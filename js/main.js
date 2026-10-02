@@ -350,7 +350,7 @@ function weather(rand) {
 {
   const rand = mulberry32(37);
   document.querySelectorAll('.sheet, .card, .clipping__paper').forEach((el) => {
-    if (rand() < 0.2) return; // a few stay crisp
+    if (rand() < 0.7) return; // most stay crisp; a few show wear
     const { polygon, folds } = weather(rand);
     el.style.setProperty('--tatter', polygon);
     for (const f of folds) {
