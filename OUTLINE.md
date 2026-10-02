@@ -263,3 +263,8 @@ Option 1 is on the page.
 
 - Dek on the page: "You won’t find it on any maps." (author's wording).
 - The three-photo row is now a **five-card carousel** with no captions: P2 planks over the reeds, P3 tracks above the flooded flats, P4 fallen-tree crossing, **P5 hopping the creek on rocks**, **P6 the small wooded valley below the falls**. Add P5 and P6 to the shot list (portrait 4:5).
+
+### Round 4 changes (2026-10-02)
+
+- Cover reworked: left-aligned three-line title in the left third, a simple dek and byline, and an interactive folded map (decorative artwork in `assets/foldmap.svg`, not a real survey) in the right third. The plank dek and byline and the falling, cracking board were retired in favour of this simpler layout.
+- Carousel cards are now polaroids. Their bottom captions are the intended shot descriptions, placeholders until real photos and captions arrive.

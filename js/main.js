@@ -1,5 +1,5 @@
 // Ivy Falls: page-level behaviour. Phase 2 covers the cover (question-mark
-// stream, falling byline board), weathered paper edges, the photo deck and the
+// cascade, folded map), weathered paper edges, the photo deck and the
 // reading-progress bar.
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -17,10 +17,10 @@ function mulberry32(seed) {
 
 // ---------- Question-mark stream ----------
 //
-// Marks fall from the top of the page onto the "h" of "The", flow right along
-// the top of the line, drop off its end (onto a lower line if one sticks out
-// further, like a tiered fall), land on the bottom of the cover and keep
-// flowing right until they leave the screen.
+// Marks fall from the top of the page onto the "h" of "The" and cascade down
+// the stepped title like water over rock ledges: along each line, off its end
+// onto the longer line below, off the end of "Waterfall", onto the bottom of
+// the cover, and away to the right until they leave the screen.
 
 const cover = document.querySelector('.cover');
 const stream = document.querySelector('.qstream');
@@ -36,17 +36,20 @@ let geo = null;
 function measure() {
   const c = cover.getBoundingClientRect();
   const fs = parseFloat(getComputedStyle(title).fontSize);
-  const range = document.createRange();
-  range.selectNodeContents(title);
-  // One rect per line (merge any fragments that share a line).
+  // Measure the words of each line (not the line boxes, which are all as wide
+  // as the longest line), so each line is its own ledge: a staircase.
   const lines = [];
-  for (const r of range.getClientRects()) {
-    const last = lines[lines.length - 1];
-    if (last && Math.abs(last.top - r.top) < 2) {
-      last.left = Math.min(last.left, r.left);
-      last.right = Math.max(last.right, r.right);
-    } else {
-      lines.push({ top: r.top, left: r.left, right: r.right });
+  for (const node of title.querySelectorAll('.cover__line')) {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    for (const r of range.getClientRects()) {
+      const last = lines[lines.length - 1];
+      if (last && Math.abs(last.top - r.top) < 2) {
+        last.left = Math.min(last.left, r.left);
+        last.right = Math.max(last.right, r.right);
+      } else {
+        lines.push({ top: r.top, left: r.left, right: r.right });
+      }
     }
   }
   // The content box starts above the letters; drop the ledge to the tops of
@@ -66,7 +69,8 @@ function measure() {
   // Where the stream lands: the "h" of "The".
   let dropX = ledges[0].left + fs * 0.6;
   let dropW = fs * 0.4;
-  const text = title.firstChild;
+  const firstLine = title.querySelector('.cover__line');
+  const text = firstLine ? firstLine.firstChild : title.firstChild;
   if (text && text.nodeType === Node.TEXT_NODE && text.length > 1) {
     const h = document.createRange();
     h.setStart(text, 1);
@@ -88,7 +92,7 @@ function measure() {
     height: c.height,
     dropX,
     dropW,
-    lineWidth: ledges[0].right - ledges[0].left,
+    lineWidth: widest, // flow speed scales with the title, not the short first line
     markSize,
   };
 }
@@ -143,7 +147,7 @@ function makeMark(rand) {
   const q = document.createElement('span');
   q.className = 'qmark';
   q.textContent = '?';
-  q.style.setProperty('--s', (0.7 + rand() * 0.8).toFixed(2));
+  q.style.setProperty('--s', (0.45 + rand() ** 1.6 * 1.35).toFixed(2)); // mostly small, a few big
   q.style.setProperty('--w', String(600 + Math.floor(rand() * 4) * 100)); // 600–900
   if (rand() < 0.45) q.style.setProperty('--c', 'var(--blue-deep)');
   return q;
@@ -226,214 +230,167 @@ if (cover && stream && title) {
   }
 }
 
-// ---------- Byline: the board falls ----------
+// ---------- Folded map ----------
 //
-// On hover, click or tap: the right nail pops out and the board swings down
-// from the left nail, swaying for about three seconds. Then the left nail
-// pops, the board drops to the bottom of the cover and cracks in two. The
-// nails land there too. READ MORE is left where the board was. Once only.
+// Hover (or tap, or focus) unfolds it once: the top row flips up, then the
+// columns open out. When it's open, a red X sits on the map and slides out of
+// the way whenever the cursor comes near it.
 
-const byline = document.querySelector('.byline');
-const board = byline && byline.querySelector('.tape--byline');
-const readMore = byline && byline.querySelector('.readmore');
+const foldmap = document.querySelector('.foldmap');
+if (foldmap) {
+  const sheet = foldmap.querySelector('.foldmap__sheet');
+  const x = foldmap.querySelector('.foldmap__x');
+  const OPEN_ANGLE = -3.5; // degrees, matches .foldmap.is-open .foldmap__sheet
+  let pos = { x: 0.62, y: 0.38 }; // as fractions of the map
 
-const NAIL_SVG = '<svg viewBox="0 0 8 20" width="8" height="20" aria-hidden="true"><rect x="3" y="4" width="2" height="15" rx="1" fill="#77776F"/><ellipse cx="4" cy="3.5" rx="4" ry="2.4" fill="#B7B7B2"/><ellipse cx="3.3" cy="3" rx="1.6" ry="0.9" fill="#EEEEEA"/></svg>';
-
-// A nail pops out at the given point (cover coordinates) and falls to the floor.
-function dropNail(nailEl) {
-  const c = cover.getBoundingClientRect();
-  const r = nailEl.getBoundingClientRect();
-  nailEl.style.visibility = 'hidden';
-  const x = r.left + r.width / 2 - c.left;
-  const y = r.top + r.height / 2 - c.top;
-  const nail = document.createElement('span');
-  nail.className = 'loose-nail';
-  nail.innerHTML = NAIL_SVG;
-  nail.style.left = `${x - 4}px`;
-  nail.style.top = `${y - 10}px`;
-  cover.append(nail);
-
-  const dy = c.height - 4 - y;
-  const drift = 10 + Math.random() * 14;
-  const spin = 250 + Math.random() * 60;
-  const anim = nail.animate([
-    { transform: 'translate(0, 0) rotate(0deg)', easing: 'ease-out' },
-    { transform: `translate(${drift * 0.3}px, -12px) rotate(50deg)`, offset: 0.14, easing: 'cubic-bezier(.5, 0, 1, .6)' },
-    { transform: `translate(${drift}px, ${dy}px) rotate(${spin}deg)`, offset: 0.82, easing: 'ease-out' },
-    { transform: `translate(${drift + 3}px, ${dy - 7}px) rotate(${spin + 10}deg)`, offset: 0.9, easing: 'ease-in' },
-    { transform: `translate(${drift + 4}px, ${dy}px) rotate(270deg)` },
-  ], { duration: 600 + Math.sqrt(Math.max(dy, 0)) * 22, fill: 'forwards' });
-  anim.onfinish = () => {
-    // Rest on the floor so it stays there if the cover is resized.
-    anim.cancel();
-    nail.style.top = 'auto';
-    nail.style.bottom = '0';
-    nail.style.left = `${x - 4 + drift + 4}px`;
-    nail.style.transform = 'rotate(270deg)';
+  const open = () => {
+    if (foldmap.classList.contains('is-open')) return;
+    foldmap.classList.add('is-open');
+    setTimeout(() => foldmap.classList.add('is-settled'), reduceMotion.matches ? 0 : 1700);
   };
-}
+  foldmap.addEventListener('mouseenter', open);
+  foldmap.addEventListener('click', open);
 
-let restingTransform = null;
+  const placeX = () => {
+    x.style.left = `${(pos.x * 100).toFixed(2)}%`;
+    x.style.top = `${(pos.y * 100).toFixed(2)}%`;
+  };
 
-function boardRestPosition() {
-  const c = cover.getBoundingClientRect();
-  const b = byline.getBoundingClientRect();
-  const w = board.offsetWidth;
-  const h = board.offsetHeight;
-  const pivotX = board.querySelector('.nail--l').offsetLeft + board.querySelector('.nail--l').offsetWidth / 2;
-  const dx = pivotX - w / 2;
-  const dy = c.bottom - b.top - h - 1;
-  return { dx, dy, pivotX, h };
-}
-
-function crackBoard({ dx, dy, pivotX, h }) {
-  const crack = document.createElement('div');
-  crack.className = 'crack';
-  crack.inert = true;
-  crack.setAttribute('aria-hidden', 'true');
-  crack.style.transformOrigin = `${pivotX}px ${h / 2}px`;
-  restingTransform = `translate(${dx}px, ${dy}px) rotate(-1.5deg)`;
-  crack.style.transform = restingTransform;
-
-  const halves = ['l', 'r'].map((side) => {
-    const half = document.createElement('div');
-    half.className = `crack__half crack__half--${side}`;
-    const copy = board.cloneNode(true);
-    copy.removeAttribute('style');
-    copy.tabIndex = -1;
-    copy.querySelectorAll('.nail').forEach((n) => { n.style.visibility = 'hidden'; });
-    half.append(copy);
-    crack.append(half);
-    return half;
-  });
-  byline.append(crack);
-  board.style.visibility = 'hidden';
-
-  if (!reduceMotion.matches) {
-    halves[0].animate([
-      { transform: 'none' },
-      { transform: 'translate(-3px, -5px) rotate(-3deg)', offset: 0.35 },
-      { transform: 'translate(-5px, 0) rotate(-2deg)' },
-    ], { duration: 380, easing: 'ease-out', fill: 'forwards' });
-    halves[1].animate([
-      { transform: 'none' },
-      { transform: 'translate(4px, -6px) rotate(4deg)', offset: 0.35 },
-      { transform: 'translate(6px, 0) rotate(3deg)' },
-    ], { duration: 380, easing: 'ease-out', fill: 'forwards' });
-  } else {
-    halves[0].style.transform = 'translate(-5px, 0) rotate(-2deg)';
-    halves[1].style.transform = 'translate(6px, 0) rotate(3deg)';
-  }
-}
-
-function dropBoard(fromKeyboard) {
-  if (!board || byline.classList.contains('is-revealed')) return;
-  byline.classList.add('is-revealed');
-  readMore.inert = false;
-  const done = () => { if (fromKeyboard) readMore.focus(); };
-
-  if (reduceMotion.matches) {
-    crackBoard(boardRestPosition());
-    done();
-    return;
-  }
-
-  const rest = boardRestPosition();
-  const tilt = parseFloat(getComputedStyle(board).getPropertyValue('--tilt')) || 0;
-  board.style.transformOrigin = `${rest.pivotX}px 50%`;
-
-  dropNail(board.querySelector('.nail--r'));
-
-  // A damped swing around the left nail, about three seconds, nearly stopping.
-  const angles = [tilt, 90, 57, 118, 69, 107, 78, 99, 84, 95, 87.5, 91.5, 88.6];
-  const swing = board.animate(angles.map((a, i) => ({
-    transform: `rotate(${a}deg)`,
-    offset: i === 0 ? 0 : 0.1 + (0.9 * (i - 1)) / (angles.length - 2),
-    easing: i === 0 ? 'cubic-bezier(.5, 0, .9, .6)' : 'ease-in-out',
-  })), { duration: 3200, fill: 'forwards' });
-
-  swing.onfinish = () => {
-    dropNail(board.querySelector('.nail--l'));
-    const fall = board.animate([
-      { transform: 'translate(0, 0) rotate(88.6deg)' },
-      { transform: `translate(${rest.dx * 0.35}px, ${rest.dy * 0.3}px) rotate(70deg)`, offset: 0.45 },
-      { transform: `translate(${rest.dx}px, ${rest.dy}px) rotate(-1.5deg)` },
-    ], { duration: 650, easing: 'cubic-bezier(.5, 0, .9, .5)', fill: 'forwards' });
-    fall.onfinish = () => {
-      crackBoard(boardRestPosition());
-      fall.cancel();
-      done();
+  // Cursor position in the map's own (rotated) coordinates, in px.
+  function toLocal(clientX, clientY) {
+    const w = foldmap.offsetWidth;
+    const h = foldmap.offsetHeight;
+    const r = foldmap.getBoundingClientRect();
+    // The sheet rotates about its bottom-right corner.
+    const ox = r.left + w;
+    const oy = r.top + h;
+    const a = (-OPEN_ANGLE * Math.PI) / 180;
+    const dx = clientX - ox;
+    const dy = clientY - oy;
+    return {
+      x: w + dx * Math.cos(a) - dy * Math.sin(a),
+      y: h + dx * Math.sin(a) + dy * Math.cos(a),
+      w,
+      h,
     };
-  };
-}
+  }
 
-if (byline && board && readMore) {
-  byline.addEventListener('mouseenter', () => dropBoard(false));
-  board.addEventListener('click', (e) => dropBoard(e.detail === 0));
-  // Keep the broken board on the floor if the cover changes height.
-  window.addEventListener('resize', () => {
-    const crack = byline.querySelector('.crack');
-    if (!crack) return;
-    const { dx, dy } = boardRestPosition();
-    crack.style.transform = `translate(${dx}px, ${dy}px) rotate(-1.5deg)`;
-  });
+  function dodge(clientX, clientY) {
+    if (!foldmap.classList.contains('is-settled')) return;
+    const c = toLocal(clientX, clientY);
+    const R = Math.max(55, c.w * 0.22);    // how close the cursor may get
+    const margin = c.w * 0.07;
+    const px = pos.x * c.w;
+    const py = pos.y * c.h;
+    const d = Math.hypot(px - c.x, py - c.y);
+    if (d > R) return;
+
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const ux = d ? (px - c.x) / d : 1;
+    const uy = d ? (py - c.y) / d : 0;
+    let nx = clamp(c.x + ux * (R + 18), margin, c.w - margin);
+    let ny = clamp(c.y + uy * (R + 18), margin, c.h - margin);
+    // Cornered: jump to the far side of the map instead.
+    if (Math.hypot(nx - c.x, ny - c.y) < R * 0.9) {
+      nx = c.x < c.w / 2 ? c.w - margin - Math.random() * c.w * 0.2 : margin + Math.random() * c.w * 0.2;
+      ny = c.y < c.h / 2 ? c.h - margin - Math.random() * c.h * 0.2 : margin + Math.random() * c.h * 0.2;
+    }
+    pos = { x: nx / c.w, y: ny / c.h };
+    placeX();
+  }
+
+  window.addEventListener('pointermove', (e) => dodge(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('pointerdown', (e) => dodge(e.clientX, e.clientY), { passive: true });
+  placeX();
 }
 
 // ---------- Weathered paper ----------
 //
-// Sparingly, sheets, cards and clippings get a torn corner or two and a few
-// tiny nicks along an edge. Applied as a clip-path on the paper layer only.
+// Sheets, cards and clippings pick up a little wear, at random but stable per
+// load: a torn corner, a folded-over corner, a split running in from an edge,
+// or a few small nicks. Most pieces get one or two marks; some stay crisp.
+// The cuts are a clip-path on the paper layer only, so text is never clipped.
 
-function tatter(rand) {
+function weather(rand) {
   const pt = (xp, xpx, yp, ypx) => `calc(${xp}% + ${xpx.toFixed(1)}px) calc(${yp}% + ${ypx.toFixed(1)}px)`;
-  let torn = 0;
+  const folds = [];
+  let marked = 0;
+
   const corner = (cx, cy) => {
-    // cx, cy: 0 or 1 (left/right, top/bottom). Returns points in clockwise order.
+    // cx, cy: 0 or 1 (left/right, top/bottom). Returns clockwise points.
     const sx = cx ? -1 : 1;
     const sy = cy ? -1 : 1;
     const X = cx * 100;
     const Y = cy * 100;
-    if (torn >= 2 || rand() > 0.3) return [pt(X, 0, Y, 0)];
-    torn++;
-    const a = 5 + rand() * 10;   // along the horizontal edge
-    const b = 5 + rand() * 10;   // along the vertical edge
-    const mid = pt(X, sx * a * (0.35 + rand() * 0.3), Y, sy * b * (0.3 + rand() * 0.35));
-    const onH = pt(X, sx * a, Y, 0);
-    const onV = pt(X, 0, Y, sy * b);
-    // Clockwise: TL goes V→H, TR goes H→V, BR goes V→H, BL goes H→V.
-    return (cx === cy) ? [onV, mid, onH] : [onH, mid, onV];
+    const roll = rand();
+    if (marked >= 2 || roll > 0.42) return [pt(X, 0, Y, 0)];
+    marked++;
+    const clockwise = (onH, onV, mid) => (cx === cy ? [onV, ...mid, onH] : [onH, ...mid, onV]);
+
+    if (roll < 0.17) {
+      // Folded over: a straight diagonal cut, with the flap drawn on top.
+      const s = 12 + rand() * 12;
+      folds.push({ corner: `${cy ? 'b' : 't'}${cx ? 'r' : 'l'}`, size: s });
+      return clockwise(pt(X, sx * s, Y, 0), pt(X, 0, Y, sy * s), []);
+    }
+    // Torn: a ragged bite out of the corner.
+    const a = 6 + rand() * 12;
+    const b = 6 + rand() * 12;
+    const mids = [
+      pt(X, sx * a * (0.55 + rand() * 0.2), Y, sy * b * (0.15 + rand() * 0.2)),
+      pt(X, sx * a * (0.3 + rand() * 0.2), Y, sy * b * (0.45 + rand() * 0.25)),
+    ];
+    return clockwise(pt(X, sx * a, Y, 0), pt(X, 0, Y, sy * b), cx === cy ? mids.reverse() : mids);
   };
-  const nicks = (fixed, along, reverse) => {
-    if (rand() > 0.5) return [];
+
+  // Along one edge: maybe a split (a narrow crack running in) or a few nicks.
+  // `at(t, depth)` maps a position along the edge (0–100) and an inward depth.
+  const edge = (at, reverse) => {
+    const roll = rand();
     const out = [];
-    const count = 1 + Math.floor(rand() * 2);
-    const ts = Array.from({ length: count }, () => 15 + rand() * 70).sort((p, q) => (reverse ? q - p : p - q));
-    for (const t of ts) {
-      const depth = 1 + rand() * 2;
-      for (const [dt, d] of [[-1.2, 0], [0, depth], [1.2, 0]]) {
-        const tt = reverse ? t - dt : t + dt;
-        out.push(along(tt, d));
+    const order = (ts) => ts.sort((p, q) => (reverse ? q - p : p - q));
+    if (roll < 0.16 && marked < 3) {
+      marked++;
+      const t = 20 + rand() * 60;
+      const depth = 10 + rand() * 16;
+      const w = 0.35 + rand() * 0.3;
+      const path = [[-w, 0], [-w * 0.2, depth * 0.55], [w * 0.15, depth], [w * 0.3, depth * 0.5], [w, 0]];
+      for (const [dt, d] of reverse ? path.reverse() : path) out.push(at(reverse ? t - dt : t + dt, d));
+    } else if (roll < 0.45) {
+      for (const t of order(Array.from({ length: 1 + Math.floor(rand() * 2) }, () => 12 + rand() * 76))) {
+        const depth = 1 + rand() * 2.5;
+        for (const [dt, d] of [[-1, 0], [0, depth], [1, 0]]) out.push(at(reverse ? t - dt : t + dt, d));
       }
     }
     return out;
   };
-  return 'polygon(' + [
+
+  const polygon = 'polygon(' + [
     ...corner(0, 0),
-    ...nicks(0, (t, d) => pt(t, 0, 0, d)),
+    ...edge((t, d) => pt(t, 0, 0, d)),
     ...corner(1, 0),
-    ...nicks(100, (t, d) => pt(100, -d, t, 0)),
+    ...edge((t, d) => pt(100, -d, t, 0)),
     ...corner(1, 1),
-    ...nicks(100, (t, d) => pt(t, 0, 100, -d), true),
+    ...edge((t, d) => pt(t, 0, 100, -d), true),
     ...corner(0, 1),
-    ...nicks(0, (t, d) => pt(0, d, t, 0), true),
+    ...edge((t, d) => pt(0, d, t, 0), true),
   ].join(', ') + ')';
+  return { polygon, folds };
 }
 
 {
   const rand = mulberry32(37);
   document.querySelectorAll('.sheet, .card, .clipping__paper').forEach((el) => {
-    if (rand() < 0.45) return; // most stay crisp
-    el.style.setProperty('--tatter', tatter(rand));
+    if (rand() < 0.2) return; // a few stay crisp
+    const { polygon, folds } = weather(rand);
+    el.style.setProperty('--tatter', polygon);
+    for (const f of folds) {
+      const flap = document.createElement('span');
+      flap.className = `dogear dogear--${f.corner}`;
+      flap.setAttribute('aria-hidden', 'true');
+      flap.style.setProperty('--fold', `${f.size.toFixed(1)}px`);
+      el.append(flap);
+    }
   });
 }
 
@@ -509,11 +466,12 @@ if (deck) {
     layout(before);
   }
 
-  deck.querySelector('.deck__arrow--prev').addEventListener('click', () => rotate(-1));
-  deck.querySelector('.deck__arrow--next').addEventListener('click', () => rotate(1));
+  // Each arrow sends the cards the opposite way to the arrow.
+  deck.querySelector('.deck__arrow--prev').addEventListener('click', () => rotate(1));
+  deck.querySelector('.deck__arrow--next').addEventListener('click', () => rotate(-1));
   deck.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') { e.preventDefault(); rotate(-1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); rotate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); rotate(1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); rotate(-1); }
   });
   // Clicking a side card brings it to the middle.
   cards.forEach((card, i) => card.addEventListener('click', () => {

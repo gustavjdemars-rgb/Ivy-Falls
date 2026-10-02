@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <!-- Decorative map for the cover's folded map. Not a real survey. -->
+  <rect width="600" height="400" fill="#F0E8D5"/>
+
+  <!-- Graticule -->
+  <g stroke="#CDBB98" stroke-width="0.8" opacity="0.6">
+    <path d="M100 0V400M200 0V400M300 0V400M400 0V400M500 0V400M0 100H600M0 200H600M0 300H600"/>
+  </g>
+
+  <!-- Contours: two hills -->
+  <g fill="none" stroke="#B07A4C" stroke-width="1.6" opacity="0.75">
+    <g transform="translate(440 130)">
+      <path d="M-130-10C-124-74-44-102 22-86 86-71 138-44 132 4 126 52 74 90 4 85-66 80-135 48-130-10Z"/>
+      <path transform="rotate(6) scale(.8)" d="M-130-10C-124-74-44-102 22-86 86-71 138-44 132 4 126 52 74 90 4 85-66 80-135 48-130-10Z"/>
+      <path transform="rotate(-4) scale(.61)" d="M-130-10C-124-74-44-102 22-86 86-71 138-44 132 4 126 52 74 90 4 85-66 80-135 48-130-10Z"/>
+      <path transform="rotate(9) scale(.43)" d="M-130-10C-124-74-44-102 22-86 86-71 138-44 132 4 126 52 74 90 4 85-66 80-135 48-130-10Z"/>
+      <path transform="rotate(2) scale(.25)" d="M-130-10C-124-74-44-102 22-86 86-71 138-44 132 4 126 52 74 90 4 85-66 80-135 48-130-10Z"/>
+    </g>
+    <g transform="translate(140 300) rotate(-12)">
+      <path d="M-110-8C-104-58-36-82 18-70 72-58 116-36 110 4 104 44 60 72 2 68-56 64-114 38-110-8Z"/>
+      <path transform="rotate(-7) scale(.76)" d="M-110-8C-104-58-36-82 18-70 72-58 116-36 110 4 104 44 60 72 2 68-56 64-114 38-110-8Z"/>
+      <path transform="rotate(5) scale(.52)" d="M-110-8C-104-58-36-82 18-70 72-58 116-36 110 4 104 44 60 72 2 68-56 64-114 38-110-8Z"/>
+      <path transform="scale(.28)" d="M-110-8C-104-58-36-82 18-70 72-58 116-36 110 4 104 44 60 72 2 68-56 64-114 38-110-8Z"/>
+    </g>
+  </g>
+
+  <!-- River and a creek -->
+  <path d="M-10 118C70 100 140 168 220 182S360 228 420 296 540 362 610 352" fill="none" stroke="#4CBBEC" stroke-width="16" stroke-linecap="round"/>
+  <path d="M300 24C312 78 290 120 316 160S332 200 336 214" fill="none" stroke="#4CBBEC" stroke-width="3.5" stroke-linecap="round"/>
+  <text x="120" y="160" fill="#16739F" font-family="Georgia, serif" font-style="italic" font-size="15" letter-spacing="4" transform="rotate(14 120 160)">MISSISSIPPI</text>
+
+  <!-- A walking trail -->
+  <path d="M40 392C110 336 196 312 262 246" fill="none" stroke="#5E5040" stroke-width="2" stroke-dasharray="7 6"/>
+
+  <!-- North arrow -->
+  <g transform="translate(560 48)" fill="#2A2520">
+    <path d="M0-20 7 8 0 3-7 8Z"/>
+    <text y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700">N</text>
+  </g>
+
+  <!-- Neatline -->
+  <rect x="10" y="10" width="580" height="380" fill="none" stroke="#7A6247" stroke-width="1.5"/>
+</svg>

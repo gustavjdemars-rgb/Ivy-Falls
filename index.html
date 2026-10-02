@@ -26,22 +26,35 @@
 <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
 <header class="cover">
-  <!-- A stream of question marks falls onto the title, runs along it and spills off (js/main.js). -->
+  <!-- Question marks fall onto the h of "The" and cascade down the stepped
+       title lines like water over rock ledges (js/main.js). -->
   <div class="qstream" aria-hidden="true"></div>
-  <h1 class="cover__title">The Twin Cities’ Hidden Waterfall</h1>
-  <hr class="cover__rule">
 
-  <div class="cover__tags">
-    <p class="tape plank tape--dek"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">You won’t find it on any maps.</span><span class="nail nail--r" aria-hidden="true"></span></p>
+  <div class="cover__lead">
+    <h1 class="cover__title"><span class="cover__line">The</span> <span class="cover__line">Twin Cities’</span> <span class="cover__line">Hidden Waterfall</span></h1>
+    <hr class="cover__rule">
+    <p class="cover__dek">You won’t find it on any maps.</p>
+    <p class="cover__byline">By Gustav DeMars</p>
+  </div>
 
-    <!-- Hover, click or tap the byline: the tape swings down from its left end,
-         sways, and drops off the screen, leaving READ MORE where it was. -->
-    <div class="byline">
-      <a class="readmore" href="#credits" inert>
-        <span class="visually-hidden">Read more about the author</span>
-        <span aria-hidden="true"><span style="--r:-9deg;--y:2px">R</span><span style="--r:6deg;--y:-3px">E</span><span style="--r:-4deg;--y:1px">A</span><span style="--r:11deg;--y:-2px">D</span><span class="readmore__gap"></span><span style="--r:7deg;--y:-1px">M</span><span style="--r:-10deg;--y:3px">O</span><span style="--r:4deg;--y:-3px">R</span><span style="--r:-6deg;--y:1px">E</span></span>
-      </a>
-      <button class="tape plank tape--byline" type="button"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">By Gustav DeMars</span><span class="nail nail--r" aria-hidden="true"></span></button>
+  <!-- A folded map. Hover (or tap) and it unfolds; a red X on it dodges the cursor. -->
+  <div class="foldmap" aria-hidden="true">
+    <div class="foldmap__sheet">
+      <div class="foldmap__row foldmap__row--b">
+        <div class="foldmap__col foldmap__col--c" style="--k:2;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i>
+          <div class="foldmap__col foldmap__col--b" style="--k:1;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i>
+            <div class="foldmap__col foldmap__col--a" style="--k:0;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i></div>
+          </div>
+        </div>
+        <div class="foldmap__row foldmap__row--t">
+          <div class="foldmap__col foldmap__col--c" style="--k:2;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i>
+            <div class="foldmap__col foldmap__col--b" style="--k:1;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i>
+              <div class="foldmap__col foldmap__col--a" style="--k:0;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg class="foldmap__x" viewBox="0 0 40 40"><path d="M8 9 31 32M31 8 9 31"/></svg>
     </div>
   </div>
 </header>
@@ -53,6 +66,8 @@
       <p class="lede">There’s a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.</p>
 
       <p>The 25-foot spring-fed waterfall in Mendota Heights was once under consideration to become a state park, but is now all but unknown to most residents of the Twin Cities.</p>
+
+      <hr class="blue-rule">
 
       <p>If you’re like me, which you probably aren’t, sometimes you procrastinate by looking at maps. One day while procrastinating, I remembered something Josh Feinberg, a geology professor at the University of Minnesota, told me one spring afternoon in 2020, while we were out collecting water samples from a natural spring on the South banks of the Mississippi, across from campus.</p>
     </div>
@@ -113,11 +128,11 @@
     <section class="deck" aria-roledescription="carousel" aria-label="Photos from the walk">
       <button class="deck__arrow deck__arrow--prev" type="button" aria-label="Rotate photos left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
       <div class="deck__hand">
-        <figure class="deck__card" data-slot="P2" aria-roledescription="slide" aria-label="1 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span><span class="ph__what">Planks across the reeds.</span></div></figure>
-        <figure class="deck__card" data-slot="P3" aria-roledescription="slide" aria-label="2 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span><span class="ph__what">Tracks above the flooded flats.</span></div></figure>
-        <figure class="deck__card" data-slot="P4" aria-roledescription="slide" aria-label="3 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span><span class="ph__what">A fallen-tree creek crossing.</span></div></figure>
-        <figure class="deck__card" data-slot="P5" aria-roledescription="slide" aria-label="4 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P5."><span class="ph__id">P5 · Photo</span><span class="ph__what">Hopping the creek on rocks.</span></div></figure>
-        <figure class="deck__card" data-slot="P6" aria-roledescription="slide" aria-label="5 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P6."><span class="ph__id">P6 · Photo</span><span class="ph__what">The small wooded valley below the falls.</span></div></figure>
+        <figure class="deck__card" data-slot="P2" aria-roledescription="slide" aria-label="1 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span></div><figcaption class="polaroid__text">Planks across the reeds.</figcaption></figure>
+        <figure class="deck__card" data-slot="P3" aria-roledescription="slide" aria-label="2 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span></div><figcaption class="polaroid__text">Tracks above the flooded flats.</figcaption></figure>
+        <figure class="deck__card" data-slot="P4" aria-roledescription="slide" aria-label="3 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span></div><figcaption class="polaroid__text">A fallen-tree creek crossing.</figcaption></figure>
+        <figure class="deck__card" data-slot="P5" aria-roledescription="slide" aria-label="4 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P5."><span class="ph__id">P5 · Photo</span></div><figcaption class="polaroid__text">Hopping the creek on rocks.</figcaption></figure>
+        <figure class="deck__card" data-slot="P6" aria-roledescription="slide" aria-label="5 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P6."><span class="ph__id">P6 · Photo</span></div><figcaption class="polaroid__text">The small wooded valley below the falls.</figcaption></figure>
       </div>
       <button class="deck__arrow deck__arrow--next" type="button" aria-label="Rotate photos right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg></button>
       <p class="visually-hidden" aria-live="polite" data-deck-status></p>
@@ -138,7 +153,7 @@
     </section>
 
     <div class="col sheet">
-      <h2 class="label-head tape plank plank--blue"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">Happy Hollow Falls</span><span class="nail nail--r" aria-hidden="true"></span></h2>
+      <h2 class="label-head">Happy Hollow Falls</h2>
 
       <p>The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century, according to a 1917 news clipping from the St. Paul Pioneer Press.</p>
     </div>
