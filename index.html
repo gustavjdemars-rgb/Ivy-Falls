@@ -16,7 +16,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" href="fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/league-spartan-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
@@ -28,12 +28,13 @@
 <header class="cover">
   <!-- Question marks fall onto the h of "The" and cascade down the stepped
        title lines like water over rock ledges (js/main.js). -->
-  <div class="qstream" aria-hidden="true"></div>
+  <div class="qstream qstream--back" aria-hidden="true"></div>
+  <div class="qstream qstream--front" aria-hidden="true"></div>
 
   <div class="cover__lead">
     <h1 class="cover__title"><span class="cover__line">The</span> <span class="cover__line">Twin Cities’</span> <span class="cover__line">Hidden Waterfall</span></h1>
     <hr class="cover__rule">
-    <!-- Two stacked label boxes: the dek on blue, the byline on white,
+    <!-- Two stacked label boxes: the dek on blue, the byline on a dark tag
          tucked under its corner. -->
     <div class="cover__tags">
       <p class="cover__dek">You won’t find it on any maps.</p>
@@ -41,47 +42,49 @@
     </div>
   </div>
 
-  <!-- A folded map (two folds, three panels). It unfolds by itself a few
-       seconds after the page opens, or sooner on hover or tap, and stays open.
-       White paper, line art in the page's dark colour: a river through the
-       middle and question marks scattered on both banks. -->
-  <div class="foldmap" aria-hidden="true">
-    <svg class="foldmap__defs" width="0" height="0" focusable="false">
-      <symbol id="foldmap-art" viewBox="0 0 600 400">
-        <rect width="600" height="400" fill="#FAFAF7"/>
-        <path d="M-30 236C80 206 128 150 220 172S356 262 440 216 560 146 630 172" fill="none" stroke="#0E1217" stroke-width="30" stroke-linecap="round"/>
-        <g font-family="Archivo, Arial Black, sans-serif" font-weight="900" text-anchor="middle" dominant-baseline="central" fill="#0E1217" stroke="#0E1217">
-          <text x="60" y="88" font-size="46" transform="rotate(-12 60 88)" stroke-width="0">?</text>
-          <text x="150" y="58" font-size="28" transform="rotate(8 150 58)" fill="none" stroke-width="1.6">?</text>
-          <text x="232" y="106" font-size="38" transform="rotate(-5 232 106)" stroke-width="0">?</text>
-          <text x="322" y="70" font-size="52" transform="rotate(10 322 70)" fill="none" stroke-width="1.6">?</text>
-          <text x="402" y="126" font-size="30" transform="rotate(-15 402 126)" stroke-width="0">?</text>
-          <text x="472" y="60" font-size="40" transform="rotate(6 472 60)" stroke-width="0">?</text>
-          <text x="552" y="92" font-size="34" transform="rotate(-8 552 92)" fill="none" stroke-width="1.6">?</text>
-          <text x="108" y="150" font-size="24" transform="rotate(14 108 150)" stroke-width="0">?</text>
-          <text x="292" y="148" font-size="22" transform="rotate(-10 292 148)" fill="none" stroke-width="1.6">?</text>
-          <text x="524" y="118" font-size="22" transform="rotate(12 524 118)" stroke-width="0">?</text>
-          <text x="52" y="330" font-size="40" transform="rotate(10 52 330)" fill="none" stroke-width="1.6">?</text>
-          <text x="142" y="292" font-size="28" transform="rotate(-8 142 292)" stroke-width="0">?</text>
-          <text x="202" y="356" font-size="50" transform="rotate(-14 202 356)" stroke-width="0">?</text>
-          <text x="302" y="322" font-size="34" transform="rotate(6 302 322)" fill="none" stroke-width="1.6">?</text>
-          <text x="382" y="366" font-size="26" transform="rotate(-6 382 366)" stroke-width="0">?</text>
-          <text x="452" y="300" font-size="44" transform="rotate(12 452 300)" stroke-width="0">?</text>
-          <text x="542" y="340" font-size="36" transform="rotate(-10 542 340)" fill="none" stroke-width="1.6">?</text>
-          <text x="252" y="282" font-size="20" transform="rotate(15 252 282)" stroke-width="0">?</text>
-          <text x="572" y="268" font-size="24" transform="rotate(8 572 268)" stroke-width="0">?</text>
+  <!-- A large question mark drawn as white contour lines, like a hill on a
+       topographic map: each ring is a band of the mask, wide to narrow. -->
+  <svg class="cover__mark" viewBox="0 0 440 620" aria-hidden="true" focusable="false">
+    <defs>
+      <path id="qmark-hook" d="M112 210C112 128 162 80 222 80 290 80 330 126 330 186 330 246 288 268 256 290 232 307 222 326 222 362L222 374"/>
+      <mask id="qmark-contours" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="620">
+        <rect width="440" height="620" fill="#000"/>
+        <!-- The hook: rings offset evenly from its centreline, outermost first. -->
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <use href="#qmark-hook" stroke="#fff" stroke-width="142"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="138"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="124"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="120"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="106"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="102"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="88"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="84"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="70"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="66"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="52"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="48"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="34"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="30"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="16"/>
+          <use href="#qmark-hook" stroke="#000" stroke-width="12"/>
+          <use href="#qmark-hook" stroke="#fff" stroke-width="2"/>
         </g>
-        <rect x="10" y="10" width="580" height="380" fill="none" stroke="#0E1217" stroke-width="2"/>
-      </symbol>
-    </svg>
-    <div class="foldmap__sheet">
-      <div class="foldmap__col foldmap__col--c"><div class="foldmap__face"><svg viewBox="400 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i>
-        <div class="foldmap__col foldmap__col--b"><div class="foldmap__face"><svg viewBox="200 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i>
-          <div class="foldmap__col foldmap__col--a"><div class="foldmap__face"><svg viewBox="0 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i></div>
-        </div>
-      </div>
-    </div>
-  </div>
+        <!-- The dot: its own small hill. -->
+        <g fill="none" stroke="#fff" stroke-width="2">
+          <circle cx="220" cy="520" r="74"/>
+          <circle cx="220" cy="520" r="65"/>
+          <circle cx="220" cy="520" r="56"/>
+          <circle cx="220" cy="520" r="47"/>
+          <circle cx="220" cy="520" r="38"/>
+          <circle cx="220" cy="520" r="29"/>
+          <circle cx="220" cy="520" r="20"/>
+          <circle cx="220" cy="520" r="11"/>
+          <circle cx="220" cy="520" r="2.5" fill="#fff"/>
+        </g>
+      </mask>
+    </defs>
+    <rect width="440" height="620" fill="#FFFFFF" mask="url(#qmark-contours)"/>
+  </svg>
 </header>
 
 <main id="story">
@@ -251,7 +254,7 @@
       <h2 class="credits__head">Maps and data</h2>
       <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
       <h2 class="credits__head">Type</h2>
-      <p>Archivo, Inter Tight and Source Serif 4, SIL Open Font License.</p>
+      <p>League Spartan, Archivo, Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>

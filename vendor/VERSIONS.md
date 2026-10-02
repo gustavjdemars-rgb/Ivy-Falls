@@ -8,6 +8,7 @@ Fetched from the Fontsource npm packages via jsDelivr on 2026-10-01. Latin subse
 
 | Family | Package | Version | Files | Licence |
 |---|---|---|---|---|
+| League Spartan (variable, wght 100–900) | `@fontsource-variable/league-spartan` | 5.3.0 | `league-spartan-latin-wght-normal.woff2` | SIL OFL 1.1 (`OFL-league-spartan.txt`) |
 | Archivo (variable: wght 100–900, wdth 62–125) | `@fontsource-variable/archivo` | 5.3.0 | `archivo-latin-standard-normal.woff2` | SIL OFL 1.1 (`OFL-archivo.txt`) |
 | Inter Tight (variable, wght 100–900) | `@fontsource-variable/inter-tight` | 5.3.0 | `inter-tight-latin-wght-normal.woff2` | SIL OFL 1.1 (`OFL-inter-tight.txt`) |
 | Source Serif 4 (variable, wght 200–900) | `@fontsource-variable/source-serif-4` | 5.3.0 | `source-serif-4-latin-wght-normal.woff2`, `source-serif-4-latin-wght-italic.woff2` | SIL OFL 1.1 (`OFL-source-serif-4.txt`) |

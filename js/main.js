@@ -1,6 +1,6 @@
 // Ivy Falls: page-level behaviour. Phase 2 covers the cover (question-mark
-// cascade, folded map), weathered paper edges, the photo deck and the
-// reading-progress bar.
+// cascade), weathered paper edges, the photo deck and the reading-progress
+// bar.
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -23,7 +23,8 @@ function mulberry32(seed) {
 // the cover, and away to the right until they leave the screen.
 
 const cover = document.querySelector('.cover');
-const stream = document.querySelector('.qstream');
+const stream = document.querySelector('.qstream--front');
+const streamBack = document.querySelector('.qstream--back'); // marks that pass behind the title
 const title = document.querySelector('.cover__title');
 
 const GRAVITY = 1700;     // px/s²
@@ -186,7 +187,8 @@ const place = ([x, y, r, rx, s]) =>
 function launch(rand) {
   const path = simulate(geo, rand);
   const q = makeMark(rand);
-  stream.append(q);
+  // About a third of the marks travel behind the title text.
+  (streamBack && rand() < 0.35 ? streamBack : stream).append(q);
   const anim = q.animate(path.map((p) => ({ transform: place(p) })), {
     duration: (path.length - 1) * STEP * 1000,
     easing: 'linear',
@@ -198,101 +200,13 @@ function launch(rand) {
 // Reduced motion: a still frame of the stream, marks spaced along one path.
 function drawStill() {
   stream.replaceChildren();
+  if (streamBack) streamBack.replaceChildren();
   const rand = mulberry32(1917);
   const path = simulate(geo, rand);
   for (let i = 0; i < path.length; i += 4) {
     const q = makeMark(rand);
     q.style.transform = place(path[i]);
-    stream.append(q);
-  }
-}
-
-// ---------- Whitewater ----------
-// Faint, wispy spray where the marks land at the foot of the falls. It swirls
-// up and drifts toward the right third, and thins out within a couple of
-// seconds. Drawn on a canvas so it stays cheap.
-
-const mist = { canvas: null, ctx: null, parts: [], carry: 0, dpr: 1, x: 0, y: 0, w: 0, h: 0 };
-
-function setupMist() {
-  if (!mist.canvas) {
-    mist.canvas = document.createElement('canvas');
-    mist.canvas.className = 'mist';
-    mist.canvas.setAttribute('aria-hidden', 'true');
-    cover.append(mist.canvas);
-    mist.ctx = mist.canvas.getContext('2d');
-  }
-  mist.dpr = Math.min(2, window.devicePixelRatio || 1);
-  mist.w = geo.width;
-  mist.h = geo.height;
-  mist.canvas.width = Math.round(mist.w * mist.dpr);
-  mist.canvas.height = Math.round(mist.h * mist.dpr);
-  mist.parts = [];
-  // Where the stream meets the floor: average a few simulated landings.
-  const rand = mulberry32(7);
-  const lands = [];
-  for (let i = 0; i < 12; i++) {
-    const p = simulate(geo, rand);
-    if (p.landX !== null) lands.push(p.landX);
-  }
-  mist.x = lands.length ? lands.reduce((a, b) => a + b, 0) / lands.length : geo.width * 0.55;
-  mist.y = geo.height - 2;
-}
-
-function spawnMist(n) {
-  for (let i = 0; i < n; i++) {
-    const spray = Math.random() < 0.3;   // a few fast droplets among the mist
-    mist.parts.push({
-      x: mist.x + (Math.random() - 0.5) * 40,
-      y: mist.y - Math.random() * 6,
-      vx: 35 + Math.random() * 70,
-      vy: -(spray ? 150 + Math.random() * 130 : 90 + Math.random() * 90),
-      r: spray ? 1.2 + Math.random() * 1.6 : 8 + Math.random() * 10,
-      grow: spray ? 0 : 26 + Math.random() * 30,
-      age: 0,
-      life: spray ? 0.6 + Math.random() * 0.5 : 1.4 + Math.random() * 1.2,
-      seed: Math.random() * 10,
-      spray,
-    });
-  }
-}
-
-function stepMist(dt) {
-  const { ctx, dpr } = mist;
-  if (!ctx) return;
-  mist.carry += dt * (lowPower ? 16 : 34); // particles per second
-  const n = Math.floor(mist.carry);
-  mist.carry -= n;
-  spawnMist(n);
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, mist.w, mist.h);
-  for (const p of mist.parts) p.age += dt;
-  mist.parts = mist.parts.filter((p) => p.age < p.life);
-  for (const p of mist.parts) {
-    const k = Math.min(1, p.age / p.life);
-    // Swirl: a slow sideways wobble that grows as the spray rises.
-    p.vx += Math.sin(p.age * 3.2 + p.seed) * 70 * dt + 18 * dt;
-    p.vy += (p.spray ? 260 : -8) * dt;   // droplets fall back, mist keeps lifting
-    p.vy *= 1 - 0.6 * dt;
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    const r = p.r + p.grow * k;
-    const alpha = (p.spray ? 0.35 : 0.085) * Math.min(1, k * 5) * (1 - k) ** 1.4;
-    if (p.spray) {
-      ctx.fillStyle = `rgba(235, 246, 252, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-      g.addColorStop(0, `rgba(235, 246, 252, ${alpha})`);
-      g.addColorStop(1, 'rgba(235, 246, 252, 0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, r * 1.35, r, Math.sin(p.seed + p.age) * 0.6, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    (streamBack && i % 3 === 0 ? streamBack : stream).append(q);
   }
 }
 
@@ -302,7 +216,7 @@ let last = 0;
 let carry = 0;
 
 // Frame-time watch: if frames average slower than ~30 fps for a few seconds,
-// switch to flat marks, a thinner stream and lighter mist.
+// switch to flat marks and a thinner stream.
 let frameAvg = 16;
 let slowFor = 0;
 
@@ -323,7 +237,6 @@ function tick(now) {
       carry -= every;
       launch(Math.random);
     }
-    stepMist(dt);
   }
   requestAnimationFrame(tick);
 }
@@ -332,14 +245,11 @@ function start() {
   geo = measure();
   if (reduceMotion.matches) {
     running = false;
-    if (mist.canvas) mist.canvas.remove();
-    mist.canvas = null;
-    mist.ctx = null;
     drawStill();
     return;
   }
   stream.replaceChildren();
-  setupMist();
+  if (streamBack) streamBack.replaceChildren();
   if (!running) {
     running = true;
     last = performance.now();
@@ -361,19 +271,6 @@ if (cover && stream && title) {
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => { coverVisible = e.isIntersecting; }).observe(cover);
   }
-}
-
-// ---------- Folded map ----------
-//
-// Unfolds by itself a few seconds after the page opens (or sooner on hover
-// or tap): the middle panel swings open, then the left one. It stays open.
-
-const foldmap = document.querySelector('.foldmap');
-if (foldmap) {
-  const open = () => foldmap.classList.add('is-open');
-  foldmap.addEventListener('mouseenter', open);
-  foldmap.addEventListener('click', open);
-  window.addEventListener('load', () => setTimeout(open, reduceMotion.matches ? 0 : 3000));
 }
 
 // ---------- Weathered paper ----------
