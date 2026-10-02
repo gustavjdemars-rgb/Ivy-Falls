@@ -19,8 +19,9 @@ function mulberry32(seed) {
 //
 // Marks fall from the top of the page onto the "h" of "The" and cascade down
 // the stepped title like water over rock ledges: along each line, off its end
-// onto the longer line below, off the end of "Waterfall", onto the bottom of
-// the cover, and away to the right until they leave the screen.
+// onto the longer line below, then off the end of "Waterfall" and down out of
+// the cover. Every mark is a solid body: they knock into and rest against each
+// other, never pass through one another.
 
 const cover = document.querySelector('.cover');
 const stream = document.querySelector('.qstream--front');
@@ -28,8 +29,11 @@ const streamBack = document.querySelector('.qstream--back'); // marks that pass 
 const title = document.querySelector('.cover__title');
 
 const GRAVITY = 1700;     // px/s²
-const STEP = 1 / 30;      // simulation step, s
+const STEP = 1 / 120;     // simulation step, s (small, so fast marks can't skip through each other)
 const SPAWN_EVERY = 0.34; // s between marks: a sparse stream, each mark easy to see
+const MAX_MARKS = 60;     // if marks pile up, hold the stream until they clear
+const BOUNCE = 0.3;       // how lively a knock between two marks is
+const SOLVE_PASSES = 4;   // collision passes per step; more keeps stacks from sinking into each other
 
 let geo = null;
 
@@ -60,8 +64,7 @@ function measure() {
     left: l.left - c.left + fs * 0.05,
     right: l.right - c.left - fs * 0.02,
   }));
-  // The bottom of the cover is a floor that runs off the right of the screen.
-  ledges.push({ y: c.height - 2, left: -Infinity, right: Infinity, floor: true });
+  // No floor: off the end of "Waterfall", marks drop out of the bottom of the cover.
 
   // The white rule under the title follows the title's widest line.
   const widest = Math.max(...lines.map((l) => l.right - l.left));
@@ -110,74 +113,14 @@ function measure() {
   };
 }
 
-// Simulate one mark and return its path as [x, y, rotation, rotationX, scale]
-// samples. path.landX is where it first hits the floor.
-function simulate(g, rand) {
-  const flow = g.lineWidth * (0.14 + rand() * 0.1); // slow, like water finding the edge
-  const floorFlow = Math.max(flow * 1.5, 90);
-  const bob = g.markSize * 0.14;                    // how far marks bob on the surface
-  const phase = rand() * Math.PI * 2;
-  // A slow turn about the horizontal axis, 35–75°/s, either way.
-  const turn = (35 + rand() * 40) * (rand() < 0.5 ? -1 : 1);
-  let rx = rand() * 360;
-  let x = g.dropX + (rand() - 0.5) * g.dropW * 0.6;
-  let y = -g.markSize * 1.5;
-  let vx = 0;
-  let vy = rand() * 60;
-  let rot = (rand() - 0.5) * 30;
-  const spin = (rand() - 0.5) * 360;
-  let ledge = null;
-  let landX = null;
-  let scale = 1;
-  let t = 0;
-  const path = [];
-
-  while (path.length < 1500) {
-    path.push([x, y, rot, rx, scale]);
-    if (x > g.width + g.markSize * 2 || y > g.height + g.markSize * 2) break;
-    t += STEP;
-    rx += turn * STEP;
-    if (ledge) {
-      const target = ledge.floor ? floorFlow : flow;
-      vx += (target - vx) * Math.min(1, STEP * 4);
-      x += vx * STEP;
-      // Bob on the surface like something floating.
-      y = ledge.y - (0.5 + 0.5 * Math.sin(t * 6.5 + phase)) * bob * scale;
-      rot = Math.sin(t * 5 + phase) * 8;
-      // On the floor, marks shrink as they drift away from the foot of the falls.
-      if (ledge.floor) {
-        const away = (x - landX) / Math.max(1, g.width - landX);
-        scale = Math.max(0.2, 1 - away * 0.85);
-      }
-      if (x > ledge.right) { ledge = null; vy = 0; }
-    } else {
-      const prevY = y;
-      vy += GRAVITY * STEP;
-      x += vx * STEP;
-      y += vy * STEP;
-      rot += spin * STEP;
-      const hit = g.ledges.find((l) => prevY <= l.y && y >= l.y && x >= l.left && x <= l.right);
-      if (hit) {
-        ledge = hit;
-        y = hit.y;
-        vy = 0;
-        vx = Math.max(vx, flow * 0.15);
-        if (hit.floor && landX === null) landX = x;
-      }
-    }
-  }
-  path.landX = landX;
-  return path;
-}
-
 // Set when the device can't keep up (see tick): marks go flat and fewer spawn.
 let lowPower = false;
-const LAYERS = 5;
+const LAYERS = 11;
 
-function makeMark(rand) {
+function makeMark(rand, s) {
   const q = document.createElement('span');
   q.className = 'qmark';
-  // A stack of layers gives each mark depth when it turns on its x axis.
+  // A stack of layers gives each mark depth when it turns.
   const layers = lowPower ? 1 : LAYERS;
   for (let i = 0; i < layers; i++) {
     const layer = document.createElement('span');
@@ -186,46 +129,163 @@ function makeMark(rand) {
     layer.textContent = '?';
     q.append(layer);
   }
-  q.style.setProperty('--s', (0.65 + rand() ** 1.6 * 1.15).toFixed(2)); // mostly mid-size, a few big
+  q.style.setProperty('--s', s.toFixed(2));
   q.style.setProperty('--w', String(600 + Math.floor(rand() * 4) * 100)); // 600–900
   if (rand() < 0.25) q.style.setProperty('--c', 'var(--blue-deep)'); // mostly the brighter blue
   return q;
 }
 
-// Anchor each mark by the bottom-centre of its glyph so it sits on the ledge.
-const place = ([x, y, r, rx, s]) =>
-  `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -82%) perspective(260px) rotate(${r.toFixed(1)}deg) rotateX(${rx.toFixed(1)}deg) scale(${s.toFixed(3)})`;
+// Each mark is a round body about as tall as its glyph, centred on the glyph,
+// so marks touch at their outlines rather than overlapping.
+let marks = [];
 
-function launch(rand) {
-  const path = simulate(geo, rand);
-  const q = makeMark(rand);
+function spawn(rand) {
+  const g = geo;
+  const s = 0.65 + rand() ** 1.6 * 1.15; // mostly mid-size, a few big
+  const size = g.markSize * s;
+  const r = size * 0.36;
+  const el = makeMark(rand, s);
   // About a quarter of the marks travel behind the title text.
-  (streamBack && rand() < 0.25 ? streamBack : stream).append(q);
-  const anim = q.animate(path.map((p) => ({ transform: place(p) })), {
-    duration: (path.length - 1) * STEP * 1000,
-    easing: 'linear',
-    fill: 'forwards',
+  (streamBack && rand() < 0.25 ? streamBack : stream).append(el);
+  marks.push({
+    el, r, size,
+    m: s * s,
+    x: g.dropX + (rand() - 0.5) * g.dropW * 0.6,
+    y: -r * 2.5,
+    vx: 0,
+    vy: rand() * 60,
+    flow: g.lineWidth * (0.14 + rand() * 0.1), // slow, like water finding the edge
+    ledge: null,
+    phase: rand() * Math.PI * 2,
+    // Slow turns about both the horizontal and the vertical axis, either way.
+    rx: rand() * 360,
+    ry: rand() * 360,
+    wrx: (35 + rand() * 40) * (rand() < 0.5 ? -1 : 1),
+    wry: (30 + rand() * 40) * (rand() < 0.5 ? -1 : 1),
+    rz: (rand() - 0.5) * 30,
+    wrz: (rand() - 0.5) * 360,
   });
-  anim.onfinish = () => q.remove();
 }
 
-// Reduced motion: a still frame of the stream, marks spaced along one path.
-function drawStill() {
+function step(t) {
+  const g = geo;
+  for (const b of marks) {
+    const prevBottom = b.y + b.r;
+    b.vy += GRAVITY * STEP;
+    if (b.ledge) {
+      // Carried along the ledge, like water finding the edge.
+      b.vx += (b.flow - b.vx) * Math.min(1, STEP * 4);
+      // Rock gently while it floats along.
+      b.rz += (Math.sin(t * 5 + b.phase) * 8 - b.rz) * Math.min(1, STEP * 6);
+    } else {
+      b.rz += b.wrz * STEP;
+    }
+    b.x += b.vx * STEP;
+    b.y += b.vy * STEP;
+    b.rx += b.wrx * STEP;
+    b.ry += b.wry * STEP;
+
+    // Land on a ledge only from above, and only while the mark's centre is
+    // over it: past the end it tips off and falls.
+    b.ledge = null;
+    for (const l of g.ledges) {
+      if (b.x < l.left || b.x > l.right) continue;
+      if (b.y + b.r >= l.y && prevBottom <= l.y + b.r * 0.5) {
+        b.y = l.y - b.r;
+        if (b.vy > 0) b.vy = 0;
+        b.ledge = l;
+        break;
+      }
+    }
+  }
+
+  // Knocks between marks: push overlapping pairs apart along the line between
+  // their centres (heavier marks move less) and trade momentum.
+  for (let pass = 0; pass < SOLVE_PASSES; pass++) {
+    for (let i = 0; i < marks.length; i++) {
+      const a = marks[i];
+      for (let j = i + 1; j < marks.length; j++) {
+        const b = marks[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const min = a.r + b.r;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= min * min) continue;
+        const d = Math.sqrt(d2) || 0.01;
+        const nx = d2 ? dx / d : 0;
+        const ny = d2 ? dy / d : 1;
+        // A mark resting on a ledge holds up the one on top of it.
+        const ia = a.ledge && ny < -0.3 ? 0 : 1 / a.m;
+        const ib = b.ledge && ny > 0.3 ? 0 : 1 / b.m;
+        if (!ia && !ib) continue;
+        const share = (min - d) / (ia + ib);
+        a.x -= nx * share * ia;
+        a.y -= ny * share * ia;
+        b.x += nx * share * ib;
+        b.y += ny * share * ib;
+        if (pass) continue;
+        const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+        if (vn < 0) {
+          const j2 = (-(1 + BOUNCE) * vn) / (ia + ib);
+          a.vx -= j2 * nx * ia;
+          a.vy -= j2 * ny * ia;
+          b.vx += j2 * nx * ib;
+          b.vy += j2 * ny * ib;
+          // A glancing knock sets both marks spinning a little.
+          const vt = (b.vx - a.vx) * -ny + (b.vy - a.vy) * nx;
+          a.wrz -= vt * 0.6;
+          b.wrz += vt * 0.6;
+        }
+      }
+    }
+  }
+
+  // Gone once fully below the cover (or, rarely, knocked off a side).
+  marks = marks.filter((b) => {
+    const out = b.y - b.r > g.height || b.x + b.r < -g.width * 0.1 || b.x - b.r > g.width * 1.1;
+    if (out) b.el.remove();
+    return !out;
+  });
+}
+
+// The glyph's centre sits about 46% of the way down its line box.
+function render() {
+  for (const b of marks) {
+    b.el.style.transform =
+      `translate(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px) translate(-50%, -46%) ` +
+      `perspective(${Math.round(b.size * 5)}px) rotate(${b.rz.toFixed(1)}deg) ` +
+      `rotateX(${b.rx.toFixed(1)}deg) rotateY(${b.ry.toFixed(1)}deg)`;
+  }
+}
+
+function clearMarks() {
+  marks = [];
   stream.replaceChildren();
   if (streamBack) streamBack.replaceChildren();
+}
+
+// Reduced motion: a still frame of the stream, taken from a few seconds of
+// the same simulation run ahead of time.
+function drawStill() {
+  clearMarks();
   const rand = mulberry32(1917);
-  const path = simulate(geo, rand);
-  for (let i = 0; i < path.length; i += 4) {
-    const q = makeMark(rand);
-    q.style.transform = place(path[i]);
-    (streamBack && i % 3 === 0 ? streamBack : stream).append(q);
+  let t = 0;
+  let carry = 0;
+  while (t < 9) {
+    carry += STEP;
+    if (carry >= SPAWN_EVERY) { carry -= SPAWN_EVERY; spawn(rand); }
+    step(t);
+    t += STEP;
   }
+  render();
 }
 
 let running = false;
 let coverVisible = true;
 let last = 0;
 let carry = 0;
+let simTime = 0;
+let simCarry = 0;
 
 // Frame-time watch: if frames average slower than ~30 fps for a few seconds,
 // switch to flat marks and a thinner stream.
@@ -247,8 +307,15 @@ function tick(now) {
     const every = lowPower ? SPAWN_EVERY * 1.6 : SPAWN_EVERY;
     while (carry >= every) {
       carry -= every;
-      launch(Math.random);
+      if (marks.length < MAX_MARKS) spawn(Math.random);
     }
+    simCarry += dt;
+    while (simCarry >= STEP) {
+      simCarry -= STEP;
+      step(simTime);
+      simTime += STEP;
+    }
+    render();
   }
   requestAnimationFrame(tick);
 }
@@ -260,8 +327,7 @@ function start() {
     drawStill();
     return;
   }
-  stream.replaceChildren();
-  if (streamBack) streamBack.replaceChildren();
+  clearMarks();
   if (!running) {
     running = true;
     last = performance.now();

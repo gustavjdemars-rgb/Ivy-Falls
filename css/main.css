@@ -224,7 +224,7 @@ a:hover { text-decoration-thickness: 2px; }
   font-family: var(--display);
   font-stretch: 88%;
   line-height: 1;
-  font-size: calc(var(--s, 1) * clamp(1.8rem, 1.25rem + 2.5vw, 3.7rem));
+  font-size: calc(var(--s, 1) * clamp(2.25rem, 1.55rem + 3.1vw, 4.6rem));
   font-weight: var(--w, 800);
   color: var(--c, var(--blue));
   will-change: transform;
@@ -234,7 +234,7 @@ a:hover { text-decoration-thickness: 2px; }
    thickness as it turns. The back layers are a darker shade of its colour. */
 .qmark__layer {
   display: block;
-  transform: translateZ(calc(var(--i) * -0.045em));
+  transform: translateZ(calc(var(--i) * -0.016em)); /* tight, so the edge reads solid side-on */
 }
 .qmark__layer + .qmark__layer {
   position: absolute;
