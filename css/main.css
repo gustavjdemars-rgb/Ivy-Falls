@@ -230,6 +230,18 @@ a:hover { text-decoration-thickness: 2px; }
   font-weight: var(--w, 800);
   color: var(--c, var(--blue));
   will-change: transform;
+  transform-style: preserve-3d;
+}
+/* Each mark is a short stack of copies, front to back, so it has visible
+   thickness as it turns. The back layers are a darker shade of its colour. */
+.qmark__layer {
+  display: block;
+  transform: translateZ(calc(var(--i) * -0.045em));
+}
+.qmark__layer + .qmark__layer {
+  position: absolute;
+  inset: 0;
+  color: color-mix(in srgb, var(--c, var(--blue)) 55%, #05080B);
 }
 
 /* A thick white rule under the title, a little shorter than its widest line
@@ -286,11 +298,11 @@ a:hover { text-decoration-thickness: 2px; }
 }
 
 /* ---------- Folded map ---------- */
-/* Six panels (3 columns × 2 rows) hinged off the bottom-right panel. Folded,
-   they stack into one small square; unfolded, the map sits at a slight angle. */
+/* Three panels with two folds, hinged off the right-hand panel. Folded, they
+   stack into one tall panel; unfolded, the map sits at a slight angle. */
 
 .foldmap {
-  --w: clamp(15rem, 25vw, 24rem);
+  --w: clamp(20rem, 36vw, 40rem);
   --h: calc(var(--w) * 2 / 3);
   position: relative;
   z-index: 4;
@@ -300,34 +312,19 @@ a:hover { text-decoration-thickness: 2px; }
   justify-self: end;
   width: var(--w);
   height: var(--h);
-  margin-bottom: clamp(0rem, 3vw, 2.5rem);
-  perspective: 1600px;
+  margin-bottom: clamp(0rem, 2vw, 2rem);
+  perspective: 1800px;
   cursor: pointer;
 }
+.foldmap__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 .foldmap__sheet {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
   transform-origin: 100% 100%;
-  transform: rotate(7deg);
-  transition: transform 0.8s cubic-bezier(.3, .7, .2, 1);
-}
-
-.foldmap__row {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  transform-style: preserve-3d;
-}
-.foldmap__row--b { bottom: 0; }
-.foldmap__row--t {
-  bottom: 100%;
-  height: 100%;
-  transform-origin: 50% 100%;
-  transform: rotateX(-180deg);
-  transition: transform 0.55s cubic-bezier(.4, .1, .3, 1);
+  transform: rotate(6deg);
+  transition: transform 0.9s cubic-bezier(.3, .7, .2, 1);
 }
 
 .foldmap__col {
@@ -343,10 +340,10 @@ a:hover { text-decoration-thickness: 2px; }
   right: 100%;
   width: 100%;
   transform-origin: 100% 50%;
-  transition: transform 0.5s cubic-bezier(.4, .1, .3, 1);
+  transition: transform 0.65s cubic-bezier(.4, .1, .3, 1);
 }
-.foldmap__col--b { transform: rotateY(-180deg); transition-delay: 0.45s; }
-.foldmap__col--a { transform: rotateY(180deg); transition-delay: 0.75s; }
+.foldmap__col--b { transform: rotateY(-180deg); }
+.foldmap__col--a { transform: rotateY(180deg); transition-delay: 0.5s; }
 
 .foldmap__face,
 .foldmap__back {
@@ -356,55 +353,45 @@ a:hover { text-decoration-thickness: 2px; }
   -webkit-backface-visibility: hidden;
 }
 .foldmap__face {
-  background-image:
-    linear-gradient(to right, rgba(60, 40, 20, 0.12), transparent 12%, transparent 88%, rgba(60, 40, 20, 0.1)),
-    url("../assets/foldmap.svg");
-  background-size: 100% 100%, 300% 200%;
-  background-position: 0 0, calc(var(--k) * 50%) calc(var(--r) * 100%);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  background: #FAFAF7;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
-/* The outside of the folded map: plain stock with a small printed river and
-   contours, and the edges of the folded panels showing underneath. */
+.foldmap__face svg { display: block; width: 100%; height: 100%; }
+/* Soft shading along each crease. */
+.foldmap__face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(14, 18, 23, 0.1), transparent 10%, transparent 90%, rgba(14, 18, 23, 0.08));
+  pointer-events: none;
+}
+
+/* The outside of the folded map: white stock with a single dark question mark
+   and the edges of the folded panels showing underneath. */
 .foldmap__back {
+  display: grid;
+  place-items: center;
   transform: rotateY(180deg);
-  background-color: #EAE2CE;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M58 30c10-6 22-2 24 8s-8 16-18 14-14-16-6-22z' stroke='%23B07A4C' stroke-width='1.6'/%3E%3Cpath d='M63 35c5-3 11-1 12 4s-4 8-9 7-7-8-3-11z' stroke='%23B07A4C' stroke-width='1.6'/%3E%3Cpath d='M14 58c14-6 22 6 34 4s20-12 38-6' stroke='%234CBBEC' stroke-width='4'/%3E%3C/g%3E%3Crect x='14' y='74' width='30' height='4' fill='%232A2520' opacity='.75'/%3E%3Crect x='14' y='82' width='20' height='3' fill='%232A2520' opacity='.4'/%3E%3C/svg%3E"),
-    linear-gradient(to right, rgba(60, 40, 20, 0.1), transparent 15%, transparent 85%, rgba(60, 40, 20, 0.1));
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+  background: #F4F4F0;
   box-shadow:
-    1px 1px 0 #DCD3BE, 2px 2px 0 #D2C8B1, 3px 3px 0 #C9BEA6,
-    0 4px 10px rgba(0, 0, 0, 0.5);
+    1px 1px 0 #E2E2DC, 2px 2px 0 #D6D6CF, 3px 3px 0 #CACAC2,
+    0 6px 14px rgba(0, 0, 0, 0.5);
 }
-.foldmap__row--t .foldmap__back { transform: rotateX(180deg); }
+.foldmap__back::after {
+  content: "?";
+  font-family: var(--display);
+  font-weight: 900;
+  font-stretch: 88%;
+  font-size: calc(var(--w) * 0.16);
+  line-height: 1;
+  color: var(--night);
+}
 
 /* Open */
 .foldmap.is-open { cursor: default; }
-.foldmap.is-open .foldmap__sheet { transform: rotate(-3.5deg); }
-.foldmap.is-open .foldmap__row--t { transform: none; }
+.foldmap.is-open .foldmap__sheet { transform: rotate(-3deg); }
 .foldmap.is-open .foldmap__col--b,
 .foldmap.is-open .foldmap__col--a { transform: none; }
-
-/* The red X, revealed once the map is open; js/main.js moves it out of the
-   cursor's way. */
-.foldmap__x {
-  position: absolute;
-  left: 62%;
-  top: 38%;
-  width: 11%;
-  height: auto;
-  transform: translate(-50%, -50%) translateZ(2px);
-  fill: none;
-  stroke: #D23A2A;
-  stroke-width: 6;
-  stroke-linecap: round;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease 0s, left 0.32s cubic-bezier(.2, .8, .2, 1), top 0.32s cubic-bezier(.2, .8, .2, 1);
-}
-.foldmap.is-open .foldmap__x { opacity: 1; transition-delay: 1.2s, 0s, 0s; }
-.foldmap.is-settled .foldmap__x { transition-delay: 0s; }
 
 @media (max-width: 760px) {
   .cover {
@@ -414,7 +401,7 @@ a:hover { text-decoration-thickness: 2px; }
   }
   .cover__lead { grid-column: 1; }
   .foldmap {
-    --w: min(16rem, 72vw);
+    --w: min(22rem, 84vw);
     grid-column: 1;
     grid-row: 2;
     margin-top: 2.5rem;
@@ -423,7 +410,6 @@ a:hover { text-decoration-thickness: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .foldmap__sheet,
-  .foldmap__row--t,
   .foldmap__col--b,
   .foldmap__col--a { transition: none; }
 }

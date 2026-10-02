@@ -41,24 +41,45 @@
     </div>
   </div>
 
-  <!-- A folded map. Hover (or tap) and it unfolds; a red X on it dodges the cursor. -->
+  <!-- A folded map (two folds, three panels). It unfolds by itself a few
+       seconds after the page opens, or sooner on hover or tap, and stays open.
+       White paper, line art in the page's dark colour: a river through the
+       middle and question marks scattered on both banks. -->
   <div class="foldmap" aria-hidden="true">
+    <svg class="foldmap__defs" width="0" height="0" focusable="false">
+      <symbol id="foldmap-art" viewBox="0 0 600 400">
+        <rect width="600" height="400" fill="#FAFAF7"/>
+        <path d="M-30 236C80 206 128 150 220 172S356 262 440 216 560 146 630 172" fill="none" stroke="#0E1217" stroke-width="30" stroke-linecap="round"/>
+        <g font-family="Archivo, Arial Black, sans-serif" font-weight="900" text-anchor="middle" dominant-baseline="central" fill="#0E1217" stroke="#0E1217">
+          <text x="60" y="88" font-size="46" transform="rotate(-12 60 88)" stroke-width="0">?</text>
+          <text x="150" y="58" font-size="28" transform="rotate(8 150 58)" fill="none" stroke-width="1.6">?</text>
+          <text x="232" y="106" font-size="38" transform="rotate(-5 232 106)" stroke-width="0">?</text>
+          <text x="322" y="70" font-size="52" transform="rotate(10 322 70)" fill="none" stroke-width="1.6">?</text>
+          <text x="402" y="126" font-size="30" transform="rotate(-15 402 126)" stroke-width="0">?</text>
+          <text x="472" y="60" font-size="40" transform="rotate(6 472 60)" stroke-width="0">?</text>
+          <text x="552" y="92" font-size="34" transform="rotate(-8 552 92)" fill="none" stroke-width="1.6">?</text>
+          <text x="108" y="150" font-size="24" transform="rotate(14 108 150)" stroke-width="0">?</text>
+          <text x="292" y="148" font-size="22" transform="rotate(-10 292 148)" fill="none" stroke-width="1.6">?</text>
+          <text x="524" y="118" font-size="22" transform="rotate(12 524 118)" stroke-width="0">?</text>
+          <text x="52" y="330" font-size="40" transform="rotate(10 52 330)" fill="none" stroke-width="1.6">?</text>
+          <text x="142" y="292" font-size="28" transform="rotate(-8 142 292)" stroke-width="0">?</text>
+          <text x="202" y="356" font-size="50" transform="rotate(-14 202 356)" stroke-width="0">?</text>
+          <text x="302" y="322" font-size="34" transform="rotate(6 302 322)" fill="none" stroke-width="1.6">?</text>
+          <text x="382" y="366" font-size="26" transform="rotate(-6 382 366)" stroke-width="0">?</text>
+          <text x="452" y="300" font-size="44" transform="rotate(12 452 300)" stroke-width="0">?</text>
+          <text x="542" y="340" font-size="36" transform="rotate(-10 542 340)" fill="none" stroke-width="1.6">?</text>
+          <text x="252" y="282" font-size="20" transform="rotate(15 252 282)" stroke-width="0">?</text>
+          <text x="572" y="268" font-size="24" transform="rotate(8 572 268)" stroke-width="0">?</text>
+        </g>
+        <rect x="10" y="10" width="580" height="380" fill="none" stroke="#0E1217" stroke-width="2"/>
+      </symbol>
+    </svg>
     <div class="foldmap__sheet">
-      <div class="foldmap__row foldmap__row--b">
-        <div class="foldmap__col foldmap__col--c" style="--k:2;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i>
-          <div class="foldmap__col foldmap__col--b" style="--k:1;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i>
-            <div class="foldmap__col foldmap__col--a" style="--k:0;--r:1"><i class="foldmap__face"></i><i class="foldmap__back"></i></div>
-          </div>
-        </div>
-        <div class="foldmap__row foldmap__row--t">
-          <div class="foldmap__col foldmap__col--c" style="--k:2;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i>
-            <div class="foldmap__col foldmap__col--b" style="--k:1;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i>
-              <div class="foldmap__col foldmap__col--a" style="--k:0;--r:0"><i class="foldmap__face"></i><i class="foldmap__back"></i></div>
-            </div>
-          </div>
+      <div class="foldmap__col foldmap__col--c"><div class="foldmap__face"><svg viewBox="400 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i>
+        <div class="foldmap__col foldmap__col--b"><div class="foldmap__face"><svg viewBox="200 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i>
+          <div class="foldmap__col foldmap__col--a"><div class="foldmap__face"><svg viewBox="0 0 200 400" preserveAspectRatio="none"><use href="#foldmap-art" width="600" height="400"/></svg></div><i class="foldmap__back"></i></div>
         </div>
       </div>
-      <svg class="foldmap__x" viewBox="0 0 40 40"><path d="M8 9 31 32M31 8 9 31"/></svg>
     </div>
   </div>
 </header>

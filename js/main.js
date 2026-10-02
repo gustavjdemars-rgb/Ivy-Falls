@@ -157,10 +157,22 @@ function simulate(g, rand) {
   return path;
 }
 
+// Set when the device can't keep up (see tick): marks go flat and fewer spawn.
+let lowPower = false;
+const LAYERS = 5;
+
 function makeMark(rand) {
   const q = document.createElement('span');
   q.className = 'qmark';
-  q.textContent = '?';
+  // A stack of layers gives each mark depth when it turns on its x axis.
+  const layers = lowPower ? 1 : LAYERS;
+  for (let i = 0; i < layers; i++) {
+    const layer = document.createElement('span');
+    layer.className = 'qmark__layer';
+    layer.style.setProperty('--i', i);
+    layer.textContent = '?';
+    q.append(layer);
+  }
   q.style.setProperty('--s', (0.45 + rand() ** 1.6 * 1.35).toFixed(2)); // mostly small, a few big
   q.style.setProperty('--w', String(600 + Math.floor(rand() * 4) * 100)); // 600–900
   if (rand() < 0.45) q.style.setProperty('--c', 'var(--blue-deep)');
@@ -248,7 +260,7 @@ function spawnMist(n) {
 function stepMist(dt) {
   const { ctx, dpr } = mist;
   if (!ctx) return;
-  mist.carry += dt * 34;                 // particles per second
+  mist.carry += dt * (lowPower ? 16 : 34); // particles per second
   const n = Math.floor(mist.carry);
   mist.carry -= n;
   spawnMist(n);
@@ -289,14 +301,26 @@ let coverVisible = true;
 let last = 0;
 let carry = 0;
 
+// Frame-time watch: if frames average slower than ~30 fps for a few seconds,
+// switch to flat marks, a thinner stream and lighter mist.
+let frameAvg = 16;
+let slowFor = 0;
+
 function tick(now) {
   if (!running) return;
-  const dt = Math.min(0.1, (now - last) / 1000);
+  const raw = (now - last) / 1000;
+  const dt = Math.min(0.1, raw);
   last = now;
   if (coverVisible && !document.hidden) {
+    if (!lowPower && raw < 0.5) {
+      frameAvg += (raw * 1000 - frameAvg) * 0.05;
+      slowFor = frameAvg > 33 ? slowFor + dt : 0;
+      if (slowFor > 3) lowPower = true;
+    }
     carry += dt;
-    while (carry >= SPAWN_EVERY) {
-      carry -= SPAWN_EVERY;
+    const every = lowPower ? SPAWN_EVERY * 1.6 : SPAWN_EVERY;
+    while (carry >= every) {
+      carry -= every;
       launch(Math.random);
     }
     stepMist(dt);
@@ -341,76 +365,15 @@ if (cover && stream && title) {
 
 // ---------- Folded map ----------
 //
-// Hover (or tap, or focus) unfolds it once: the top row flips up, then the
-// columns open out. When it's open, a red X sits on the map and slides out of
-// the way whenever the cursor comes near it.
+// Unfolds by itself a few seconds after the page opens (or sooner on hover
+// or tap): the middle panel swings open, then the left one. It stays open.
 
 const foldmap = document.querySelector('.foldmap');
 if (foldmap) {
-  const sheet = foldmap.querySelector('.foldmap__sheet');
-  const x = foldmap.querySelector('.foldmap__x');
-  const OPEN_ANGLE = -3.5; // degrees, matches .foldmap.is-open .foldmap__sheet
-  let pos = { x: 0.62, y: 0.38 }; // as fractions of the map
-
-  const open = () => {
-    if (foldmap.classList.contains('is-open')) return;
-    foldmap.classList.add('is-open');
-    setTimeout(() => foldmap.classList.add('is-settled'), reduceMotion.matches ? 0 : 1700);
-  };
+  const open = () => foldmap.classList.add('is-open');
   foldmap.addEventListener('mouseenter', open);
   foldmap.addEventListener('click', open);
-
-  const placeX = () => {
-    x.style.left = `${(pos.x * 100).toFixed(2)}%`;
-    x.style.top = `${(pos.y * 100).toFixed(2)}%`;
-  };
-
-  // Cursor position in the map's own (rotated) coordinates, in px.
-  function toLocal(clientX, clientY) {
-    const w = foldmap.offsetWidth;
-    const h = foldmap.offsetHeight;
-    const r = foldmap.getBoundingClientRect();
-    // The sheet rotates about its bottom-right corner.
-    const ox = r.left + w;
-    const oy = r.top + h;
-    const a = (-OPEN_ANGLE * Math.PI) / 180;
-    const dx = clientX - ox;
-    const dy = clientY - oy;
-    return {
-      x: w + dx * Math.cos(a) - dy * Math.sin(a),
-      y: h + dx * Math.sin(a) + dy * Math.cos(a),
-      w,
-      h,
-    };
-  }
-
-  function dodge(clientX, clientY) {
-    if (!foldmap.classList.contains('is-settled')) return;
-    const c = toLocal(clientX, clientY);
-    const R = Math.max(55, c.w * 0.22);    // how close the cursor may get
-    const margin = c.w * 0.07;
-    const px = pos.x * c.w;
-    const py = pos.y * c.h;
-    const d = Math.hypot(px - c.x, py - c.y);
-    if (d > R) return;
-
-    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-    const ux = d ? (px - c.x) / d : 1;
-    const uy = d ? (py - c.y) / d : 0;
-    let nx = clamp(c.x + ux * (R + 18), margin, c.w - margin);
-    let ny = clamp(c.y + uy * (R + 18), margin, c.h - margin);
-    // Cornered: jump to the far side of the map instead.
-    if (Math.hypot(nx - c.x, ny - c.y) < R * 0.9) {
-      nx = c.x < c.w / 2 ? c.w - margin - Math.random() * c.w * 0.2 : margin + Math.random() * c.w * 0.2;
-      ny = c.y < c.h / 2 ? c.h - margin - Math.random() * c.h * 0.2 : margin + Math.random() * c.h * 0.2;
-    }
-    pos = { x: nx / c.w, y: ny / c.h };
-    placeX();
-  }
-
-  window.addEventListener('pointermove', (e) => dodge(e.clientX, e.clientY), { passive: true });
-  window.addEventListener('pointerdown', (e) => dodge(e.clientX, e.clientY), { passive: true });
-  placeX();
+  window.addEventListener('load', () => setTimeout(open, reduceMotion.matches ? 0 : 3000));
 }
 
 // ---------- Weathered paper ----------
