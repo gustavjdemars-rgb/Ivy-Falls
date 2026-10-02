@@ -12,19 +12,6 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Libre Caslon Text";
-  src: url("../fonts/libre-caslon-text-latin-400-normal.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Libre Caslon Text";
-  src: url("../fonts/libre-caslon-text-latin-400-italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
   font-family: "Inter Tight";
   src: url("../fonts/inter-tight-latin-wght-normal.woff2") format("woff2");
   font-weight: 100 900;
@@ -76,7 +63,6 @@
   --highlight: #FFE45C;
 
   --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --caslon: "Libre Caslon Text", "Source Serif 4", Georgia, serif;
   --sans: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
   --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
 
@@ -87,6 +73,8 @@
 
   /* Fine grain (small tile) and uneven wear (large tile). */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .22 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --dust: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .52 0 0 0 0 .48 40 0 0 0 -28.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23d)'/%3E%3C/svg%3E");
+  --wear-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.008' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .75 0 0 0 0 .8 0 0 0 0 .85 0 0 0 .1 -.035'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
   --wear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='640'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .22 0 0 0 .12 -.03'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
 }
 
@@ -109,16 +97,26 @@ body {
   overflow-x: clip;
 }
 
-/* A very light film grain over everything, dark sections included. */
+/* Film grain and sparse dust over everything, dark sections included. */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 100;
   pointer-events: none;
-  background-image: var(--grain);
-  opacity: 0.55;
+  background-image: var(--dust), var(--grain);
+  opacity: 0.9;
   mix-blend-mode: overlay;
+}
+
+/* Dark sections: a soft vignette and faint uneven wear, like a printed plate. */
+.cover,
+.night,
+.credits {
+  background-color: var(--night);
+  background-image:
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.45) 100%),
+    var(--wear-light);
 }
 
 p { margin: 0 0 1.2em; }
@@ -132,18 +130,9 @@ a:hover { text-decoration-thickness: 2px; }
 
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 
-/* Marker for missing copy or credits; removed as content arrives. */
-.todo {
-  font-family: var(--sans);
-  font-size: 0.72em;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #B3261E;
-  border: 1px dashed currentColor;
-  border-radius: 3px;
-  padding: 0.1em 0.4em;
-}
+/* Marker for missing copy or credits: plain red text in the surrounding
+   style, removed as content arrives. */
+.todo { color: #B3261E; }
 
 .col {
   max-width: calc(var(--measure) + 2 * var(--gutter));
@@ -189,7 +178,6 @@ a:hover { text-decoration-thickness: 2px; }
   min-height: 100vh;
   min-height: 100svh;
   padding: 6rem var(--gutter) 5rem;
-  background: var(--night);
   color: var(--night-ink);
   text-align: center;
 }
@@ -239,7 +227,19 @@ a:hover { text-decoration-thickness: 2px; }
   will-change: transform;
 }
 
-/* ---------- Cover tape: dek and byline ---------- */
+/* ---------- Cover rule, dek and byline ---------- */
+
+/* A thin white rule under the title, a little shorter than the title's widest
+   line (width set from js/main.js; 60% without JS). */
+.cover__rule {
+  position: relative;
+  z-index: 1;
+  width: calc(var(--title-w, 60%) - clamp(2rem, 6vw, 5rem));
+  height: 0;
+  margin: clamp(1.4rem, 3vw, 2.1rem) auto 0;
+  border: 0;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.88);
+}
 
 .cover__tags {
   position: relative;
@@ -247,19 +247,20 @@ a:hover { text-decoration-thickness: 2px; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.1rem;
-  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  gap: 1.2rem;
+  margin-top: clamp(1.4rem, 3vw, 2.1rem);
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
 
-/* A strip of white tape with torn ends. */
+/* A strip of white tape with torn ends and a little wear. */
 .tape {
   position: relative;
   display: inline-block;
   margin: 0;
   padding: 0.45em 1.1em 0.5em;
   background-color: var(--tape);
-  background-image: var(--grain);
+  background-image: var(--dust), var(--grain);
+  background-blend-mode: multiply;
   transform: rotate(var(--tilt, -0.8deg));
   clip-path: polygon(
     0 0, 100% 0,
@@ -270,123 +271,64 @@ a:hover { text-decoration-thickness: 2px; }
 }
 
 .tape--dek {
-  --tilt: -0.9deg;
-  max-width: min(36rem, 100%);
-  font-family: var(--caslon);
-  font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.55rem);
-  line-height: 1.35;
+  --tilt: -0.7deg;
+  max-width: min(46rem, 100%);
+  padding-inline: 1.4em;
+  font-family: var(--display);
+  font-weight: 650;
+  font-stretch: 100%;
+  font-size: clamp(1.15rem, 0.95rem + 0.9vw, 1.7rem);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
   color: var(--dek-red);
-  text-wrap: balance;
 }
 
 .tape--byline {
   --tilt: 1.2deg;
   border: 0;
-  font-family: var(--caslon);
-  font-style: italic;
-  font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.1rem);
-  letter-spacing: 0.01em;
+  font-family: var(--sans);
+  font-weight: 650;
+  font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.3rem);
+  letter-spacing: 0.005em;
   color: var(--blue-deep);
   cursor: pointer;
 }
 
-/* ---------- Byline drawer ---------- */
+/* ---------- Byline: the tape falls away to reveal READ MORE ---------- */
 
 .byline {
   position: relative;
   display: inline-block;
 }
-.byline > .tape { position: relative; z-index: 2; }
 
-/* The slot clips the drawer so it seems to come out from under the tape. */
-.drawer-slot {
+/* Sits exactly under the byline tape until the tape falls. */
+.readmore {
   position: absolute;
-  z-index: 1;
-  top: calc(100% - 8px);
-  left: 50%;
-  width: min(21rem, 88vw);
-  height: 12.5rem;
-  transform: translateX(-50%);
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.drawer {
-  position: relative;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.4rem;
-  height: calc(100% - 10px);
-  padding: 1.25rem 1.25rem 1.6rem;
-  background-color: #FAF9F5;
-  background-image: var(--grain);
-  border-radius: 0 0 4px 4px;
-  /* Depth at the top edge, as if it slides out from inside something. */
-  box-shadow: inset 0 14px 14px -12px rgba(0, 0, 0, 0.35), 0 6px 14px -6px rgba(0, 0, 0, 0.5);
-  transform: translateY(calc(-100% - 28px));
-  transition: transform 0.55s cubic-bezier(.2, .8, .2, 1);
-  pointer-events: auto;
-}
-/* Drawer pull. */
-.drawer::after {
-  content: "";
-  position: absolute;
-  bottom: 0.6rem;
-  left: 50%;
-  width: 2.75rem;
-  height: 4px;
-  border-radius: 2px;
-  background: #D5D2C8;
-  transform: translateX(-50%);
-}
-
-.byline:hover .drawer,
-.byline:focus-within .drawer,
-.byline.is-open .drawer { transform: translateY(0); }
-
-.polaroid {
-  flex: none;
-  width: 6.75rem;
-  margin: 0;
-  padding: 0.4rem 0.4rem 1.5rem;
-  background: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 6px 12px -6px rgba(0, 0, 0, 0.35);
-  transform: rotate(-5deg);
-}
-.polaroid__photo {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  background: #2B3036;
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #9AA3AC;
-}
-
-.readmore {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-  color: var(--ink);
+  color: var(--tape);
   text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.1s;
 }
-.readmore__word { display: flex; gap: 0.08em; }
-.readmore__word span {
+.readmore span[style] {
   display: inline-block;
   font-family: var(--display);
   font-weight: 800;
   font-stretch: 90%;
-  font-size: 1.65rem;
+  font-size: clamp(1.2rem, 1.05rem + 0.5vw, 1.55rem);
   line-height: 1;
   transform: translateY(var(--y, 0)) rotate(var(--r, 0deg));
+  transition: color 0.2s;
 }
-.readmore__word + .readmore__word { margin-left: 0.6rem; }
-.readmore:hover .readmore__word span { color: var(--blue-ink); }
+.readmore__gap { display: inline-block; width: 0.45em; }
+.readmore:hover span[style],
+.readmore:focus-visible span[style] { color: var(--blue); }
+
+.byline.is-revealed .readmore { opacity: 1; }
+.byline.is-gone .tape--byline { visibility: hidden; }
 
 /* ---------- Story: text on sheets that overlap like stacked paper ---------- */
 
@@ -399,8 +341,13 @@ a:hover { text-decoration-thickness: 2px; }
   margin: 0 auto;
   padding: var(--sheet-pad);
   background-color: var(--sheet);
-  background-image: var(--grain);
-  box-shadow: 0 1px 1px rgba(40, 30, 20, 0.06), 0 10px 26px -16px rgba(40, 30, 20, 0.35);
+  background-image: var(--wear), var(--grain);
+  background-blend-mode: multiply;
+  /* Slightly aged edges, then the shadow onto the sheet below. */
+  box-shadow:
+    inset 0 0 38px rgba(120, 100, 70, 0.08),
+    0 1px 1px rgba(40, 30, 20, 0.06),
+    0 10px 26px -16px rgba(40, 30, 20, 0.35);
   transform: rotate(var(--tilt, 0deg));
 }
 .sheet:nth-of-type(3n + 1) { --tilt: -0.28deg; }
@@ -408,10 +355,15 @@ a:hover { text-decoration-thickness: 2px; }
 .sheet:nth-of-type(3n) { --tilt: -0.12deg; }
 .sheet > :last-child { margin-bottom: 0; }
 
-/* Figures, clippings and photos are laid over the sheet edges. */
+/* Figures, clippings and photos are laid over the bottom edge of the sheet
+   above. Below them there's always clear space, so captions and transcription
+   toggles never sit on top of the next sheet. */
 .story > .media--wide,
 .story > .clipping,
-.story > .gallery { margin-block: -1.1rem; }
+.story > .gallery {
+  margin-top: -1.1rem;
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
 .story > .media--closing { margin-top: -1.1rem; }
 .story > .stage + .gallery { margin-top: 3rem; }
 
@@ -432,12 +384,12 @@ a:hover { text-decoration-thickness: 2px; }
   line-height: 1.55;
 }
 
-/* Section label in the style of the map labels: a blue box. */
+/* Section label: a strip of blue tape, like the cover tape, matching the
+   map-label blue. */
 .label-head {
-  display: inline-block;
-  margin: 0 0 1.4rem;
-  padding: 0.3em 0.55em 0.32em;
-  background: var(--blue);
+  margin: 0 0 1.4rem -0.4em;
+  padding: 0.32em 0.8em 0.36em;
+  background-color: var(--blue);
   color: var(--on-blue);
   font-family: var(--display);
   font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem);
@@ -445,7 +397,8 @@ a:hover { text-decoration-thickness: 2px; }
   font-stretch: 92%;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  transform: rotate(-0.6deg);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.22));
+  --tilt: -1.6deg;
 }
 
 /* ---------- Media and placeholders ---------- */
@@ -582,7 +535,6 @@ figcaption {
   z-index: 0;
   margin: clamp(3rem, 8vw, 5rem) 0 0;
   padding-bottom: clamp(4rem, 9vw, 6.5rem);
-  background: var(--night);
   color: var(--night-ink);
 }
 .night .media { margin-top: 0; }
@@ -669,7 +621,6 @@ mark {
 
 .credits {
   padding: clamp(2.5rem, 6vw, 4rem) var(--gutter) clamp(3rem, 8vw, 5rem);
-  background: var(--night);
   color: var(--night-soft);
   font-family: var(--sans);
   font-size: 0.9rem;
@@ -707,5 +658,5 @@ mark {
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .drawer { transition: none; }
+  .readmore { transition: none; }
 }

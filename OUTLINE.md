@@ -247,3 +247,14 @@ Drawn only from facts in the story. Option 1 is on the page for now.
 3. How a half-remembered geology lesson and a topographical map led to a waterfall the maps forgot.
 4. A spring-fed waterfall on the Mississippi bluffs, almost unknown to the cities around it.
 5. It's 25 feet tall, fed by springs and 45 minutes' walk from a trailhead. Almost nobody goes.
+
+### Dek options, round 2 (short, no spoilers)
+
+Option 1 is on the page.
+
+1. The maps say there's nothing here. They're wrong.
+2. It isn't on any map. It's been there all along.
+3. There's a waterfall in the Twin Cities almost no one has seen.
+4. Somewhere off the Mississippi, the maps leave a blank.
+5. Hiding in plain sight, a short walk from the city.
+6. Some places you have to find for yourself.

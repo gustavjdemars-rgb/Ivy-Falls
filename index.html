@@ -29,24 +29,19 @@
   <!-- A stream of question marks falls onto the title, runs along it and spills off (js/main.js). -->
   <div class="qstream" aria-hidden="true"></div>
   <h1 class="cover__title">The Twin Cities’ Hidden Waterfall</h1>
+  <hr class="cover__rule">
 
   <div class="cover__tags">
-    <p class="tape tape--dek">A 25-foot waterfall in Mendota Heights was once considered for a state park. Today it isn’t on any map.</p>
+    <p class="tape tape--dek">The maps say there’s nothing here. They’re wrong.</p>
 
-    <!-- Hover (or tap) the byline: a drawer slides out with the author's polaroid. -->
+    <!-- Hover, click or tap the byline: the tape swings down from its left end,
+         sways, and drops off the screen, leaving READ MORE where it was. -->
     <div class="byline">
-      <button class="tape tape--byline" type="button" aria-expanded="false" aria-controls="author-drawer">By Gustav DeMars</button>
-      <div class="drawer-slot">
-        <div class="drawer" id="author-drawer">
-          <figure class="polaroid">
-            <div class="polaroid__photo" role="img" aria-label="Placeholder for the author's headshot"><span>Headshot</span></div>
-          </figure>
-          <a class="readmore" href="#credits" aria-label="Read more about the author">
-            <span class="readmore__word" aria-hidden="true"><span style="--r:-9deg;--y:2px">R</span><span style="--r:6deg;--y:-3px">E</span><span style="--r:-4deg;--y:1px">A</span><span style="--r:11deg;--y:-2px">D</span></span>
-            <span class="readmore__word" aria-hidden="true"><span style="--r:7deg;--y:-1px">M</span><span style="--r:-10deg;--y:3px">O</span><span style="--r:4deg;--y:-3px">R</span><span style="--r:-6deg;--y:1px">E</span></span>
-          </a>
-        </div>
-      </div>
+      <a class="readmore" href="#credits" inert>
+        <span class="visually-hidden">Read more about the author</span>
+        <span aria-hidden="true"><span style="--r:-9deg;--y:2px">R</span><span style="--r:6deg;--y:-3px">E</span><span style="--r:-4deg;--y:1px">A</span><span style="--r:11deg;--y:-2px">D</span><span class="readmore__gap"></span><span style="--r:7deg;--y:-1px">M</span><span style="--r:-10deg;--y:3px">O</span><span style="--r:4deg;--y:-3px">R</span><span style="--r:-6deg;--y:1px">E</span></span>
+      </a>
+      <button class="tape tape--byline" type="button">By Gustav DeMars</button>
     </div>
   </div>
 </header>
@@ -67,7 +62,7 @@
         <span class="ph__id">P1 · Photo · 3:2 · optional</span>
         <span class="ph__what">Spring 2020: collecting water samples with Josh Feinberg on the south bank.</span>
       </div>
-      <figcaption><span class="todo">Caption</span> <span class="credit todo">Credit</span></figcaption>
+      <figcaption><span class="todo">Caption to come.</span> <span class="credit todo">Photo credit to come</span></figcaption>
     </figure>
 
     <div class="col sheet">
@@ -81,7 +76,7 @@
         <span class="ph__id">D1 · Diagram · 16:9 (1:1 mobile)</span>
         <span class="ph__what">Gorge cross-section in three steps: rock spans the river; the river cuts down while one fracture crosses both banks; a spring falls on each side.</span>
       </div>
-      <figcaption><span class="todo">Caption</span></figcaption>
+      <figcaption><span class="todo">Caption to come.</span></figcaption>
     </figure>
 
     <!-- Stage 1: full-bleed sticky map, text cards scroll over it (M2 → M3). -->
@@ -116,15 +111,15 @@
     <div class="gallery">
       <figure class="media" data-slot="P2" style="--ar: 4 / 5">
         <div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span><span class="ph__what">Planks across the reeds.</span></div>
-        <figcaption><span class="todo">Caption</span></figcaption>
+        <figcaption><span class="todo">Caption to come.</span></figcaption>
       </figure>
       <figure class="media" data-slot="P3" style="--ar: 4 / 5">
         <div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span><span class="ph__what">Tracks above the flooded flats.</span></div>
-        <figcaption><span class="todo">Caption</span></figcaption>
+        <figcaption><span class="todo">Caption to come.</span></figcaption>
       </figure>
       <figure class="media" data-slot="P4" style="--ar: 4 / 5">
         <div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span><span class="ph__what">A fallen-tree creek crossing.</span></div>
-        <figcaption><span class="todo">Caption</span></figcaption>
+        <figcaption><span class="todo">Caption to come.</span></figcaption>
       </figure>
     </div>
 
@@ -135,7 +130,7 @@
           <span class="ph__id">V1 · Video loop · 16:9 (4:5 mobile)</span>
           <span class="ph__what">Both tiers of the falls. Muted loop when in view, with play/pause and sound controls.</span>
         </div>
-        <figcaption class="col"><span class="todo">Caption</span> <span class="credit todo">Video credit</span></figcaption>
+        <figcaption class="col"><span class="todo">Caption to come.</span> <span class="credit todo">Video credit to come</span></figcaption>
       </figure>
       <div class="col">
         <p>The tiered waterfall has two drops, of about 10 and 25 feet, flowing over shelves of shale before plunging to the stream bed below. The falls are nearly 100% spring-fed, according to Feinberg.</p>
@@ -143,7 +138,7 @@
     </section>
 
     <div class="col sheet">
-      <h2 class="label-head">Happy Hollow Falls</h2>
+      <h2 class="label-head tape">Happy Hollow Falls</h2>
 
       <p>The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century, according to a 1917 news clipping from the St. Paul Pioneer Press.</p>
     </div>
@@ -153,10 +148,10 @@
         <span class="clipping__id">C1 · 1917 · St. Paul Pioneer Press</span>
         <p class="clipping__line">Scan goes here. The key sentence gets a <mark>highlighter stroke</mark> as it scrolls into view.</p>
       </div>
-      <figcaption><span class="todo">Publication, date, page</span></figcaption>
+      <figcaption><span class="todo">Publication, date and page to come.</span></figcaption>
       <details class="transcript">
         <summary>Read the transcription</summary>
-        <p class="todo">Transcription</p>
+        <p class="todo">Transcription to come.</p>
       </details>
     </figure>
 
@@ -169,10 +164,10 @@
         <span class="clipping__id">C2 · 1937 · South St. Paul Reporter</span>
         <p class="clipping__line">Scan goes here, with the key sentence <mark>highlighted</mark>.</p>
       </div>
-      <figcaption><span class="todo">Publication, date, page</span></figcaption>
+      <figcaption><span class="todo">Publication, date and page to come.</span></figcaption>
       <details class="transcript">
         <summary>Read the transcription</summary>
-        <p class="todo">Transcription</p>
+        <p class="todo">Transcription to come.</p>
       </details>
     </figure>
 
@@ -195,9 +190,9 @@
     <div>
       <h2 class="credits__head">Credits</h2>
       <p>Reported and written by Gustav DeMars</p>
-      <p>Video by <span class="todo">Name</span></p>
-      <p>Photos by <span class="todo">Name</span></p>
-      <p><span class="todo">Originally reported spring 2023?</span></p>
+      <p>Video by <span class="todo">name to come</span></p>
+      <p>Photos by <span class="todo">name to come</span></p>
+      <p><span class="todo">Original reporting date to come</span></p>
     </div>
     <div>
       <h2 class="credits__head">Sources</h2>
@@ -214,7 +209,7 @@
       <h2 class="credits__head">Maps and data</h2>
       <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
       <h2 class="credits__head">Type</h2>
-      <p>Archivo, Libre Caslon Text, Inter Tight and Source Serif 4, SIL Open Font License.</p>
+      <p>Archivo, Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>

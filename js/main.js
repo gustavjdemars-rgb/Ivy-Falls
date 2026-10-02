@@ -54,6 +54,10 @@ function measure() {
     left: l.left - c.left + fs * 0.05,
     right: l.right - c.left - fs * 0.02,
   }));
+  // The white rule under the title follows the title's widest line.
+  const widest = Math.max(...lines.map((l) => l.right - l.left));
+  cover.style.setProperty('--title-w', `${Math.round(widest)}px`);
+
   const first = ledges[0];
   const probe = document.createElement('span');
   probe.className = 'qmark';
@@ -198,25 +202,57 @@ if (cover && stream && title) {
   }
 }
 
-// ---------- Byline drawer ----------
-// CSS opens it on hover and focus; a tap or click toggles it so it also
-// works on touch screens. Escape or a click elsewhere closes it.
+// ---------- Byline: the tape falls away ----------
+// On hover, click or tap, the byline tape swings down from its left end,
+// sways like a pendulum, settles, then drops off the bottom of the screen,
+// leaving READ MORE where it was. It happens once.
 
 const byline = document.querySelector('.byline');
-const bylineButton = byline && byline.querySelector('button');
-if (byline && bylineButton) {
-  const setOpen = (open) => {
-    byline.classList.toggle('is-open', open);
-    bylineButton.setAttribute('aria-expanded', String(open));
+const tape = byline && byline.querySelector('.tape--byline');
+const readMore = byline && byline.querySelector('.readmore');
+
+function dropTape(fromKeyboard) {
+  if (!tape || byline.classList.contains('is-revealed')) return;
+  byline.classList.add('is-revealed');
+  readMore.inert = false;
+
+  const finish = () => {
+    byline.classList.add('is-gone');
+    if (fromKeyboard) readMore.focus();
   };
-  bylineButton.addEventListener('click', () => setOpen(!byline.classList.contains('is-open')));
-  document.addEventListener('click', (e) => { if (!byline.contains(e.target)) setOpen(false); });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && byline.classList.contains('is-open')) {
-      setOpen(false);
-      bylineButton.focus();
-    }
-  });
+
+  if (reduceMotion.matches) {
+    tape.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }).onfinish = finish;
+    return;
+  }
+
+  const tilt = parseFloat(getComputedStyle(tape).getPropertyValue('--tilt')) || 0;
+  tape.style.transformOrigin = '6px 50%';
+  // A damped swing around 90°: drop, overshoot, and settle.
+  const swing = tape.animate([
+    { transform: `rotate(${tilt}deg)`, easing: 'cubic-bezier(.5, 0, .9, .6)' },
+    { transform: 'rotate(90deg)', offset: 0.28, easing: 'ease-out' },
+    { transform: 'rotate(66deg)', offset: 0.44, easing: 'ease-in-out' },
+    { transform: 'rotate(101deg)', offset: 0.6, easing: 'ease-in-out' },
+    { transform: 'rotate(81deg)', offset: 0.73, easing: 'ease-in-out' },
+    { transform: 'rotate(95deg)', offset: 0.84, easing: 'ease-in-out' },
+    { transform: 'rotate(87deg)', offset: 0.93, easing: 'ease-in-out' },
+    { transform: 'rotate(90deg)' },
+  ], { duration: 1900, fill: 'forwards' });
+
+  swing.onfinish = () => {
+    // Then it lets go and falls off the bottom of the cover.
+    const below = cover.getBoundingClientRect().bottom - tape.getBoundingClientRect().top + 80;
+    tape.animate([
+      { transform: 'translateY(0) rotate(90deg)' },
+      { transform: `translateY(${Math.max(below, 300)}px) rotate(97deg)` },
+    ], { duration: 750, easing: 'cubic-bezier(.55, 0, 1, .45)', fill: 'forwards' }).onfinish = finish;
+  };
+}
+
+if (byline && tape && readMore) {
+  byline.addEventListener('mouseenter', () => dropTape(false));
+  tape.addEventListener('click', (e) => dropTape(e.detail === 0));
 }
 
 // ---------- Reading progress ----------
