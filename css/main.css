@@ -75,6 +75,7 @@
   --measure: 44rem;        /* ≈ 70–75 characters of body text */
   --wide: 76rem;
   --sheet-pad: clamp(1.25rem, 4vw, 3rem);
+  --rule-gap: clamp(1.1rem, 2.4vw, 1.75rem);  /* space either side of the cover rule */
 
   /* Fine grain (small tile) and uneven wear (large tile). */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .25 0 0 0 0 .22 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -246,9 +247,11 @@ a:hover { text-decoration-thickness: 2px; }
 .cover__rule {
   position: relative;
   z-index: 3;
-  width: calc(var(--title-w, 20rem) - 1.5rem);
+  width: var(--title-w, 20rem);  /* runs to the end of "Waterfall" */
   height: 0;
-  margin: clamp(1.25rem, 2.6vw, 1.9rem) 0 0;
+  /* Equal gaps above and below the rule. The title's line box ends a little
+     below the letters (--title-tail), so that space is taken off the top gap. */
+  margin: calc(var(--rule-gap) - var(--title-tail, 0px)) 0 0;
   border: 0;
   border-top: 4px solid rgba(255, 255, 255, 0.9);
 }
@@ -262,7 +265,7 @@ a:hover { text-decoration-thickness: 2px; }
   display: inline-flex;
   flex-direction: column;
   align-items: flex-end;
-  margin-top: clamp(1.1rem, 2.4vw, 1.6rem);
+  margin-top: var(--rule-gap);
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
 }
 .cover__dek {

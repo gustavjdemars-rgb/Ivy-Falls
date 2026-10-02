@@ -29,7 +29,7 @@ const title = document.querySelector('.cover__title');
 
 const GRAVITY = 1700;     // px/s²
 const STEP = 1 / 30;      // simulation step, s
-const SPAWN_EVERY = 0.16; // s between marks
+const SPAWN_EVERY = 0.34; // s between marks: a sparse stream, each mark easy to see
 
 let geo = null;
 
@@ -66,6 +66,18 @@ function measure() {
   // The white rule under the title follows the title's widest line.
   const widest = Math.max(...lines.map((l) => l.right - l.left));
   cover.style.setProperty('--title-w', `${Math.round(widest)}px`);
+
+  // The gap between the baseline of "Waterfall" (no descenders) and the bottom
+  // of the title box, so the rule can sit equally between letters and dek.
+  const lastLine = title.querySelector('.cover__line:last-child');
+  if (lastLine) {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    lastLine.append(probe);
+    const tail = title.getBoundingClientRect().bottom - probe.getBoundingClientRect().top;
+    probe.remove();
+    cover.style.setProperty('--title-tail', `${Math.max(0, Math.round(tail))}px`);
+  }
 
   // Where the stream lands: the "h" of "The".
   let dropX = ledges[0].left + fs * 0.6;
@@ -174,9 +186,9 @@ function makeMark(rand) {
     layer.textContent = '?';
     q.append(layer);
   }
-  q.style.setProperty('--s', (0.45 + rand() ** 1.6 * 1.35).toFixed(2)); // mostly small, a few big
+  q.style.setProperty('--s', (0.65 + rand() ** 1.6 * 1.15).toFixed(2)); // mostly mid-size, a few big
   q.style.setProperty('--w', String(600 + Math.floor(rand() * 4) * 100)); // 600–900
-  if (rand() < 0.45) q.style.setProperty('--c', 'var(--blue-deep)');
+  if (rand() < 0.25) q.style.setProperty('--c', 'var(--blue-deep)'); // mostly the brighter blue
   return q;
 }
 
@@ -187,8 +199,8 @@ const place = ([x, y, r, rx, s]) =>
 function launch(rand) {
   const path = simulate(geo, rand);
   const q = makeMark(rand);
-  // About a third of the marks travel behind the title text.
-  (streamBack && rand() < 0.35 ? streamBack : stream).append(q);
+  // About a quarter of the marks travel behind the title text.
+  (streamBack && rand() < 0.25 ? streamBack : stream).append(q);
   const anim = q.animate(path.map((p) => ({ transform: place(p) })), {
     duration: (path.length - 1) * STEP * 1000,
     easing: 'linear',
