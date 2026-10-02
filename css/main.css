@@ -666,14 +666,14 @@ figcaption {
   align-items: center;
   gap: clamp(0.25rem, 2vw, 1.5rem);
   max-width: calc(80rem + 2 * var(--gutter));
-  margin: clamp(3.5rem, 9vw, 6rem) auto;
+  margin: clamp(2.5rem, 6vw, 4rem) auto;
   padding-inline: var(--gutter);
 }
 
 .deck__hand {
   position: relative;
-  height: calc(var(--card-w) * 1.2 * 1.25);
-  --card-w: clamp(12rem, 30vw, 23rem);
+  height: calc(var(--card-w) * 1.32);
+  --card-w: clamp(11rem, 22vw, 17rem);
 }
 
 /* Each card is a photo print with a white border. Positions are set from
@@ -740,7 +740,7 @@ figcaption {
 
 @media (max-width: 760px) {
   .deck { gap: 0; }
-  .deck__hand { --card-w: 58vw; }
+  .deck__hand { --card-w: 50vw; }
   .deck__arrow { margin-inline: -0.25rem; }
 }
 
@@ -750,10 +750,23 @@ figcaption {
   position: relative;
   z-index: 0;
   margin: clamp(3rem, 8vw, 5rem) 0 0;
-  padding-bottom: clamp(4rem, 9vw, 6.5rem);
+  padding-bottom: clamp(6rem, 12vw, 9rem);
   color: var(--night-ink);
 }
-.night .media { margin-top: 0; }
+.night .media { margin-top: 0; margin-bottom: 0; }
+
+/* The route map runs straight into the dark section, with no sliver of paper. */
+.stage:has(+ .night) { margin-bottom: 0; }
+.stage + .night { margin-top: 0; }
+
+/* The paragraph under the video gets room to breathe and a little more size,
+   clear of the caption above and the sheet laid over the section below. */
+.night__text {
+  padding-top: clamp(3.5rem, 8vw, 6rem);
+  font-size: clamp(1.15em, 1.05em + 0.5vw, 1.35em);
+  line-height: 1.6;
+}
+.night__text p { margin: 0; }
 .night figcaption { color: var(--night-soft); }
 .night a { color: var(--blue); }
 .night .todo { color: #F28B82; }
