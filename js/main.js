@@ -30,9 +30,8 @@ const title = document.querySelector('.cover__title');
 
 const GRAVITY = 1700;     // px/s²
 const STEP = 1 / 120;     // simulation step, s (small, so fast marks can't skip through each other)
-const SPAWN_EVERY = 0.34; // s between marks: a sparse stream, each mark easy to see
+const SPAWN_EVERY = 0.45; // s between marks: a sparse stream, each mark easy to see
 const MAX_MARKS = 60;     // if marks pile up, hold the stream until they clear
-const BOUNCE = 0.3;       // how lively a knock between two marks is
 const SOLVE_PASSES = 4;   // collision passes per step; more keeps stacks from sinking into each other
 
 let geo = null;
@@ -154,7 +153,7 @@ function spawn(rand) {
     y: -r * 2.5,
     vx: 0,
     vy: rand() * 60,
-    flow: g.lineWidth * (0.14 + rand() * 0.1), // slow, like water finding the edge
+    flow: g.lineWidth * (0.22 + rand() * 0.08), // unhurried, like water finding the edge
     ledge: null,
     phase: rand() * Math.PI * 2,
     // Slow turns about both the horizontal and the vertical axis, either way.
@@ -163,7 +162,8 @@ function spawn(rand) {
     wrx: (35 + rand() * 40) * (rand() < 0.5 ? -1 : 1),
     wry: (30 + rand() * 40) * (rand() < 0.5 ? -1 : 1),
     rz: (rand() - 0.5) * 30,
-    wrz: (rand() - 0.5) * 360,
+    wrz: (rand() - 0.5) * 80, // a slow tumble while falling, never a spin
+    supported: false,
   });
 }
 
@@ -172,11 +172,11 @@ function step(t) {
   for (const b of marks) {
     const prevBottom = b.y + b.r;
     b.vy += GRAVITY * STEP;
-    if (b.ledge) {
-      // Carried along the ledge, like water finding the edge.
-      b.vx += (b.flow - b.vx) * Math.min(1, STEP * 4);
+    if (b.ledge || b.supported) {
+      // Carried along, like something floating down a stream.
+      b.vx += (b.flow - b.vx) * Math.min(1, STEP * 3);
       // Rock gently while it floats along.
-      b.rz += (Math.sin(t * 5 + b.phase) * 8 - b.rz) * Math.min(1, STEP * 6);
+      b.rz += (Math.sin(t * 4 + b.phase) * 7 - b.rz) * Math.min(1, STEP * 4);
     } else {
       b.rz += b.wrz * STEP;
     }
@@ -186,12 +186,18 @@ function step(t) {
     b.ry += b.wry * STEP;
 
     // Land on a ledge only from above, and only while the mark's centre is
-    // over it: past the end it tips off and falls.
+    // over it: past the right end it tips off and falls. A mark already on a
+    // ledge can't be nudged off its left end; the stream only runs one way.
+    const was = b.ledge;
     b.ledge = null;
+    b.supported = false;
     for (const l of g.ledges) {
-      if (b.x < l.left || b.x > l.right) continue;
+      const held = l === was && b.x < l.left;
+      if (!held && (b.x < l.left || b.x > l.right)) continue;
       if (b.y + b.r >= l.y && prevBottom <= l.y + b.r * 0.5) {
-        b.y = l.y - b.r;
+        if (held) { b.x = l.left; b.vx = Math.max(0, b.vx); }
+        // Bob gently on the surface.
+        b.y = l.y - b.r - (0.5 + 0.5 * Math.sin(t * 3 + b.phase)) * b.r * 0.2;
         if (b.vy > 0) b.vy = 0;
         b.ledge = l;
         break;
@@ -199,8 +205,9 @@ function step(t) {
     }
   }
 
-  // Knocks between marks: push overlapping pairs apart along the line between
-  // their centres (heavier marks move less) and trade momentum.
+  // Gentle knocks: overlapping marks are eased apart along the line between
+  // their centres (heavier marks move less) and their closing speed is simply
+  // absorbed, with no rebound and no spin, so nothing gets flung away.
   for (let pass = 0; pass < SOLVE_PASSES; pass++) {
     for (let i = 0; i < marks.length; i++) {
       const a = marks[i];
@@ -214,9 +221,12 @@ function step(t) {
         const d = Math.sqrt(d2) || 0.01;
         const nx = d2 ? dx / d : 0;
         const ny = d2 ? dy / d : 1;
-        // A mark resting on a ledge holds up the one on top of it.
+        // A mark resting on a ledge holds up the one on top of it, and the one
+        // on top floats along with the stream.
         const ia = a.ledge && ny < -0.3 ? 0 : 1 / a.m;
         const ib = b.ledge && ny > 0.3 ? 0 : 1 / b.m;
+        if (ny < -0.3) b.supported = true;
+        if (ny > 0.3) a.supported = true;
         if (!ia && !ib) continue;
         const share = (min - d) / (ia + ib);
         a.x -= nx * share * ia;
@@ -226,17 +236,27 @@ function step(t) {
         if (pass) continue;
         const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
         if (vn < 0) {
-          const j2 = (-(1 + BOUNCE) * vn) / (ia + ib);
+          const j2 = -vn / (ia + ib);
           a.vx -= j2 * nx * ia;
           a.vy -= j2 * ny * ia;
           b.vx += j2 * nx * ib;
           b.vy += j2 * ny * ib;
-          // A glancing knock sets both marks spinning a little.
-          const vt = (b.vx - a.vx) * -ny + (b.vy - a.vy) * nx;
-          a.wrz -= vt * 0.6;
-          b.wrz += vt * 0.6;
         }
       }
+    }
+  }
+
+  // Keep every nudge soft: no mark is pushed upward or sideways faster than
+  // a drift.
+  // Nothing escapes off the left of the title, even from the top of a heap.
+  const wall = g.ledges[0].left;
+  const lastLedge = g.ledges[g.ledges.length - 1].y;
+  for (const b of marks) {
+    b.vx = Math.min(b.flow * 1.6, Math.max(-b.flow * 0.25, b.vx));
+    if (b.vy < -30) b.vy = -30;
+    if (b.y < lastLedge && b.x - b.r * 0.5 < wall) {
+      b.x = wall + b.r * 0.5;
+      b.vx = Math.max(0, b.vx);
     }
   }
 
