@@ -97,12 +97,16 @@ function measure() {
   };
 }
 
-// Simulate one mark and return its path as [x, y, rotation] samples.
+// Simulate one mark and return its path as [x, y, rotation, rotationX, scale]
+// samples. path.landX is where it first hits the floor.
 function simulate(g, rand) {
   const flow = g.lineWidth * (0.14 + rand() * 0.1); // slow, like water finding the edge
   const floorFlow = Math.max(flow * 1.5, 90);
   const bob = g.markSize * 0.14;                    // how far marks bob on the surface
   const phase = rand() * Math.PI * 2;
+  // A slow turn about the horizontal axis, 35–75°/s, either way.
+  const turn = (35 + rand() * 40) * (rand() < 0.5 ? -1 : 1);
+  let rx = rand() * 360;
   let x = g.dropX + (rand() - 0.5) * g.dropW * 0.6;
   let y = -g.markSize * 1.5;
   let vx = 0;
@@ -110,20 +114,28 @@ function simulate(g, rand) {
   let rot = (rand() - 0.5) * 30;
   const spin = (rand() - 0.5) * 360;
   let ledge = null;
+  let landX = null;
+  let scale = 1;
   let t = 0;
   const path = [];
 
   while (path.length < 1500) {
-    path.push([x, y, rot]);
+    path.push([x, y, rot, rx, scale]);
     if (x > g.width + g.markSize * 2 || y > g.height + g.markSize * 2) break;
     t += STEP;
+    rx += turn * STEP;
     if (ledge) {
       const target = ledge.floor ? floorFlow : flow;
       vx += (target - vx) * Math.min(1, STEP * 4);
       x += vx * STEP;
       // Bob on the surface like something floating.
-      y = ledge.y - (0.5 + 0.5 * Math.sin(t * 6.5 + phase)) * bob;
+      y = ledge.y - (0.5 + 0.5 * Math.sin(t * 6.5 + phase)) * bob * scale;
       rot = Math.sin(t * 5 + phase) * 8;
+      // On the floor, marks shrink as they drift away from the foot of the falls.
+      if (ledge.floor) {
+        const away = (x - landX) / Math.max(1, g.width - landX);
+        scale = Math.max(0.2, 1 - away * 0.85);
+      }
       if (x > ledge.right) { ledge = null; vy = 0; }
     } else {
       const prevY = y;
@@ -137,9 +149,11 @@ function simulate(g, rand) {
         y = hit.y;
         vy = 0;
         vx = Math.max(vx, flow * 0.15);
+        if (hit.floor && landX === null) landX = x;
       }
     }
   }
+  path.landX = landX;
   return path;
 }
 
@@ -154,7 +168,8 @@ function makeMark(rand) {
 }
 
 // Anchor each mark by the bottom-centre of its glyph so it sits on the ledge.
-const place = ([x, y, r]) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -82%) rotate(${r.toFixed(1)}deg)`;
+const place = ([x, y, r, rx, s]) =>
+  `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -82%) perspective(260px) rotate(${r.toFixed(1)}deg) rotateX(${rx.toFixed(1)}deg) scale(${s.toFixed(3)})`;
 
 function launch(rand) {
   const path = simulate(geo, rand);
@@ -180,6 +195,95 @@ function drawStill() {
   }
 }
 
+// ---------- Whitewater ----------
+// Faint, wispy spray where the marks land at the foot of the falls. It swirls
+// up and drifts toward the right third, and thins out within a couple of
+// seconds. Drawn on a canvas so it stays cheap.
+
+const mist = { canvas: null, ctx: null, parts: [], carry: 0, dpr: 1, x: 0, y: 0, w: 0, h: 0 };
+
+function setupMist() {
+  if (!mist.canvas) {
+    mist.canvas = document.createElement('canvas');
+    mist.canvas.className = 'mist';
+    mist.canvas.setAttribute('aria-hidden', 'true');
+    cover.append(mist.canvas);
+    mist.ctx = mist.canvas.getContext('2d');
+  }
+  mist.dpr = Math.min(2, window.devicePixelRatio || 1);
+  mist.w = geo.width;
+  mist.h = geo.height;
+  mist.canvas.width = Math.round(mist.w * mist.dpr);
+  mist.canvas.height = Math.round(mist.h * mist.dpr);
+  mist.parts = [];
+  // Where the stream meets the floor: average a few simulated landings.
+  const rand = mulberry32(7);
+  const lands = [];
+  for (let i = 0; i < 12; i++) {
+    const p = simulate(geo, rand);
+    if (p.landX !== null) lands.push(p.landX);
+  }
+  mist.x = lands.length ? lands.reduce((a, b) => a + b, 0) / lands.length : geo.width * 0.55;
+  mist.y = geo.height - 2;
+}
+
+function spawnMist(n) {
+  for (let i = 0; i < n; i++) {
+    const spray = Math.random() < 0.3;   // a few fast droplets among the mist
+    mist.parts.push({
+      x: mist.x + (Math.random() - 0.5) * 40,
+      y: mist.y - Math.random() * 6,
+      vx: 35 + Math.random() * 70,
+      vy: -(spray ? 150 + Math.random() * 130 : 90 + Math.random() * 90),
+      r: spray ? 1.2 + Math.random() * 1.6 : 8 + Math.random() * 10,
+      grow: spray ? 0 : 26 + Math.random() * 30,
+      age: 0,
+      life: spray ? 0.6 + Math.random() * 0.5 : 1.4 + Math.random() * 1.2,
+      seed: Math.random() * 10,
+      spray,
+    });
+  }
+}
+
+function stepMist(dt) {
+  const { ctx, dpr } = mist;
+  if (!ctx) return;
+  mist.carry += dt * 34;                 // particles per second
+  const n = Math.floor(mist.carry);
+  mist.carry -= n;
+  spawnMist(n);
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, mist.w, mist.h);
+  for (const p of mist.parts) p.age += dt;
+  mist.parts = mist.parts.filter((p) => p.age < p.life);
+  for (const p of mist.parts) {
+    const k = Math.min(1, p.age / p.life);
+    // Swirl: a slow sideways wobble that grows as the spray rises.
+    p.vx += Math.sin(p.age * 3.2 + p.seed) * 70 * dt + 18 * dt;
+    p.vy += (p.spray ? 260 : -8) * dt;   // droplets fall back, mist keeps lifting
+    p.vy *= 1 - 0.6 * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    const r = p.r + p.grow * k;
+    const alpha = (p.spray ? 0.35 : 0.085) * Math.min(1, k * 5) * (1 - k) ** 1.4;
+    if (p.spray) {
+      ctx.fillStyle = `rgba(235, 246, 252, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      g.addColorStop(0, `rgba(235, 246, 252, ${alpha})`);
+      g.addColorStop(1, 'rgba(235, 246, 252, 0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, r * 1.35, r, Math.sin(p.seed + p.age) * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
 let running = false;
 let coverVisible = true;
 let last = 0;
@@ -195,6 +299,7 @@ function tick(now) {
       carry -= SPAWN_EVERY;
       launch(Math.random);
     }
+    stepMist(dt);
   }
   requestAnimationFrame(tick);
 }
@@ -203,10 +308,14 @@ function start() {
   geo = measure();
   if (reduceMotion.matches) {
     running = false;
+    if (mist.canvas) mist.canvas.remove();
+    mist.canvas = null;
+    mist.ctx = null;
     drawStill();
     return;
   }
   stream.replaceChildren();
+  setupMist();
   if (!running) {
     running = true;
     last = performance.now();
