@@ -24,7 +24,20 @@ The arc is: a place that is on no map → found by *reading* a map → reached o
 
 The narrator is casual and self-deprecating ("If you're like me, which you probably aren't"). The design should feel precise and archival, but never pompous.
 
-## 4. Design concept: "The survey sheet"
+## 4. Design concept
+
+> **Revised by the author, 2026-10-01. This overrides the original concept below wherever they conflict.**
+> - Sleek, professional and modern, in the spirit of **Vox Atlas** videos: satellite imagery, bold grotesque labels in solid colour boxes, clean motion. The vibe of old maps comes through the map content itself, not the page chrome.
+> - **Paper is used sparingly**, only on a few archival objects (the newspaper clippings, the old topo sheet overlaid on the satellite map). The page background is clean white, with dark full-bleed sections.
+> - **Brand colour is the label blue from the author's overview map: `#4CBBEC`.** White text on it fails contrast (2.2:1), so text on blue uses dark navy `#0D1B24`. Blue text and links on white use `#16739F`.
+> - Type: Inter Tight (titles, labels, UI) and Source Serif 4 (body).
+> - The title is surrounded by blue question marks that wrap around it. The closing map answers them with a blue "Ivy Falls" label.
+> - Text can be wider (~44rem), but never at the expense of photo and video size. Media runs wide or full bleed.
+> - The neatline frame, tick rail, benchmark glyphs and map-collar credits from the original concept are dropped.
+>
+> The original concept follows for reference.
+
+### Original concept: "The survey sheet"
 
 Treat the page as an old topographic quadrangle that is missing one feature, and let the story ink it in.
 

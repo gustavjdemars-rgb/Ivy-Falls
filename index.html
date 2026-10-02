@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Twin Cities’ Hidden Waterfall</title>
   <meta name="description" content="There’s a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.">
+  <meta name="theme-color" content="#0E1217">
 
   <!-- Open Graph. og:image is slot OG (1200×630), not yet made. -->
   <meta property="og:type" content="article">
@@ -15,152 +16,110 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
+  <link rel="preload" href="fonts/inter-tight-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/libre-caslon-display-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
 
-<!-- Neatline frame. Tick values are the St. Paul West 7.5′ quadrangle
-     bounds from the USGS cell index (44093-H2); verify against the sheet. -->
-<div class="neatline" aria-hidden="true">
-  <div class="neatline__rail" data-lat-top="45°00′" data-lat-bottom="44°52′30″"></div>
-  <span class="neatline__corner neatline__corner--tl">93°15′</span>
-  <span class="neatline__corner neatline__corner--tr">93°07′30″</span>
-</div>
+<div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
 <header class="cover">
-  <div class="cover__collar">
-    <span>Mendota Heights, Minnesota</span>
-    <span class="todo">Dateline · Q-DATE</span>
+  <p class="cover__kicker">Mendota Heights, Minnesota</p>
+  <div class="cover__title-wrap">
+    <div class="qmarks" aria-hidden="true"></div>
+    <h1 class="cover__title">The Twin Cities’ Hidden waterfall</h1>
   </div>
-  <h1 class="cover__title">The Twin Cities’ Hidden waterfall</h1>
   <p class="cover__dek"><span class="todo">Dek: optional, needs author copy</span></p>
-  <p class="cover__byline">By <span class="todo">Byline · Q-BYLINE</span></p>
-
-  <figure class="slot slot--bleed slot--cover" data-slot="M0">
-    <div class="ph" role="img" aria-label="Placeholder for map M0: contour sheet of the bluff and river with the falls unlabeled.">
-      <span class="ph__id">M0 · Map · 16:9 (4:5 mobile)</span>
-      <span class="ph__what">Cover sheet: contours of the bluff and river, water labeled in blue italic, the ravine left blank. Locator inset in the corner. Base: historical USGS St. Paul West sheet.</span>
-      <span class="ph__status">Make · Phase 3</span>
-    </div>
-  </figure>
+  <p class="cover__byline">By <span class="todo">Byline</span> <span class="cover__date todo">Date</span></p>
 </header>
 
 <main id="story">
-
   <article class="story">
 
     <div class="col">
       <p class="lede">There’s a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.</p>
 
       <p>The 25-foot spring-fed waterfall in Mendota Heights was once under consideration to become a state park, but is now all but unknown to most residents of the Twin Cities.</p>
-    </div>
 
-    <div class="benchmark" aria-hidden="true"><svg viewBox="0 0 24 22"><path d="M12 2 22 20H2Z"/><circle cx="12" cy="14" r="2"/></svg></div>
-
-    <div class="col">
       <p>If you’re like me, which you probably aren’t, sometimes you procrastinate by looking at maps. One day while procrastinating, I remembered something Josh Feinberg, a geology professor at the University of Minnesota, told me one spring afternoon in 2020, while we were out collecting water samples from a natural spring on the South banks of the Mississippi, across from campus.</p>
     </div>
 
-    <figure class="slot slot--wide" data-slot="P1" style="--ar: 3 / 2">
+    <figure class="media media--wide" data-slot="P1" style="--ar: 3 / 2">
       <div class="ph" role="img" aria-label="Placeholder for photo P1.">
         <span class="ph__id">P1 · Photo · 3:2 · optional</span>
-        <span class="ph__what">Spring 2020: collecting water samples with Josh Feinberg on the south bank, if a photo exists and he agrees to be pictured.</span>
-        <span class="ph__status">Need · Q-FEINBERG</span>
+        <span class="ph__what">Spring 2020: collecting water samples with Josh Feinberg on the south bank.</span>
       </div>
-      <figcaption><span class="todo">Caption needed</span> <span class="credit todo">Credit</span></figcaption>
+      <figcaption><span class="todo">Caption</span> <span class="credit todo">Credit</span></figcaption>
     </figure>
 
     <div class="col">
-      <p class="quote">“So before, there used to be sediment that went all the way across the river,” he said. “And the surface was much higher, there were pre-existing rocks above where the river is now. So as the river eroded down, there are sometimes features that used to be connected with one another in space.”</p>
+      <blockquote class="quote"><p>“So before, there used to be sediment that went all the way across the river,” he said. “And the surface was much higher, there were pre-existing rocks above where the river is now. So as the river eroded down, there are sometimes features that used to be connected with one another in space.”</p></blockquote>
 
       <p>Because of a geological pattern called jointing, spring-fed waterfalls on the Mississippi in the Twin Cities are often found on opposite sides of the river from each other, flowing down the path of least resistance created by fractures in the layers of rock.</p>
     </div>
 
-    <figure class="slot slot--wide" data-slot="D1" style="--ar: 4 / 3">
-      <div class="ph" role="img" aria-label="Placeholder for diagram D1: jointing cross-section in three states.">
-        <span class="ph__id">D1 · Diagram · 4:3 (1:1 mobile)</span>
-        <span class="ph__what">Gorge cross-section in three steps: layers span the river; the river cuts down while one fracture crosses both banks; a spring falls on each side. Layer names need a source.</span>
-        <span class="ph__status">Make · Phase 3 · Q-FEINBERG</span>
+    <figure class="media media--wide" data-slot="D1" style="--ar: 16 / 9">
+      <div class="ph" role="img" aria-label="Placeholder for diagram D1: jointing cross-section.">
+        <span class="ph__id">D1 · Diagram · 16:9 (1:1 mobile)</span>
+        <span class="ph__what">Gorge cross-section in three steps: rock spans the river; the river cuts down while one fracture crosses both banks; a spring falls on each side.</span>
       </div>
-      <figcaption><span class="todo">Caption needed</span></figcaption>
+      <figcaption><span class="todo">Caption</span></figcaption>
     </figure>
 
-    <!-- Sidecar 1: bank-to-bank map continuing into the contour reveal (M2 → M3). -->
-    <section class="sidecar" aria-label="Searching the map">
-      <div class="sidecar__graphic">
-        <figure class="slot slot--fill" data-slot="M2-M3">
-          <div class="ph" role="img" aria-label="Placeholder for maps M2 and M3.">
-            <span class="ph__id">M2 → M3 · Sticky map stage</span>
-            <span class="ph__what">Bank to bank: two known waterfalls and the points opposite, then the blank spot with a red survey mark. Then contours draw in and the ravine appears.</span>
-            <span class="ph__status">Make · Phase 3 · Q-PAIRS</span>
-          </div>
-        </figure>
+    <!-- Stage 1: full-bleed sticky map, text cards scroll over it (M2 → M3). -->
+    <section class="stage" aria-label="Searching the map">
+      <div class="stage__graphic">
+        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for maps M2 and M3.">
+          <span class="ph__id">M2 → M3 · Full-bleed sticky map</span>
+          <span class="ph__what">Satellite view of the river. Hop bank to bank between marked waterfalls, land on an unmarked spot. Then an old topographic sheet slides in over the satellite as a paper overlay, and its contours show the ravine.</span>
+        </div>
       </div>
-      <div class="sidecar__steps">
-        <div class="step"><p>Half-remembering what he told me years later, I bounced back and forth between the banks of the Mississippi on Google Maps, looking at the locations of marked waterfalls and the points directly across. I eventually landed on a spot that looked like it should have a waterfall, but found nothing marked.</p></div>
-        <div class="step step--aha"><p>A quick look at a topographical map showed there was something there.</p></div>
+      <div class="stage__steps">
+        <div class="card"><p>Half-remembering what he told me years later, I bounced back and forth between the banks of the Mississippi on Google Maps, looking at the locations of marked waterfalls and the points directly across. I eventually landed on a spot that looked like it should have a waterfall, but found nothing marked.</p></div>
+        <div class="card card--aha"><p>A quick look at a topographical map showed there was something there.</p></div>
       </div>
     </section>
 
-    <div class="benchmark" aria-hidden="true"><svg viewBox="0 0 24 22"><path d="M12 2 22 20H2Z"/><circle cx="12" cy="14" r="2"/></svg></div>
-
-    <!-- Sidecar 2: the inked route (M4). -->
-    <section class="sidecar" aria-label="The route to the falls">
-      <div class="sidecar__graphic">
-        <figure class="slot slot--fill" data-slot="M4">
-          <div class="ph" role="img" aria-label="Placeholder for route map M4.">
-            <span class="ph__id">M4 · Sticky route map</span>
-            <span class="ph__what">Lilydale flats, bluff, rail line and creek. A generalized red route inks in: trailhead, planks, tracks, creek crossings, falls.</span>
-            <span class="ph__status">Make · Phase 3 · Q-LOC · Q-RAIL</span>
-          </div>
-        </figure>
+    <!-- Stage 2: overview zooming into the route (M4). -->
+    <section class="stage" aria-label="The route to the falls">
+      <div class="stage__graphic">
+        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for route map M4.">
+          <span class="ph__id">M4 · Full-bleed sticky map</span>
+          <span class="ph__what">Starts on the overview (Minneapolis, St. Paul, Ivy Falls labels in blue boxes), then zooms toward the Lilydale flats as each card arrives. Detail level to be decided (see location note).</span>
+        </div>
       </div>
-      <div class="sidecar__steps">
-        <div class="step"><p>Reaching Ivy Falls takes about 45 minutes on foot starting at the Lilydale Trailhead, located on the flats of the Mississippi, about a 15-minute drive from Downtown Minneapolis. The town that once resided on this floodplain relocated to the bluffs overlooking the river due to the area’s repeated flooding, <a href="https://web.archive.org/web/20240523142348/https://www.nps.gov/miss/planyourvisit/lilydale_park.htm">according to the National Parks Service.</a></p></div>
-        <div class="step"><p>The first leg of the journey involves walking two-thirds of a mile along a train track sandwiched between the steep river bluffs and the floodplain forests of Lilydale Regional park. Upon reaching the trailhead, I and a friend assisting in videography, found the road to the parking lot blocked off due to high waters from the recent snow melt of <a href="https://web.archive.org/web/20240523142348/https://www.mprnews.org/story/2023/04/07/seeley-winter-wraps-up-with-a-warm-look-ahead">Minnesota’s third snowiest winter on record.</a> Traversing a marshy patch of reeds by way of a few conveniently placed wood planks, we reached the railroad tracks, which jutted above the flooded river flats.</p></div>
-        <div class="step"><p>The next stretch of the hike saw us walking through the often steep sides of the small wooded valley cut by the stream flowing down from the falls. The trek involves a few crossings of the creek that’s only about 8 feet wide, either by hopping across rocks above the water, or walking across the numerous fallen trees acting as makeshift bridges.</p></div>
+      <div class="stage__steps">
+        <div class="card"><p>Reaching Ivy Falls takes about 45 minutes on foot starting at the Lilydale Trailhead, located on the flats of the Mississippi, about a 15-minute drive from Downtown Minneapolis. The town that once resided on this floodplain relocated to the bluffs overlooking the river due to the area’s repeated flooding, <a href="https://web.archive.org/web/20240523142348/https://www.nps.gov/miss/planyourvisit/lilydale_park.htm">according to the National Parks Service.</a></p></div>
+        <div class="card"><p>The first leg of the journey involves walking two-thirds of a mile along a train track sandwiched between the steep river bluffs and the floodplain forests of Lilydale Regional park. Upon reaching the trailhead, I and a friend assisting in videography, found the road to the parking lot blocked off due to high waters from the recent snow melt of <a href="https://web.archive.org/web/20240523142348/https://www.mprnews.org/story/2023/04/07/seeley-winter-wraps-up-with-a-warm-look-ahead">Minnesota’s third snowiest winter on record.</a> Traversing a marshy patch of reeds by way of a few conveniently placed wood planks, we reached the railroad tracks, which jutted above the flooded river flats.</p></div>
+        <div class="card"><p>The next stretch of the hike saw us walking through the often steep sides of the small wooded valley cut by the stream flowing down from the falls. The trek involves a few crossings of the creek that’s only about 8 feet wide, either by hopping across rocks above the water, or walking across the numerous fallen trees acting as makeshift bridges.</p></div>
       </div>
     </section>
 
-    <div class="fieldnotes">
-      <figure class="slot" data-slot="P2" style="--ar: 3 / 2">
-        <div class="ph" role="img" aria-label="Placeholder for photo P2.">
-          <span class="ph__id">P2 · Photo · 3:2</span>
-          <span class="ph__what">Wood planks across the reeds.</span>
-          <span class="ph__status">Need</span>
-        </div>
-        <figcaption><span class="todo">Caption needed</span></figcaption>
+    <div class="gallery">
+      <figure class="media" data-slot="P2" style="--ar: 4 / 5">
+        <div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span><span class="ph__what">Planks across the reeds.</span></div>
+        <figcaption><span class="todo">Caption</span></figcaption>
       </figure>
-      <figure class="slot" data-slot="P3" style="--ar: 3 / 2">
-        <div class="ph" role="img" aria-label="Placeholder for photo P3.">
-          <span class="ph__id">P3 · Photo · 3:2</span>
-          <span class="ph__what">The tracks above the flooded flats, bluff behind.</span>
-          <span class="ph__status">Need</span>
-        </div>
-        <figcaption><span class="todo">Caption needed</span></figcaption>
+      <figure class="media" data-slot="P3" style="--ar: 4 / 5">
+        <div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span><span class="ph__what">Tracks above the flooded flats.</span></div>
+        <figcaption><span class="todo">Caption</span></figcaption>
       </figure>
-      <figure class="slot" data-slot="P4" style="--ar: 3 / 2">
-        <div class="ph" role="img" aria-label="Placeholder for photo P4.">
-          <span class="ph__id">P4 · Photo · 3:2</span>
-          <span class="ph__what">A fallen-tree crossing over the creek.</span>
-          <span class="ph__status">Need</span>
-        </div>
-        <figcaption><span class="todo">Caption needed</span></figcaption>
+      <figure class="media" data-slot="P4" style="--ar: 4 / 5">
+        <div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span><span class="ph__what">A fallen-tree creek crossing.</span></div>
+        <figcaption><span class="todo">Caption</span></figcaption>
       </figure>
     </div>
 
-    <!-- The payoff: the page's one dark, full-bleed moment. -->
+    <!-- The payoff: dark, full-bleed video. -->
     <section class="night" aria-label="The falls">
-      <figure class="slot slot--bleed slot--video" data-slot="V1">
-        <div class="ph" role="img" aria-label="Placeholder for video V1 of the falls.">
-          <span class="ph__id">V1 · Video loop · 16:9 (4:5 mobile) · poster P5</span>
-          <span class="ph__what">Locked-off shot of both tiers, 10–20 second loop. Muted autoplay when in view, with play/pause and sound controls.</span>
-          <span class="ph__status">Need</span>
+      <figure class="media media--bleed" data-slot="V1">
+        <div class="ph ph--night ph--video" role="img" aria-label="Placeholder for video V1 of the falls.">
+          <span class="ph__id">V1 · Video loop · 16:9 (4:5 mobile)</span>
+          <span class="ph__what">Both tiers of the falls. Muted loop when in view, with play/pause and sound controls.</span>
         </div>
-        <figcaption class="col caption-col"><span class="todo">Caption needed</span> <span class="credit todo">Video credit · Q-BYLINE</span></figcaption>
+        <figcaption class="col"><span class="todo">Caption</span> <span class="credit todo">Video credit</span></figcaption>
       </figure>
       <div class="col">
         <p>The tiered waterfall has two drops, of about 10 and 25 feet, flowing over shelves of shale before plunging to the stream bed below. The falls are nearly 100% spring-fed, according to Feinberg.</p>
@@ -168,24 +127,20 @@
     </section>
 
     <div class="col">
-      <h2 class="subhead">
-        <svg class="subhead__mark" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 2 22 20H2Z"/><circle cx="12" cy="14" r="2"/></svg>
-        Happy Hollow Falls
-      </h2>
+      <h2 class="label-head">Happy Hollow Falls</h2>
 
       <p>The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century, according to a 1917 news clipping from the St. Paul Pioneer Press.</p>
     </div>
 
-    <figure class="slot slot--clipping" data-slot="C1" style="--ar: 3 / 4; --tilt: -1.2deg">
-      <div class="ph" role="img" aria-label="Placeholder for the 1917 St. Paul Pioneer Press clipping.">
-        <span class="ph__id">C1 · Clipping · aspect of scan</span>
-        <span class="ph__what">1917 St. Paul Pioneer Press. The key sentence will be underlined in red.</span>
-        <span class="ph__status">Need</span>
+    <figure class="clipping" data-slot="C1" style="--tilt: -1.4deg">
+      <div class="clipping__paper">
+        <span class="clipping__id">C1 · 1917 · St. Paul Pioneer Press</span>
+        <p class="clipping__line">Scan goes here. The key sentence gets a <mark>highlighter stroke</mark> as it scrolls into view.</p>
       </div>
-      <figcaption><span class="todo">St. Paul Pioneer Press, date and page needed</span></figcaption>
+      <figcaption><span class="todo">Publication, date, page</span></figcaption>
       <details class="transcript">
-        <summary>Transcription</summary>
-        <p class="todo">Transcription needed</p>
+        <summary>Read the transcription</summary>
+        <p class="todo">Transcription</p>
       </details>
     </figure>
 
@@ -193,72 +148,57 @@
       <p>Despite the waterfall’s lack of widespread exposure, the South St. Paul Reporter reported in 1937 that the park was under consideration to become a state park, with two state legislators introducing bills to set aside the land for public use. Those efforts never came to fruition.</p>
     </div>
 
-    <figure class="slot slot--clipping" data-slot="C2" style="--ar: 3 / 4; --tilt: 0.9deg">
-      <div class="ph" role="img" aria-label="Placeholder for the 1937 South St. Paul Reporter clipping.">
-        <span class="ph__id">C2 · Clipping · aspect of scan</span>
-        <span class="ph__what">1937 South St. Paul Reporter. The key sentence will be underlined in red.</span>
-        <span class="ph__status">Need · Q-RIGHTS</span>
+    <figure class="clipping" data-slot="C2" style="--tilt: 1.1deg">
+      <div class="clipping__paper">
+        <span class="clipping__id">C2 · 1937 · South St. Paul Reporter</span>
+        <p class="clipping__line">Scan goes here, with the key sentence <mark>highlighted</mark>.</p>
       </div>
-      <figcaption><span class="todo">South St. Paul Reporter, date and page needed</span></figcaption>
+      <figcaption><span class="todo">Publication, date, page</span></figcaption>
       <details class="transcript">
-        <summary>Transcription</summary>
-        <p class="todo">Transcription needed</p>
+        <summary>Read the transcription</summary>
+        <p class="todo">Transcription</p>
       </details>
     </figure>
-
-    <div class="benchmark" aria-hidden="true"><svg viewBox="0 0 24 22"><path d="M12 2 22 20H2Z"/><circle cx="12" cy="14" r="2"/></svg></div>
 
     <div class="col">
       <p>Ivy Falls now sits nestled in between the Mississippi and a residential neighborhood, surrounded by million-dollar house laden cul-de-sacs, according to data from Zillow. A locale once sought as a recreation area for many, now is seen by very few.</p>
     </div>
 
-    <figure class="slot slot--bleed slot--closing" data-slot="M5">
-      <div class="ph" role="img" aria-label="Placeholder for closing map M5.">
-        <span class="ph__id">M5 · Map · 16:9 (4:5 mobile)</span>
-        <span class="ph__what">The cover sheet, pulled back to show the ravine between the river and the cul-de-sacs. The label Ivy Falls is written in blue italic where the blank was.</span>
-        <span class="ph__status">Make · Phase 3 · Q-LOC</span>
+    <figure class="media media--bleed media--closing" data-slot="M5">
+      <div class="ph ph--night ph--closing" role="img" aria-label="Placeholder for closing map M5.">
+        <span class="ph__id">M5 · Closing map · full bleed</span>
+        <span class="ph__what">Pull back to show the ravine between the river and the cul-de-sacs. A blue “Ivy Falls” label appears where the map had nothing, answering the question marks on the cover.</span>
       </div>
     </figure>
 
   </article>
 </main>
 
-<!-- Credits laid out as a map collar. -->
-<footer class="collar">
-  <div class="collar__grid">
-    <div class="collar__block">
-      <h2 class="collar__head">Surveyed by</h2>
+<footer class="credits">
+  <div class="credits__grid">
+    <div>
+      <h2 class="credits__head">Credits</h2>
       <p>Reported and written by <span class="todo">Byline</span></p>
-      <p>Videography by <span class="todo">Name · Q-BYLINE</span></p>
-      <p>Photographs by <span class="todo">Name</span></p>
-      <p><span class="todo">Originally reported spring 2023 · Q-DATE</span></p>
+      <p>Video by <span class="todo">Name</span></p>
+      <p>Photos by <span class="todo">Name</span></p>
+      <p><span class="todo">Originally reported spring 2023?</span></p>
     </div>
-
-    <div class="collar__block collar__block--center">
-      <svg class="collar__north" viewBox="0 0 40 72" role="img" aria-label="North arrow">
-        <path d="M20 4 28 40 20 34 12 40Z"/>
-        <line x1="20" y1="34" x2="20" y2="68"/>
-        <text x="20" y="62" text-anchor="middle">N</text>
-      </svg>
-      <div class="collar__scale">
-        <div class="ph ph--inline">Scale bar · set from M5 extent in Phase 3</div>
-      </div>
-    </div>
-
-    <div class="collar__block">
-      <h2 class="collar__head">Sources</h2>
+    <div>
+      <h2 class="credits__head">Sources</h2>
       <ul>
         <li>Interview: Josh Feinberg, University of Minnesota</li>
         <li><a href="https://web.archive.org/web/20240523142348/https://www.nps.gov/miss/planyourvisit/lilydale_park.htm">National Park Service, Lilydale Park</a> (archived)</li>
         <li><a href="https://web.archive.org/web/20240523142348/https://www.mprnews.org/story/2023/04/07/seeley-winter-wraps-up-with-a-warm-look-ahead">MPR News, April 7, 2023</a> (archived)</li>
-        <li>St. Paul Pioneer Press, 1917 <span class="todo">date</span></li>
-        <li>South St. Paul Reporter, 1937 <span class="todo">date</span></li>
-        <li>Zillow <span class="todo">as-of date · Q-ZILLOW</span></li>
+        <li>St. Paul Pioneer Press, 1917</li>
+        <li>South St. Paul Reporter, 1937</li>
+        <li>Zillow</li>
       </ul>
-      <h2 class="collar__head">Map data</h2>
-      <p class="todo">Planned: Minnesota lidar DEM (MnGeo), OpenStreetMap contributors (ODbL), USGS historical topographic maps. Final list in data/SOURCES.md.</p>
-      <h2 class="collar__head">Type</h2>
-      <p>Libre Caslon Display, Source Serif 4, Barlow Condensed. SIL Open Font License.</p>
+    </div>
+    <div>
+      <h2 class="credits__head">Maps and data</h2>
+      <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
+      <h2 class="credits__head">Type</h2>
+      <p>Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>

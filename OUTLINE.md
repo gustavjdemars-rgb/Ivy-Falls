@@ -207,6 +207,20 @@ Searches were done October 2026. Several outlets (Reuters, WaPo) block automated
 
 ---
 
+## 10a. Phase 2 redesign (author feedback, 2026-10-01)
+
+The survey-sheet skeleton was too stylized. It has been rebuilt as sleek and modern, Vox Atlas-inspired (see CLAUDE.md §4 revision):
+- Dark full-screen cover with the title in bold Inter Tight, wrapped in a ring of blue (`#4CBBEC`) question marks.
+- White reading page with a ~44rem column; photos and maps run wide or full bleed.
+- Both sticky sections (M2→M3, M4) are now **full-bleed maps with text cards floating over them**, giving the media the whole screen.
+- M4 now starts on the author's overview-map style (Minneapolis / St. Paul / Ivy Falls in blue label boxes) and zooms in. The separate cover map M0 is dropped.
+- Paper appears only on the clippings (with a Vox-style yellow highlighter on the key sentence) and the old topo sheet overlaid in M3.
+- "Happy Hollow Falls" is set as a blue label box, matching the map labels.
+- A thin blue reading-progress bar replaces the neatline tick rail.
+- Copy edits, media and the opposite-waterfall pairs are on hold at the author's request.
+
+Superseded notes from the first skeleton follow.
+
 ## 10. Phase 2 build notes (decisions made while building the skeleton)
 
 - **Text is verbatim** from `content/story.md`, typeset only: straight quotes became curly ("There's", "you're"), and the two link brackets moved to the word they belong on. **None of the copy edits in §7 are applied**, including E3 (the title still reads "Hidden waterfall").
