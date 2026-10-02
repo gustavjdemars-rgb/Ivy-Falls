@@ -16,7 +16,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" href="fonts/inter-tight-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fraunces-latin-full-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
@@ -26,13 +26,11 @@
 <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
 
 <header class="cover">
-  <p class="cover__kicker">Mendota Heights, Minnesota</p>
-  <div class="cover__title-wrap">
-    <div class="qmarks" aria-hidden="true"></div>
-    <h1 class="cover__title">The Twin Cities’ Hidden waterfall</h1>
-  </div>
-  <p class="cover__dek"><span class="todo">Dek: optional, needs author copy</span></p>
-  <p class="cover__byline">By <span class="todo">Byline</span> <span class="cover__date todo">Date</span></p>
+  <!-- A stream of question marks falls onto the title, runs along it and spills off (js/main.js). -->
+  <div class="qstream" aria-hidden="true"></div>
+  <h1 class="cover__title">The Twin Cities’ Hidden waterfall</h1>
+  <p class="cover__dek">Dek: optional, needs author copy</p>
+  <p class="cover__byline"><span class="visually-hidden">By Gustav DeMars</span><span class="bounce" aria-hidden="true">By Gustav DeMars</span></p>
 </header>
 
 <main id="story">
@@ -178,7 +176,7 @@
   <div class="credits__grid">
     <div>
       <h2 class="credits__head">Credits</h2>
-      <p>Reported and written by <span class="todo">Byline</span></p>
+      <p>Reported and written by Gustav DeMars</p>
       <p>Video by <span class="todo">Name</span></p>
       <p>Photos by <span class="todo">Name</span></p>
       <p><span class="todo">Originally reported spring 2023?</span></p>
@@ -198,7 +196,7 @@
       <h2 class="credits__head">Maps and data</h2>
       <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
       <h2 class="credits__head">Type</h2>
-      <p>Inter Tight and Source Serif 4, SIL Open Font License.</p>
+      <p>Fraunces, EB Garamond, Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>

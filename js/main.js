@@ -1,9 +1,9 @@
-// Ivy Falls: page-level behaviour. Phase 2 covers the reading-progress bar
-// and the ring of question marks around the cover title.
+// Ivy Falls: page-level behaviour. Phase 2 covers the question-mark stream on
+// the cover, the byline hover, and the reading-progress bar.
 
-// ---------- Question marks around the title ----------
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-// Seeded so the arrangement is identical on every load.
+// Seeded so the reduced-motion still frame is identical on every load.
 function mulberry32(seed) {
   return () => {
     seed |= 0;
@@ -14,37 +14,203 @@ function mulberry32(seed) {
   };
 }
 
-function placeQuestionMarks(container, count = 36) {
-  const rand = mulberry32(1917);
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // A superellipse hugs the rectangular title block more closely than an ellipse,
-  // keeping the marks in the padding band instead of over the letters.
-  const n = 5;
-  for (let i = 0; i < count; i++) {
-    const t = ((i + rand() * 0.35) / count) * Math.PI * 2;
-    const c = Math.cos(t);
-    const s = Math.sin(t);
-    const rx = 42 + rand() * 6;
-    const ry = 38 + rand() * 9;
-    const x = 50 + rx * Math.sign(c) * Math.abs(c) ** (2 / n);
-    const y = 50 + ry * Math.sign(s) * Math.abs(s) ** (2 / n);
+// ---------- Question-mark stream ----------
+//
+// Marks fall from the top of the page, land on the title near its middle,
+// flow right along the top of the line, drop off its end (onto a lower line
+// if one sticks out further, like a tiered fall) and spill off the bottom.
 
-    const q = document.createElement('span');
-    q.className = 'qmark';
-    q.textContent = '?';
-    q.style.left = `${x.toFixed(2)}%`;
-    q.style.top = `${y.toFixed(2)}%`;
-    q.style.setProperty('--s', (0.55 + rand() * 1.25).toFixed(2));
-    q.style.setProperty('--r', `${Math.round(rand() * 50 - 25)}deg`);
-    q.style.setProperty('--w', String(300 + Math.floor(rand() * 6) * 100)); // 300–800
-    q.style.setProperty('--o', (0.45 + rand() * 0.55).toFixed(2));
-    if (!reduceMotion) q.style.setProperty('--d', `${(0.15 + (i / count) * 0.9).toFixed(2)}s`);
-    container.append(q);
+const cover = document.querySelector('.cover');
+const stream = document.querySelector('.qstream');
+const title = document.querySelector('.cover__title');
+
+const GRAVITY = 2600;     // px/s²
+const STEP = 1 / 30;      // simulation step, s
+const SPAWN_EVERY = 0.09; // s between marks
+
+let geo = null;
+
+// Where the tops of the title's lines are, relative to the cover.
+function measure() {
+  const c = cover.getBoundingClientRect();
+  const fs = parseFloat(getComputedStyle(title).fontSize);
+  const range = document.createRange();
+  range.selectNodeContents(title);
+  // One rect per line (merge any fragments that share a line).
+  const lines = [];
+  for (const r of range.getClientRects()) {
+    const last = lines[lines.length - 1];
+    if (last && Math.abs(last.top - r.top) < 2) {
+      last.left = Math.min(last.left, r.left);
+      last.right = Math.max(last.right, r.right);
+    } else {
+      lines.push({ top: r.top, left: r.left, right: r.right });
+    }
+  }
+  // The content box starts above the letters; drop the ledge to the tops of
+  // the lowercase ascenders and capitals.
+  const ledges = lines.map((l) => ({
+    y: l.top - c.top + fs * 0.33,
+    left: l.left - c.left + fs * 0.05,
+    right: l.right - c.left - fs * 0.02,
+  }));
+  const first = ledges[0];
+  const probe = document.createElement('span');
+  probe.className = 'qmark';
+  stream.append(probe);
+  const markSize = parseFloat(getComputedStyle(probe).fontSize) || 24;
+  probe.remove();
+  return {
+    ledges,
+    width: c.width,
+    height: c.height,
+    centerX: (first.left + first.right) / 2,
+    lineWidth: first.right - first.left,
+    markSize,
+  };
+}
+
+// Simulate one mark and return its path as [x, y, rotation] samples.
+function simulate(g, rand) {
+  const flow = g.lineWidth * (0.38 + rand() * 0.22);
+  let x = g.centerX + (rand() - 0.5) * g.lineWidth * 0.08;
+  let y = -g.markSize * 1.5;
+  let vx = 0;
+  let vy = rand() * 120;
+  let rot = (rand() - 0.5) * 30;
+  const spin = (rand() - 0.5) * 360;
+  let ledge = null;
+  let t = 0;
+  const path = [];
+
+  while (y < g.height + g.markSize * 2 && path.length < 400) {
+    path.push([x, y, rot]);
+    t += STEP;
+    if (ledge) {
+      vx += (flow - vx) * Math.min(1, STEP * 4);
+      x += vx * STEP;
+      rot = Math.sin(t * 9) * 7;
+      if (x > ledge.right) { ledge = null; vy = 0; }
+    } else {
+      const prevY = y;
+      vy += GRAVITY * STEP;
+      x += vx * STEP;
+      y += vy * STEP;
+      rot += spin * STEP;
+      const hit = g.ledges.find((l) => prevY <= l.y && y >= l.y && x >= l.left && x <= l.right);
+      if (hit) {
+        ledge = hit;
+        y = hit.y;
+        vy = 0;
+        vx = Math.max(vx, flow * 0.15);
+      }
+    }
+  }
+  path.push([x, y, rot]);
+  return path;
+}
+
+function makeMark(rand) {
+  const q = document.createElement('span');
+  q.className = 'qmark';
+  q.textContent = '?';
+  q.style.setProperty('--s', (0.6 + rand() * 0.9).toFixed(2));
+  q.style.setProperty('--w', String(500 + Math.floor(rand() * 5) * 100)); // 500–900
+  q.style.opacity = (0.55 + rand() * 0.45).toFixed(2);
+  return q;
+}
+
+// Anchor each mark by the bottom-centre of its glyph so it sits on the ledge.
+const place = ([x, y, r]) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -82%) rotate(${r.toFixed(1)}deg)`;
+
+function launch(rand) {
+  const path = simulate(geo, rand);
+  const q = makeMark(rand);
+  stream.append(q);
+  const anim = q.animate(path.map((p) => ({ transform: place(p) })), {
+    duration: (path.length - 1) * STEP * 1000,
+    easing: 'linear',
+    fill: 'forwards',
+  });
+  anim.onfinish = () => q.remove();
+}
+
+// Reduced motion: a still frame of the stream, marks spaced along one path.
+function drawStill() {
+  stream.replaceChildren();
+  const rand = mulberry32(1917);
+  const path = simulate(geo, rand);
+  for (let i = 0; i < path.length; i += 3) {
+    const q = makeMark(rand);
+    q.style.transform = place(path[i]);
+    stream.append(q);
   }
 }
 
-const ring = document.querySelector('.qmarks');
-if (ring) placeQuestionMarks(ring);
+let running = false;
+let coverVisible = true;
+let last = 0;
+let carry = 0;
+const rand = Math.random;
+
+function tick(now) {
+  if (!running) return;
+  const dt = Math.min(0.1, (now - last) / 1000);
+  last = now;
+  if (coverVisible && !document.hidden) {
+    carry += dt;
+    while (carry >= SPAWN_EVERY) {
+      carry -= SPAWN_EVERY;
+      launch(rand);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function start() {
+  geo = measure();
+  if (reduceMotion.matches) {
+    running = false;
+    drawStill();
+    return;
+  }
+  stream.replaceChildren();
+  if (!running) {
+    running = true;
+    last = performance.now();
+    requestAnimationFrame(tick);
+  }
+}
+
+if (cover && stream && title) {
+  // Wait for the display font so the ledges match the real letters.
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(start);
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(start, 150);
+  });
+  reduceMotion.addEventListener('change', start);
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => { coverVisible = e.isIntersecting; }).observe(cover);
+  }
+}
+
+// ---------- Byline: letters hop on hover ----------
+
+const bounce = document.querySelector('.bounce');
+if (bounce) {
+  const text = bounce.textContent;
+  bounce.replaceChildren(...[...text].map((ch, i) => {
+    const s = document.createElement('span');
+    s.className = 'ch';
+    s.style.setProperty('--i', i);
+    s.textContent = ch;
+    return s;
+  }));
+}
 
 // ---------- Reading progress ----------
 
@@ -58,15 +224,10 @@ function updateProgress() {
   bar.style.transform = `scaleX(${p})`;
 }
 
-function requestUpdate() {
-  if (!queued) {
-    queued = true;
-    requestAnimationFrame(updateProgress);
-  }
-}
-
 if (bar) {
-  window.addEventListener('scroll', requestUpdate, { passive: true });
-  window.addEventListener('resize', requestUpdate);
+  window.addEventListener('scroll', () => {
+    if (!queued) { queued = true; requestAnimationFrame(updateProgress); }
+  }, { passive: true });
+  window.addEventListener('resize', updateProgress);
   updateProgress();
 }
