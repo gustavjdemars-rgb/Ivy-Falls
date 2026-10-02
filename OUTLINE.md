@@ -182,7 +182,7 @@ Searches were done October 2026. Several outlets (Reuters, WaPo) block automated
 - E12. "starting at the Lilydale Trailhead" / "Upon reaching the trailhead": consider "Upon reaching the trailhead parking lot," because as written the road "to the parking lot" was blocked *after* reaching the trailhead.
 
 **Factual consistency** (questions, not edits)
-- E13. The lede says "25-foot waterfall"; later "two drops, of about 10 and 25 feet". Is 25 ft the total or the larger drop? If the larger drop, the lede could say "35-foot" or "two-tiered".
+- E13. ~~The lede says "25-foot waterfall"; later "two drops, of about 10 and 25 feet". Is 25 ft the total or the larger drop?~~ **Answered:** 25 ft is the larger, second drop. The lede is accurate as written. Optional: "two-tiered" or "35-foot" if you want the lede to cover both drops. The 10 ft drop is the first (upper) one, so the payoff diagram labels the tiers top to bottom as 10 ft, then 25 ft.
 - E14. Both links use the same Wayback timestamp (`20240523142348`), but one points to nps.gov and the other to mprnews.org. Two different sites captured in the same second is unlikely, so the MPR link may be a copy-paste error. Please re-check.
 
 ---
