@@ -244,29 +244,45 @@ a:hover { text-decoration-thickness: 2px; }
   border-top: 4px solid rgba(255, 255, 255, 0.9);
 }
 
-.cover__dek {
+/* Dek and byline as two stacked label boxes, map-label style: the dek in
+   white on the deep question-mark blue, the byline in that blue on a white
+   tag tucked under the dek's bottom-right corner. */
+.cover__tags {
   position: relative;
   z-index: 3;
-  max-width: 26rem;
-  margin: clamp(1rem, 2.2vw, 1.4rem) 0 0;
-  font-family: var(--display);
-  font-weight: 600;
-  font-stretch: 96%;
-  font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.6rem);
-  line-height: 1.25;
-  color: var(--night-ink);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: clamp(1.1rem, 2.4vw, 1.6rem);
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
 }
-
-.cover__byline {
-  position: relative;
-  z-index: 3;
-  margin: 0.9rem 0 0;
+.cover__dek {
+  margin: 0;
+  padding: 0.55em 0.95em 0.6em;
+  background: var(--blue-deep);
   font-family: var(--sans);
   font-weight: 600;
+  font-size: clamp(1.15rem, 0.95rem + 0.8vw, 1.6rem);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: #FFFFFF;           /* 5.6:1 on --blue-deep */
+}
+.cover__byline {
+  position: relative;
+  margin: -0.55em -1.1em 0 0;
+  padding: 0.6em 0.95em 0.6em;
+  background: #F7F6F2;
+  font-family: var(--display);
+  font-weight: 700;
+  font-stretch: 96%;
   font-size: clamp(0.78rem, 0.72rem + 0.2vw, 0.9rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--blue);
+  color: var(--blue-deep);  /* 5.1:1 on the white tag */
+  transform: rotate(-1.5deg);
+}
+@media (max-width: 760px) {
+  .cover__byline { margin-right: 0; }
 }
 
 /* ---------- Folded map ---------- */
