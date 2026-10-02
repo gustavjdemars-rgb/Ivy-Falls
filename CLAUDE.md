@@ -15,7 +15,7 @@ A self-hosted scrollytelling feature about Ivy Falls, published on GitHub Pages.
 
 ### How to work on this project
 
-- **Previewing:** Python isn't installed on this machine, so run `powershell -File tools/serve.ps1 -Root .` (serves on http://localhost:8000/; run it in the background).
+- **Previewing:** Python isn't installed on this machine, so run `powershell -File tools/serve.ps1 -Root .` (serves on http://localhost:8417/; run it in the background. Port 8000 is used by another project, sata-scout).
 - **Screenshots:** `powershell -File tools/shoot.ps1 -Out review/<round> -Shots ".cover__title,.lede" -Widths 360,768,1280,1920` (headless Chrome). `-Wait` lets the cover animation fill in; `-Eval` runs JS first (e.g. to flip the byline). `review/` is git-ignored.
 - **Each round of feedback:** make the changes, check them in screenshots at phone and desktop widths, fix what looks off, commit with a descriptive message, then update §0 and §4 here so a fresh session can pick up. Report back in plain language and ask before pushing.
 - **The author's taste, learned so far:** sleek, modern and fairly minimal, with a vintage/archival flavour and Vox Atlas energy; subtle over flashy; dislikes heavy texture and anything that looks like a template. Prefers seeing options pitched (about 5) before a big new element is built. Check contrast for any new text colour (the light blue `#4CBBEC` can't carry white text, or be text on white).

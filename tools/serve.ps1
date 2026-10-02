@@ -1,5 +1,5 @@
-param([string]$Root, [int]$Port = 8000)
-# Usage: powershell -File tools/serve.ps1 -Root . [-Port 8000]
+param([string]$Root, [int]$Port = 8417)
+# Usage: powershell -File tools/serve.ps1 -Root . [-Port 8417]
 # Minimal static file server for local preview (no Python on this machine).
 $types = @{ '.html'='text/html; charset=utf-8'; '.css'='text/css'; '.js'='text/javascript'; '.json'='application/json';
   '.geojson'='application/geo+json'; '.woff2'='font/woff2'; '.svg'='image/svg+xml'; '.png'='image/png';

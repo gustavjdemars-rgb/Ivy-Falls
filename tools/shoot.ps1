@@ -1,4 +1,4 @@
-param([string]$Url = 'http://localhost:8000/', [string]$Out, [string]$Shots = 'full', [switch]$Reduce, [int[]]$Widths = @(360, 768, 1280, 1920), [string]$Prefix = 'view', [int]$Wait = 1800, [string]$Eval = '')
+param([string]$Url = 'http://localhost:8417/', [string]$Out, [string]$Shots = 'full', [switch]$Reduce, [int[]]$Widths = @(360, 768, 1280, 1920), [string]$Prefix = 'view', [int]$Wait = 1800, [string]$Eval = '')
 # Usage: powershell -File tools/shoot.ps1 -Out review/<round> [-Shots ".cover__title,.lede"] [-Widths 360,1280] [-Wait 6000] [-Eval "<js>"] [-Reduce]
 # Needs the preview server running (tools/serve.ps1) and Google Chrome installed.
 # Screenshots via headless Chrome + DevTools protocol.
