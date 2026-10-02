@@ -258,3 +258,8 @@ Option 1 is on the page.
 4. Somewhere off the Mississippi, the maps leave a blank.
 5. Hiding in plain sight, a short walk from the city.
 6. Some places you have to find for yourself.
+
+### Round 3 changes (2026-10-02)
+
+- Dek on the page: "You won’t find it on any maps." (author's wording).
+- The three-photo row is now a **five-card carousel** with no captions: P2 planks over the reeds, P3 tracks above the flooded flats, P4 fallen-tree crossing, **P5 hopping the creek on rocks**, **P6 the small wooded valley below the falls**. Add P5 and P6 to the shot list (portrait 4:5).

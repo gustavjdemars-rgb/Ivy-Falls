@@ -32,7 +32,7 @@
   <hr class="cover__rule">
 
   <div class="cover__tags">
-    <p class="tape tape--dek">The maps say there’s nothing here. They’re wrong.</p>
+    <p class="tape plank tape--dek"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">You won’t find it on any maps.</span><span class="nail nail--r" aria-hidden="true"></span></p>
 
     <!-- Hover, click or tap the byline: the tape swings down from its left end,
          sways, and drops off the screen, leaving READ MORE where it was. -->
@@ -41,7 +41,7 @@
         <span class="visually-hidden">Read more about the author</span>
         <span aria-hidden="true"><span style="--r:-9deg;--y:2px">R</span><span style="--r:6deg;--y:-3px">E</span><span style="--r:-4deg;--y:1px">A</span><span style="--r:11deg;--y:-2px">D</span><span class="readmore__gap"></span><span style="--r:7deg;--y:-1px">M</span><span style="--r:-10deg;--y:3px">O</span><span style="--r:4deg;--y:-3px">R</span><span style="--r:-6deg;--y:1px">E</span></span>
       </a>
-      <button class="tape tape--byline" type="button">By Gustav DeMars</button>
+      <button class="tape plank tape--byline" type="button"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">By Gustav DeMars</span><span class="nail nail--r" aria-hidden="true"></span></button>
     </div>
   </div>
 </header>
@@ -108,20 +108,20 @@
       </div>
     </section>
 
-    <div class="gallery">
-      <figure class="media" data-slot="P2" style="--ar: 4 / 5">
-        <div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span><span class="ph__what">Planks across the reeds.</span></div>
-        <figcaption><span class="todo">Caption to come.</span></figcaption>
-      </figure>
-      <figure class="media" data-slot="P3" style="--ar: 4 / 5">
-        <div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span><span class="ph__what">Tracks above the flooded flats.</span></div>
-        <figcaption><span class="todo">Caption to come.</span></figcaption>
-      </figure>
-      <figure class="media" data-slot="P4" style="--ar: 4 / 5">
-        <div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span><span class="ph__what">A fallen-tree creek crossing.</span></div>
-        <figcaption><span class="todo">Caption to come.</span></figcaption>
-      </figure>
-    </div>
+    <!-- Carousel: five photos fanned like a hand of cards. The arrows deal the
+         hand left or right; the middle card is raised as if being chosen. -->
+    <section class="deck" aria-roledescription="carousel" aria-label="Photos from the walk">
+      <button class="deck__arrow deck__arrow--prev" type="button" aria-label="Rotate photos left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
+      <div class="deck__hand">
+        <figure class="deck__card" data-slot="P2" aria-roledescription="slide" aria-label="1 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span><span class="ph__what">Planks across the reeds.</span></div></figure>
+        <figure class="deck__card" data-slot="P3" aria-roledescription="slide" aria-label="2 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span><span class="ph__what">Tracks above the flooded flats.</span></div></figure>
+        <figure class="deck__card" data-slot="P4" aria-roledescription="slide" aria-label="3 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span><span class="ph__what">A fallen-tree creek crossing.</span></div></figure>
+        <figure class="deck__card" data-slot="P5" aria-roledescription="slide" aria-label="4 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P5."><span class="ph__id">P5 · Photo</span><span class="ph__what">Hopping the creek on rocks.</span></div></figure>
+        <figure class="deck__card" data-slot="P6" aria-roledescription="slide" aria-label="5 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P6."><span class="ph__id">P6 · Photo</span><span class="ph__what">The small wooded valley below the falls.</span></div></figure>
+      </div>
+      <button class="deck__arrow deck__arrow--next" type="button" aria-label="Rotate photos right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg></button>
+      <p class="visually-hidden" aria-live="polite" data-deck-status></p>
+    </section>
 
     <!-- The payoff: dark, full-bleed video. -->
     <section class="night" aria-label="The falls">
@@ -138,7 +138,7 @@
     </section>
 
     <div class="col sheet">
-      <h2 class="label-head tape">Happy Hollow Falls</h2>
+      <h2 class="label-head tape plank plank--blue"><span class="nail nail--l" aria-hidden="true"></span><span class="plank__text">Happy Hollow Falls</span><span class="nail nail--r" aria-hidden="true"></span></h2>
 
       <p>The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century, according to a 1917 news clipping from the St. Paul Pioneer Press.</p>
     </div>
