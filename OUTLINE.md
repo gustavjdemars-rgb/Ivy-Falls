@@ -268,3 +268,9 @@ Option 1 is on the page.
 
 - Cover reworked: left-aligned three-line title in the left third, a simple dek and byline, and an interactive folded map (decorative artwork in `assets/foldmap.svg`, not a real survey) in the right third. The plank dek and byline and the falling, cracking board were retired in favour of this simpler layout.
 - Carousel cards are now polaroids. Their bottom captions are the intended shot descriptions, placeholders until real photos and captions arrive.
+
+### Round 5+ summary (2026-10-02): cover approved
+
+The author is happy with the title screen; it is now locked (see CLAUDE.md §0 and §4). Final cover: Alfa Slab One title on three left-aligned lines, a cascade of 3D blue question marks over and behind it, a blue dek box and a dark byline tag that flips to "See my work →", and a heavily redacted crop of the real 1951 USGS St. Paul West sheet in the right third.
+
+**Still open:** portfolio URL for the byline link.

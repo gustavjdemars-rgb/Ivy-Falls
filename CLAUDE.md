@@ -2,6 +2,25 @@
 
 A self-hosted scrollytelling feature about Ivy Falls, published on GitHub Pages. The author (Gus) supplies the text and media. You design and build the page.
 
+## 0. Current status (read this first)
+
+*Last updated 2026-10-02.*
+
+- **Phase:** Phase 1 (outline) approved. Phase 2 (skeleton) is in progress: the full page exists with real text and placeholders, and the design has been iterated round by round with the author. **The cover / title screen is approved. Treat it as locked: don't change it unless the author asks.** Its exact spec is in §4.
+- **Section 4 is the current design.** Where it conflicts with anything older in this file (the original "survey sheet" concept, palette table, type list, layout patterns), §4's top block wins.
+- **Next up:** review the story body below the cover in the same round-by-round way, then Phase 3 (real maps, route, diagram, clippings) once the author is ready.
+- **Waiting on the author:** portfolio URL for the byline link (it points to `#credits` for now); all photos, video and newspaper scans; final captions and credits; original reporting date. Deliberately on hold at the author's request: copy edits, location-precision and rail-line decisions, which "opposite" waterfalls to show.
+- **Files:** `index.html` (page), `css/main.css`, `js/main.js` (cover question-mark cascade, byline flip, weathered paper edges, photo deck, progress bar), `fonts/` (pinned in `vendor/VERSIONS.md`), `assets/maps/stpaul-west-1951-bluffs.jpg` (crop of the public-domain 1951 USGS St. Paul West quadrangle), `OUTLINE.md` (slot table, pitches, open questions, dek options, change log), `content/story.md` (source text; only change so far: "Waterfall" capitalised in the title, at the author's request).
+- **Live site:** https://gustavjdemars-rgb.github.io/Ivy-Falls/ (repo `gustavjdemars-rgb/Ivy-Falls`, Pages from `main` root). Push only when the author says so.
+
+### How to work on this project
+
+- **Previewing:** Python isn't installed on this machine, so run `powershell -File tools/serve.ps1 -Root .` (serves on http://localhost:8000/; run it in the background).
+- **Screenshots:** `powershell -File tools/shoot.ps1 -Out review/<round> -Shots ".cover__title,.lede" -Widths 360,768,1280,1920` (headless Chrome). `-Wait` lets the cover animation fill in; `-Eval` runs JS first (e.g. to flip the byline). `review/` is git-ignored.
+- **Each round of feedback:** make the changes, check them in screenshots at phone and desktop widths, fix what looks off, commit with a descriptive message, then update §0 and §4 here so a fresh session can pick up. Report back in plain language and ask before pushing.
+- **The author's taste, learned so far:** sleek, modern and fairly minimal, with a vintage/archival flavour and Vox Atlas energy; subtle over flashy; dislikes heavy texture and anything that looks like a template. Prefers seeing options pitched (about 5) before a big new element is built. Check contrast for any new text colour (the light blue `#4CBBEC` can't carry white text, or be text on white).
+- **Performance guard:** the 3D question marks fall back to flat marks automatically if frames drop. Keep first load under ~2 MB (currently ~660 KB).
+
 ## 1. Goals
 
 1. Present a ~600-word reported story as a polished multimedia feature, on par with NYT / LA Times interactives and ArcGIS StoryMaps.
@@ -26,7 +45,7 @@ The narrator is casual and self-deprecating ("If you're like me, which you proba
 
 ## 4. Design concept
 
-> **Revised by the author, 2026-10-01. This overrides the original concept below wherever they conflict.**
+> **Current design, revised with the author 2026-10-01 to 2026-10-02. This overrides the original concept below wherever they conflict. The cover (the "Cover" and byline bullets) is approved and locked.**
 > - Sleek, professional and modern, in the spirit of **Vox Atlas** videos: satellite imagery, bold grotesque labels in solid colour boxes, clean motion. The vibe of old maps comes through the map content itself, not the page chrome.
 > - **Sleek, minimal retro-futurism:** a light film grain and faint wear (kept low), and story text on straight off-white sheets that overlap slightly like stacked pages. A few sheets, cards and clippings (about a third) carry a little damage at random: a torn corner, a folded-over corner, a split, or small nicks. Kept simple and modern. White boxes over photos and maps carry a subtle drop shadow. Captions and controls always sit on clear space. Real aged paper is reserved for the newspaper clippings and the old topo sheet overlaid on the satellite map. "Happy Hollow Falls" is highlighted with a slightly angled blue marker stroke; the opening two paragraphs are framed by four blue corner marks, and the story opens with a small initial T in the light question-mark blue inside a thin light-blue box.
 > - **Brand colour is the label blue from the author's overview map: `#4CBBEC`.** White text on it fails contrast (2.2:1), so text on blue uses dark navy `#0D1B24`. Blue text and links on white use `#16739F`.
