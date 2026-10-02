@@ -203,6 +203,17 @@ Searches were done October 2026. Several outlets (Reuters, WaPo) block automated
 | Q-GAP | The paste has a gap after "Happy Hollow Falls". Was there a photo of the falls there in the original? If so, which one? | Slot planning |
 | Q-3D | After the 2D contour reveal is built with real data, do you want the 3D tier evaluated? (See §3.) | Phase 4 scope |
 | Q-REF | Do you have a link for the "LA Times Gale Crater" reference? | Research accuracy |
+| Q-TICKS | The neatline ticks are labeled with the St. Paul West 7.5′ quadrangle bounds (45°00′ to 44°52′30″ N, 93°15′ to 93°07′30″ W), taken from the USGS cell index (44093-H2). I haven't checked them against the sheet, and I haven't confirmed the falls fall inside that quad. I'll do both in Phase 3. | Coordinates must not be invented |
+
+---
+
+## 10. Phase 2 build notes (decisions made while building the skeleton)
+
+- **Text is verbatim** from `content/story.md`, typeset only: straight quotes became curly ("There's", "you're"), and the two link brackets moved to the word they belong on. **None of the copy edits in §7 are applied**, including E3 (the title still reads "Hidden waterfall").
+- **Section markers** are benchmark glyphs (a red triangulation-station mark between brown rules) **with no text**, so I haven't added any subheads that aren't in the story. The only labeled marker is the existing "Happy Hollow Falls", set in blue italic caps because it's a water-feature name.
+- **The ending puts the text before M5**, which reverses the order in the §2 table. The last thing on the page becomes the map writing *Ivy Falls* onto itself, right after "now is seen by very few."
+- **The Feinberg quote** is styled as an indented italic passage with a contour-brown rule. The words are unchanged.
+- **Contrast:** `#A5683A` contour brown measures 3.8:1 on paper, so it's only used for lines and rules. Small brown text uses `#8A5326` (5.2:1). The other palette colours pass AA as given.
 
 ---
 

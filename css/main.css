@@ -1,0 +1,647 @@
+/* Ivy Falls: "The survey sheet". */
+
+/* ---------- Fonts (self-hosted, SIL OFL; versions in vendor/VERSIONS.md) ---------- */
+
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("../fonts/source-serif-4-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("../fonts/source-serif-4-latin-wght-italic.woff2") format("woff2");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Libre Caslon Display";
+  src: url("../fonts/libre-caslon-display-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../fonts/barlow-condensed-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../fonts/barlow-condensed-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../fonts/barlow-condensed-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../fonts/barlow-condensed-latin-500-italic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ---------- Tokens ---------- */
+
+:root {
+  /* Palette from the brief. Contrast against paper (WCAG):
+     ink 12.7, water 4.6, red 4.8, contour-text 5.2, ink-soft 5.1.
+     --contour itself is 3.8: lines and large type only. */
+  --paper: #F2EAD8;
+  --paper-deep: #E9DFC8;
+  --ink: #2A2520;
+  --ink-soft: #6B6157;
+  --contour: #A5683A;
+  --contour-text: #8A5326;
+  --water: #3D6E8A;
+  --wood: #C8D4AE;
+  --red: #B23F2C;
+
+  /* Dark register (video, showpiece). Contrast on --night:
+     night-ink 13.1, night-soft 6.6, night-red 5.4, night-water 7.8. */
+  --night: #1E1B17;
+  --night-ink: #E9E0CC;
+  --night-soft: #A89F90;
+  --night-red: #D4775F;
+  --night-water: #8BB4CC;
+
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --display: "Libre Caslon Display", "Source Serif 4", Georgia, serif;
+  --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+
+  --frame: 14px;                 /* neatline inset */
+  --rail: 26px;                  /* room for the tick rail */
+  --gutter: calc(var(--frame) + var(--rail) + 8px);
+  --measure: 62ch;
+  --wide: 52rem;
+  --hairline: 1px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --frame: 6px;
+    --rail: 10px;
+    --gutter: 22px;
+  }
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* Very light paper grain: one small tiled SVG noise. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .16 0 0 0 0 .14 0 0 0 0 .12 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  font-family: var(--serif);
+  font-size: clamp(1.1875rem, 1.05rem + 0.45vw, 1.3125rem); /* 19–21px */
+  line-height: 1.62;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+p { margin: 0 0 1.15em; }
+
+a {
+  color: var(--water);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 3px;
+}
+
+img, video, svg { display: block; max-width: 100%; }
+
+/* Placeholder marker for missing copy or credits. */
+.todo {
+  font-family: var(--label);
+  font-size: 0.78em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  padding: 0.05em 0.35em;
+  border: 1px dashed color-mix(in srgb, var(--red) 55%, transparent);
+}
+
+/* ---------- Layout primitives ---------- */
+
+.col {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---------- Neatline frame + tick rail (also the scroll-progress indicator) ---------- */
+
+.neatline {
+  position: fixed;
+  inset: var(--frame);
+  z-index: 50;
+  pointer-events: none;
+  border: var(--hairline) solid var(--ink);
+  outline: 0.5px solid color-mix(in srgb, var(--ink) 45%, transparent);
+  outline-offset: 3px;
+  transition: border-color 0.4s, outline-color 0.4s;
+}
+
+.neatline__rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--rail);
+  border-left: 0.5px solid color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+.tick {
+  position: absolute;
+  right: 0;
+  height: 1px;
+  width: 7px;
+  background: var(--ink);
+  transform: translateY(-0.5px);
+}
+.tick--major { width: 14px; }
+.tick.is-passed { background: var(--red); }
+
+.neatline__index {
+  position: absolute;
+  right: calc(var(--rail) - 1px);
+  width: 0;
+  height: 0;
+  border-block: 4px solid transparent;
+  border-right: 6px solid var(--red);
+  transform: translateY(-4px);
+}
+
+.neatline__label,
+.neatline__corner {
+  position: absolute;
+  font-family: var(--label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.neatline__label {
+  right: 2px;
+  writing-mode: vertical-rl;
+}
+.neatline__label--top { top: 22px; }
+.neatline__label--bottom { bottom: 22px; }
+.neatline__corner { top: 4px; }
+.neatline__corner--tl { left: 8px; }
+.neatline__corner--tr { right: calc(var(--rail) + 6px); }
+
+/* Over dark sections the frame turns light. */
+html.on-night .neatline { border-color: var(--night-soft); outline-color: color-mix(in srgb, var(--night-soft) 45%, transparent); }
+html.on-night .tick { background: var(--night-soft); }
+html.on-night .tick.is-passed { background: var(--night-red); }
+html.on-night .neatline__label { color: var(--night-soft); }
+
+@media (max-width: 640px) {
+  .neatline { outline: none; }
+  .neatline__label, .neatline__corner { display: none; }
+  .tick { width: 4px; }
+  .tick--major { width: 9px; }
+  .neatline__index { border-block-width: 3px; border-right-width: 4px; transform: translateY(-3px); }
+}
+
+/* ---------- Cover ---------- */
+
+.cover {
+  padding-top: calc(var(--frame) + 2.2rem);
+}
+
+.cover__collar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--wide);
+  margin-inline: auto;
+  padding-bottom: 0.6rem;
+  border-bottom: var(--hairline) solid var(--contour);
+  font-family: var(--label);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--contour-text);
+}
+
+.cover__title {
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  margin: clamp(2rem, 6vw, 4.5rem) auto 0;
+  padding-inline: var(--gutter);
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 1.4rem + 5.4vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.cover__dek,
+.cover__byline {
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  margin: 1.2rem auto 0;
+  padding-inline: var(--gutter);
+}
+
+.cover__dek { font-size: 1.15em; }
+
+.cover__byline {
+  font-family: var(--label);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------- Story text ---------- */
+
+.story { padding-top: clamp(2.5rem, 6vw, 4.5rem); }
+
+.lede::first-line {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+
+.quote {
+  margin-block: 1.8em;
+  padding-left: 1.1em;
+  border-left: 2px solid var(--contour);
+  font-style: italic;
+}
+
+/* Section marker: a survey benchmark (triangulation station). */
+.benchmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin: clamp(2.5rem, 7vw, 4.5rem) auto;
+  padding-inline: var(--gutter);
+  max-width: 20rem;
+}
+.benchmark::before,
+.benchmark::after {
+  content: "";
+  flex: 1;
+  border-top: var(--hairline) solid var(--contour);
+}
+.benchmark svg,
+.subhead__mark {
+  width: 18px;
+  height: 17px;
+  flex: none;
+}
+.benchmark path,
+.subhead__mark path { fill: none; stroke: var(--red); stroke-width: 1.6; stroke-linejoin: miter; }
+.benchmark circle,
+.subhead__mark circle { fill: var(--red); }
+
+/* Water features follow map convention: blue italic. */
+.subhead {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: clamp(3rem, 8vw, 5rem) 0 1.4rem;
+  font-family: var(--label);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 1.8rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--water);
+}
+
+/* ---------- Media slots and placeholders ---------- */
+
+.slot {
+  margin: clamp(2rem, 5vw, 3.25rem) auto;
+}
+
+.slot--wide {
+  max-width: calc(var(--wide) + 2 * var(--gutter));
+  padding-inline: var(--gutter);
+}
+
+.slot--bleed { margin-inline: 0; }
+
+.slot .ph { aspect-ratio: var(--ar, 16 / 9); }
+
+.ph {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  background-color: var(--paper-deep);
+  /* Red registration corners, like the corners of a sheet. */
+  background-image:
+    linear-gradient(var(--red), var(--red)), linear-gradient(var(--red), var(--red)),
+    linear-gradient(var(--red), var(--red)), linear-gradient(var(--red), var(--red)),
+    linear-gradient(var(--red), var(--red)), linear-gradient(var(--red), var(--red)),
+    linear-gradient(var(--red), var(--red)), linear-gradient(var(--red), var(--red));
+  background-size: 14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  outline: 1px dashed color-mix(in srgb, var(--contour) 70%, transparent);
+  outline-offset: -6px;
+  font-family: var(--label);
+  color: var(--ink);
+}
+
+.ph__id {
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+.ph__what {
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+.ph__status {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--contour-text);
+}
+
+.ph--inline {
+  aspect-ratio: auto;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--contour-text);
+}
+
+figcaption {
+  margin-top: 0.6rem;
+  font-family: var(--label);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+.slot--bleed figcaption { padding-inline: var(--gutter); }
+/* A caption aligned to the text column: keep the body font on the box so
+   62ch measures the same as the paragraphs; the label face goes on the children. */
+figcaption.caption-col {
+  font-family: var(--serif);
+  font-size: inherit;
+}
+figcaption.caption-col > * { font-family: var(--label); }
+.credit {
+  margin-left: 0.4em;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Cover and closing maps: full width inside the frame. */
+.slot--cover,
+.slot--closing {
+  padding-inline: calc(var(--frame) + var(--rail) + 1px);
+}
+.slot--cover { margin-top: clamp(2rem, 5vw, 3rem); margin-bottom: 0; }
+.slot--cover .ph,
+.slot--closing .ph { aspect-ratio: 16 / 9; }
+
+@media (max-width: 640px) {
+  .slot--cover .ph,
+  .slot--closing .ph { aspect-ratio: 4 / 5; }
+}
+
+/* ---------- Sidecar: sticky graphic with scrolling text cards ---------- */
+
+.sidecar {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 92rem;
+  margin: clamp(2rem, 5vw, 3rem) auto;
+  padding-inline: var(--gutter);
+}
+
+.sidecar__graphic {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  padding-block: calc(var(--frame) + 1.5rem);
+}
+
+.sidecar__steps {
+  grid-column: 1;
+  grid-row: 1;
+  padding-block: 40vh;
+  padding-block: 40svh;
+}
+
+.step {
+  margin-bottom: 70vh;
+  margin-bottom: 70svh;
+  padding: 1.4rem 1.5rem 0.4rem;
+  background: var(--paper);
+  border: var(--hairline) solid color-mix(in srgb, var(--contour) 60%, transparent);
+}
+.step:last-child { margin-bottom: 0; }
+
+.step--aha p {
+  font-size: 1.15em;
+  line-height: 1.45;
+}
+
+.slot--fill {
+  height: 100%;
+  margin: 0;
+}
+.slot--fill .ph { height: 100%; aspect-ratio: auto; }
+
+/* Mobile: the graphic pins to the top half, cards scroll over the lower half. */
+@media (max-width: 860px) {
+  .sidecar {
+    display: block;
+    padding-inline: 0;
+  }
+  .sidecar__graphic {
+    height: 55vh;
+    height: 55svh;
+    padding: calc(var(--frame) + 0.5rem) var(--gutter) 0.5rem;
+    z-index: 0;
+  }
+  .sidecar__steps {
+    position: relative;
+    z-index: 1;
+    padding: 20svh var(--gutter) 30svh;
+  }
+  .step {
+    margin-bottom: 60svh;
+    padding: 1.1rem 1.15rem 0.2rem;
+    box-shadow: 0 0 0 6px var(--paper);
+  }
+}
+
+/* ---------- Field notes: three photos wider than the column ---------- */
+
+.fieldnotes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.8rem, 2vw, 1.4rem);
+  max-width: calc(68rem + 2 * var(--gutter));
+  margin: clamp(2.5rem, 6vw, 4rem) auto;
+  padding-inline: var(--gutter);
+}
+.fieldnotes .slot { margin: 0; }
+.fieldnotes .ph__what { font-size: 0.95rem; }
+
+@media (max-width: 860px) {
+  .fieldnotes { grid-template-columns: 1fr; }
+}
+
+/* ---------- Night: the dark, full-bleed register ---------- */
+
+.night {
+  margin-block: clamp(3rem, 8vw, 5rem);
+  padding-block: clamp(3rem, 8vw, 6rem) clamp(2rem, 6vw, 4rem);
+  background: var(--night);
+  color: var(--night-ink);
+}
+.night a { color: var(--night-water); }
+.night figcaption { color: var(--night-soft); }
+.night .ph {
+  background-color: #2A2621;
+  color: var(--night-ink);
+  outline-color: color-mix(in srgb, var(--night-soft) 50%, transparent);
+  --red: var(--night-red);
+}
+.night .ph__status { color: var(--night-soft); }
+.night .todo { color: var(--night-red); border-color: color-mix(in srgb, var(--night-red) 60%, transparent); }
+.night .slot { margin-top: 0; }
+
+.slot--video { padding-inline: calc(var(--frame) + var(--rail) + 1px); }
+.slot--video .ph { aspect-ratio: 16 / 9; }
+@media (max-width: 640px) {
+  .slot--video .ph { aspect-ratio: 4 / 5; }
+}
+
+/* ---------- Clippings ---------- */
+
+.slot--clipping {
+  max-width: calc(30rem + 2 * var(--gutter));
+  padding-inline: var(--gutter);
+}
+.slot--clipping .ph {
+  transform: rotate(var(--tilt, 0deg));
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 12%, transparent), 0 8px 18px -12px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.slot--clipping figcaption { margin-top: 1.1rem; }
+
+.transcript {
+  margin-top: 0.6rem;
+  font-family: var(--label);
+  font-size: 0.95rem;
+}
+.transcript summary {
+  cursor: pointer;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--contour-text);
+}
+.transcript p { margin: 0.6rem 0 0; }
+
+/* ---------- Closing map ---------- */
+
+.slot--closing { margin-bottom: clamp(3rem, 8vw, 5rem); }
+
+/* ---------- Collar (credits) ---------- */
+
+.collar {
+  margin-top: clamp(2rem, 6vw, 4rem);
+  padding: 0 var(--gutter) calc(var(--frame) + 3rem);
+  font-family: var(--label);
+  font-size: 0.98rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.collar__grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-top: clamp(2rem, 5vw, 3rem);
+  border-top: var(--hairline) solid var(--ink);
+}
+
+.collar__head {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--contour-text);
+}
+.collar__head:not(:first-child) { margin-top: 1.4rem; }
+
+.collar p { margin: 0 0 0.35rem; }
+.collar ul { margin: 0; padding: 0; list-style: none; }
+.collar li { margin-bottom: 0.35rem; }
+
+.collar__block--center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.collar__north { width: 34px; height: 62px; }
+.collar__north path { fill: var(--ink); }
+.collar__north line { stroke: var(--ink); stroke-width: 1; }
+.collar__north text { font-family: var(--label); font-size: 13px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 4px; }
+
+.collar__scale { width: 14rem; }
+
+@media (max-width: 860px) {
+  .collar__grid { grid-template-columns: 1fr; }
+  .collar__block--center { order: -1; flex-direction: row; justify-content: flex-start; }
+}
