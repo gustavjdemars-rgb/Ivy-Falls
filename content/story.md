@@ -1,4 +1,4 @@
-# The Twin Cities' Hidden waterfall
+# The Twin Cities' Hidden Waterfall
 
 There's a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.
 

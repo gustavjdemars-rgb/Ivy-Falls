@@ -237,3 +237,13 @@ Superseded notes from the first skeleton follow.
 - **Phase 3, maps and accents.** Data pipeline (`data/SOURCES.md`), M0/M5 on the historical sheet, the M2/M3 stage in 2D, M4 route, D1, clippings.
 - **Phase 4, showpiece.** Only if Q-3D is a yes after seeing Phase 3.
 - **Phase 5, polish and ship.** Real media, accessibility and performance pass, OG image, deploy.
+
+## 11. Dek options (author to choose)
+
+Drawn only from facts in the story. Option 1 is on the page for now.
+
+1. A 25-foot waterfall in Mendota Heights was once considered for a state park. Today it isn't on any map.
+2. Once called Happy Hollow Falls, it was nearly a state park. Now it hides behind the cul-de-sacs.
+3. How a half-remembered geology lesson and a topographical map led to a waterfall the maps forgot.
+4. A spring-fed waterfall on the Mississippi bluffs, almost unknown to the cities around it.
+5. It's 25 feet tall, fed by springs and 45 minutes' walk from a trailhead. Almost nobody goes.

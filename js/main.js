@@ -24,9 +24,9 @@ const cover = document.querySelector('.cover');
 const stream = document.querySelector('.qstream');
 const title = document.querySelector('.cover__title');
 
-const GRAVITY = 2600;     // px/s²
+const GRAVITY = 1700;     // px/s²
 const STEP = 1 / 30;      // simulation step, s
-const SPAWN_EVERY = 0.09; // s between marks
+const SPAWN_EVERY = 0.16; // s between marks
 
 let geo = null;
 
@@ -72,11 +72,11 @@ function measure() {
 
 // Simulate one mark and return its path as [x, y, rotation] samples.
 function simulate(g, rand) {
-  const flow = g.lineWidth * (0.38 + rand() * 0.22);
+  const flow = g.lineWidth * (0.14 + rand() * 0.1); // slow, like water finding the edge
   let x = g.centerX + (rand() - 0.5) * g.lineWidth * 0.08;
   let y = -g.markSize * 1.5;
   let vx = 0;
-  let vy = rand() * 120;
+  let vy = rand() * 60;
   let rot = (rand() - 0.5) * 30;
   const spin = (rand() - 0.5) * 360;
   let ledge = null;
@@ -89,7 +89,7 @@ function simulate(g, rand) {
     if (ledge) {
       vx += (flow - vx) * Math.min(1, STEP * 4);
       x += vx * STEP;
-      rot = Math.sin(t * 9) * 7;
+      rot = Math.sin(t * 5) * 6;
       if (x > ledge.right) { ledge = null; vy = 0; }
     } else {
       const prevY = y;
@@ -114,9 +114,9 @@ function makeMark(rand) {
   const q = document.createElement('span');
   q.className = 'qmark';
   q.textContent = '?';
-  q.style.setProperty('--s', (0.6 + rand() * 0.9).toFixed(2));
-  q.style.setProperty('--w', String(500 + Math.floor(rand() * 5) * 100)); // 500–900
-  q.style.opacity = (0.55 + rand() * 0.45).toFixed(2);
+  q.style.setProperty('--s', (0.7 + rand() * 0.8).toFixed(2));
+  q.style.setProperty('--w', String(600 + Math.floor(rand() * 4) * 100)); // 600–900
+  if (rand() < 0.45) q.style.setProperty('--c', 'var(--blue-deep)');
   return q;
 }
 
@@ -198,18 +198,25 @@ if (cover && stream && title) {
   }
 }
 
-// ---------- Byline: letters hop on hover ----------
+// ---------- Byline drawer ----------
+// CSS opens it on hover and focus; a tap or click toggles it so it also
+// works on touch screens. Escape or a click elsewhere closes it.
 
-const bounce = document.querySelector('.bounce');
-if (bounce) {
-  const text = bounce.textContent;
-  bounce.replaceChildren(...[...text].map((ch, i) => {
-    const s = document.createElement('span');
-    s.className = 'ch';
-    s.style.setProperty('--i', i);
-    s.textContent = ch;
-    return s;
-  }));
+const byline = document.querySelector('.byline');
+const bylineButton = byline && byline.querySelector('button');
+if (byline && bylineButton) {
+  const setOpen = (open) => {
+    byline.classList.toggle('is-open', open);
+    bylineButton.setAttribute('aria-expanded', String(open));
+  };
+  bylineButton.addEventListener('click', () => setOpen(!byline.classList.contains('is-open')));
+  document.addEventListener('click', (e) => { if (!byline.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && byline.classList.contains('is-open')) {
+      setOpen(false);
+      bylineButton.focus();
+    }
+  });
 }
 
 // ---------- Reading progress ----------

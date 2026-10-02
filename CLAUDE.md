@@ -28,10 +28,10 @@ The narrator is casual and self-deprecating ("If you're like me, which you proba
 
 > **Revised by the author, 2026-10-01. This overrides the original concept below wherever they conflict.**
 > - Sleek, professional and modern, in the spirit of **Vox Atlas** videos: satellite imagery, bold grotesque labels in solid colour boxes, clean motion. The vibe of old maps comes through the map content itself, not the page chrome.
-> - **Paper is used sparingly**, only on a few archival objects (the newspaper clippings, the old topo sheet overlaid on the satellite map). The page background is clean white, with dark full-bleed sections.
+> - **Paper, used subtly:** the story text sits on off-white sheets that overlap slightly, like stacked pages, over a warm light-grey background with a faint worn grain (retro-futurist, still clean). Real aged paper is reserved for the newspaper clippings and the old topo sheet overlaid on the satellite map.
 > - **Brand colour is the label blue from the author's overview map: `#4CBBEC`.** White text on it fails contrast (2.2:1), so text on blue uses dark navy `#0D1B24`. Blue text and links on white use `#16739F`.
-> - Type: Fraunces (title: vintage, archival display), EB Garamond italic in vermilion `#E5533D` (cover dek and byline), Inter Tight (labels, UI), Source Serif 4 (body).
-> - Cover: a stream of blue question marks falls onto the middle of the title, flows right along its top and spills off the end, like a waterfall. Byline "By Gustav DeMars" hops letter by letter on hover. No location kicker. The closing map answers the question marks with a blue "Ivy Falls" label.
+> - Type: Archivo at weight 900, slightly condensed (title, labels), Libre Caslon Text (cover dek and byline, New Yorker feel), Inter Tight (UI), Source Serif 4 (body).
+> - Cover: larger blue question marks (bright `#4CBBEC` and deep `#306F8C`) fall slowly onto the middle of the title, flow right along its top and spill off the end. The title erodes faintly at the top right where they pour off. The dek (vermilion `#B8361F`) and the byline (deep blue `#306F8C`) sit on strips of white tape. Hovering or tapping the byline slides a drawer out from under it, holding a polaroid (author headshot) and a scattered, tilted READ MORE. The closing map answers the question marks with a blue "Ivy Falls" label.
 > - Text can be wider (~44rem), but never at the expense of photo and video size. Media runs wide or full bleed.
 > - The neatline frame, tick rail, benchmark glyphs and map-collar credits from the original concept are dropped.
 >

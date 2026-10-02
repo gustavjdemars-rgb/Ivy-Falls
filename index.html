@@ -16,7 +16,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" href="fonts/fraunces-latin-full-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
@@ -28,15 +28,33 @@
 <header class="cover">
   <!-- A stream of question marks falls onto the title, runs along it and spills off (js/main.js). -->
   <div class="qstream" aria-hidden="true"></div>
-  <h1 class="cover__title">The Twin Cities’ Hidden waterfall</h1>
-  <p class="cover__dek">Dek: optional, needs author copy</p>
-  <p class="cover__byline"><span class="visually-hidden">By Gustav DeMars</span><span class="bounce" aria-hidden="true">By Gustav DeMars</span></p>
+  <h1 class="cover__title">The Twin Cities’ Hidden Waterfall</h1>
+
+  <div class="cover__tags">
+    <p class="tape tape--dek">A 25-foot waterfall in Mendota Heights was once considered for a state park. Today it isn’t on any map.</p>
+
+    <!-- Hover (or tap) the byline: a drawer slides out with the author's polaroid. -->
+    <div class="byline">
+      <button class="tape tape--byline" type="button" aria-expanded="false" aria-controls="author-drawer">By Gustav DeMars</button>
+      <div class="drawer-slot">
+        <div class="drawer" id="author-drawer">
+          <figure class="polaroid">
+            <div class="polaroid__photo" role="img" aria-label="Placeholder for the author's headshot"><span>Headshot</span></div>
+          </figure>
+          <a class="readmore" href="#credits" aria-label="Read more about the author">
+            <span class="readmore__word" aria-hidden="true"><span style="--r:-9deg;--y:2px">R</span><span style="--r:6deg;--y:-3px">E</span><span style="--r:-4deg;--y:1px">A</span><span style="--r:11deg;--y:-2px">D</span></span>
+            <span class="readmore__word" aria-hidden="true"><span style="--r:7deg;--y:-1px">M</span><span style="--r:-10deg;--y:3px">O</span><span style="--r:4deg;--y:-3px">R</span><span style="--r:-6deg;--y:1px">E</span></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </header>
 
 <main id="story">
   <article class="story">
 
-    <div class="col">
+    <div class="col sheet">
       <p class="lede">There’s a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.</p>
 
       <p>The 25-foot spring-fed waterfall in Mendota Heights was once under consideration to become a state park, but is now all but unknown to most residents of the Twin Cities.</p>
@@ -52,7 +70,7 @@
       <figcaption><span class="todo">Caption</span> <span class="credit todo">Credit</span></figcaption>
     </figure>
 
-    <div class="col">
+    <div class="col sheet">
       <blockquote class="quote"><p>“So before, there used to be sediment that went all the way across the river,” he said. “And the surface was much higher, there were pre-existing rocks above where the river is now. So as the river eroded down, there are sometimes features that used to be connected with one another in space.”</p></blockquote>
 
       <p>Because of a geological pattern called jointing, spring-fed waterfalls on the Mississippi in the Twin Cities are often found on opposite sides of the river from each other, flowing down the path of least resistance created by fractures in the layers of rock.</p>
@@ -124,7 +142,7 @@
       </div>
     </section>
 
-    <div class="col">
+    <div class="col sheet">
       <h2 class="label-head">Happy Hollow Falls</h2>
 
       <p>The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century, according to a 1917 news clipping from the St. Paul Pioneer Press.</p>
@@ -142,7 +160,7 @@
       </details>
     </figure>
 
-    <div class="col">
+    <div class="col sheet">
       <p>Despite the waterfall’s lack of widespread exposure, the South St. Paul Reporter reported in 1937 that the park was under consideration to become a state park, with two state legislators introducing bills to set aside the land for public use. Those efforts never came to fruition.</p>
     </div>
 
@@ -158,7 +176,7 @@
       </details>
     </figure>
 
-    <div class="col">
+    <div class="col sheet">
       <p>Ivy Falls now sits nestled in between the Mississippi and a residential neighborhood, surrounded by million-dollar house laden cul-de-sacs, according to data from Zillow. A locale once sought as a recreation area for many, now is seen by very few.</p>
     </div>
 
@@ -172,7 +190,7 @@
   </article>
 </main>
 
-<footer class="credits">
+<footer class="credits" id="credits">
   <div class="credits__grid">
     <div>
       <h2 class="credits__head">Credits</h2>
@@ -196,7 +214,7 @@
       <h2 class="credits__head">Maps and data</h2>
       <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
       <h2 class="credits__head">Type</h2>
-      <p>Fraunces, EB Garamond, Inter Tight and Source Serif 4, SIL Open Font License.</p>
+      <p>Archivo, Libre Caslon Text, Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>
