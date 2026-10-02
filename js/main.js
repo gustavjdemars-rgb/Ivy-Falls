@@ -56,7 +56,7 @@ function measure() {
   // The content box starts above the letters; drop the ledge to the tops of
   // the lowercase ascenders and capitals.
   const ledges = lines.map((l) => ({
-    y: l.top - c.top + fs * 0.33,
+    y: l.top - c.top + fs * 0.44,
     left: l.left - c.left + fs * 0.05,
     right: l.right - c.left - fs * 0.02,
   }));
