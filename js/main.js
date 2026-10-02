@@ -471,3 +471,17 @@ if (bar) {
   window.addEventListener('resize', updateProgress);
   updateProgress();
 }
+
+// ---------- Byline flip ----------
+// Each time the pointer arrives on the byline tag it turns over: first to
+// "Read more", then back to the byline on the next hover.
+
+const flip = document.querySelector('.flipcard');
+if (flip) {
+  flip.addEventListener('pointerenter', (e) => {
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen') flip.classList.toggle('is-flipped');
+  });
+  // Keyboard users see the back while the link has focus.
+  flip.addEventListener('focus', () => flip.classList.add('is-flipped'));
+  flip.addEventListener('blur', () => flip.classList.remove('is-flipped'));
+}

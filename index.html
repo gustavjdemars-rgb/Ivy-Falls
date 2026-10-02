@@ -16,7 +16,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preload" href="fonts/bowlby-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/alfa-slab-one-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/source-serif-4-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
@@ -38,7 +38,12 @@
          tucked under its corner. -->
     <div class="cover__tags">
       <p class="cover__dek">You won’t find it on any maps.</p>
-      <p class="cover__byline">By Gustav DeMars</p>
+      <!-- Hover turns the tag over to "Read more"; hover again turns it back.
+           It links to the author's portfolio (URL to come). -->
+      <a class="cover__byline flipcard" href="#credits" aria-label="By Gustav DeMars. Read more: portfolio">
+        <span class="flipcard__face" aria-hidden="true">By Gustav DeMars</span>
+        <span class="flipcard__back" aria-hidden="true">Read more →</span>
+      </a>
     </div>
   </div>
 
@@ -48,8 +53,16 @@
        illustrative, not the falls' exact location. Hover nudges the bar. -->
   <figure class="redacted">
     <div class="redacted__sheet">
-      <img src="assets/maps/stpaul-west-1951-bluffs.jpg" width="1000" height="1460" alt="A 1951 U.S. Geological Survey topographic map of the Mississippi River at Lilydale, with a black redaction bar drawn across the bluffs on the south bank.">
-      <span class="redacted__bar" aria-hidden="true"></span>
+      <img src="assets/maps/stpaul-west-1951-bluffs.jpg" width="1000" height="1460" alt="A 1951 U.S. Geological Survey topographic map of the Mississippi River at Lilydale, with black redaction bars drawn across much of it, including the bluffs on the south bank.">
+      <!-- Several bars, varied in length and angle, so the sheet reads as heavily
+           censored. Positions are illustrative, not real locations. -->
+      <span class="redacted__bar" style="--x:44%;--y:86%;--w:54%;--r:-22deg" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:6%;--y:14%;--w:38%;--r:-2deg" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:58%;--y:22%;--w:34%;--r:1deg" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:30%;--y:44%;--w:30%;--r:-36deg;--h:3.6%" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:78%;--y:40%;--w:20%;--r:-58deg;--h:3.4%" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:12%;--y:66%;--w:26%;--r:-30deg;--h:3.2%" aria-hidden="true"></span>
+      <span class="redacted__bar" style="--x:60%;--y:60%;--w:28%;--r:-48deg;--h:3.8%" aria-hidden="true"></span>
     </div>
     <figcaption>U.S. Geological Survey · St. Paul West, Minn. · 1951</figcaption>
   </figure>
@@ -223,7 +236,7 @@
       <h2 class="credits__head">Maps and data</h2>
       <p class="todo">To come: imagery, elevation and map-data sources with licences (data/SOURCES.md).</p>
       <h2 class="credits__head">Type</h2>
-      <p>Bowlby One, Archivo, Inter Tight and Source Serif 4, SIL Open Font License.</p>
+      <p>Alfa Slab One, Archivo, Inter Tight and Source Serif 4, SIL Open Font License.</p>
     </div>
   </div>
 </footer>
