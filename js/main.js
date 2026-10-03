@@ -32,9 +32,13 @@ const GRAVITY = 1700;     // px/s²
 const STEP = 1 / 120;     // simulation step, s (small, so fast marks can't skip through each other)
 const SPAWN_EVERY = 0.45; // s between marks: a sparse stream, each mark easy to see
 const MAX_MARKS = 60;     // if marks pile up, hold the stream until they clear
-const SOLVE_PASSES = 4;   // collision passes per step; more keeps stacks from sinking into each other
 
 let geo = null;
+
+// Add ?debug to the URL to see the simulation drawn over the cover and live
+// counts of marks that jitter, get stuck, or sit inside the letters.
+const DEBUG = new URLSearchParams(location.search).has('debug');
+const debugRand = mulberry32(7); // debug runs are repeatable
 
 // Where the tops of the title's lines are, relative to the cover.
 function measure() {
@@ -62,11 +66,16 @@ function measure() {
     y: l.top - c.top + fs * 0.44,
     left: l.left - c.left + fs * 0.05,
     right: l.right - c.left - fs * 0.02,
+    depth: fs * 0.7, // how far the letters run below the ledge (for the debug view)
   }));
   // No floor: off the end of "Waterfall", marks drop out of the bottom of the cover.
 
   // The white rule under the title follows the title's widest line.
   const widest = Math.max(...lines.map((l) => l.right - l.left));
+
+  // The marks are sized from the title, so they keep the same proportions to
+  // it on every screen.
+  cover.style.setProperty('--title-fs', `${fs}px`);
   cover.style.setProperty('--title-w', `${Math.round(widest)}px`);
 
   // The gap between the baseline of "Waterfall" (no descenders) and the bottom
@@ -142,15 +151,18 @@ function spawn(rand) {
   const g = geo;
   const s = 0.65 + rand() ** 1.6 * 1.15; // mostly mid-size, a few big
   const size = g.markSize * s;
-  const r = size * 0.36;
+  const r = size * 0.3; // a little inside the glyph's outline, so a soft squish never shows
+  const foot = size * 0.36; // centre to the bottom of the glyph, for sitting on a line
   const el = makeMark(rand, s);
   // About a quarter of the marks travel behind the title text.
   (streamBack && rand() < 0.25 ? streamBack : stream).append(el);
   marks.push({
-    el, r, size,
+    el, r, foot, size,
     m: s * s,
     x: g.dropX + (rand() - 0.5) * g.dropW * 0.6,
     y: -r * 2.5,
+    px: 0,
+    py: 0,
     vx: 0,
     vy: rand() * 60,
     flow: g.lineWidth * (0.22 + rand() * 0.08), // unhurried, like water finding the edge
@@ -163,101 +175,132 @@ function spawn(rand) {
     wry: (30 + rand() * 40) * (rand() < 0.5 ? -1 : 1),
     rz: (rand() - 0.5) * 30,
     wrz: (rand() - 0.5) * 80, // a slow tumble while falling, never a spin
-    supported: false,
+    supportedAt: -1,
   });
+  const b = marks[marks.length - 1];
+  b.px = b.x;
+  b.py = b.y;
+}
+
+// The marks move like something thick and soft (syrup, or jello) rather than
+// hard pieces: every contact is a soft cushion that's damped just enough to
+// settle without wobbling, so all motion comes from smooth forces and nothing
+// ever snaps into place.
+const SOFT = 900;        // how firm a contact is (per unit of mass), s⁻²
+const SETTLE = 60;       // contact damping; 2·√SOFT, so contacts settle without bouncing
+const STICKY = 0.35;     // neighbours drag on each other a little, like something viscous
+const FALL_SPEED = 380;  // marks sink through thick air and never fall faster than about this, px/s
+const FLOW_GRIP = 2.5;   // how quickly a mark on a line takes up the stream's speed, s⁻¹
+
+// The water surface along each line: one slow wave, so neighbouring marks
+// rise and fall almost together.
+function surface(l, x, t) {
+  const g = geo;
+  return l.y - g.markSize * 0.06 * (0.5 + 0.5 * Math.sin((x / (g.markSize * 4)) * Math.PI * 2 - t * 2));
 }
 
 function step(t) {
   const g = geo;
+  const wall = g.ledges[0].left;
+  const lastLedge = g.ledges[g.ledges.length - 1].y;
+
   for (const b of marks) {
-    const prevBottom = b.y + b.r;
-    b.vy += GRAVITY * STEP;
-    if (b.ledge || b.supported) {
-      // Carried along, like something floating down a stream.
-      b.vx += (b.flow - b.vx) * Math.min(1, STEP * 3);
-      // Rock gently while it floats along.
-      b.rz += (Math.sin(t * 4 + b.phase) * 7 - b.rz) * Math.min(1, STEP * 4);
+    b.px = b.x;
+    b.py = b.y;
+    b.ax = 0;
+    b.ay = GRAVITY;
+  }
+
+  // Soft contacts between marks: a cushion pushes overlapping marks apart,
+  // damped so they ease apart instead of bouncing, with a little drag along
+  // the contact so neighbours flow together.
+  for (let i = 0; i < marks.length; i++) {
+    const a = marks[i];
+    for (let j = i + 1; j < marks.length; j++) {
+      const b = marks[j];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const min = a.r + b.r;
+      const d2 = dx * dx + dy * dy;
+      if (d2 >= min * min) continue;
+      const d = Math.sqrt(d2) || 0.01;
+      const nx = d2 ? dx / d : 0;
+      const ny = d2 ? dy / d : 1;
+      const mu = (a.m * b.m) / (a.m + b.m);
+      const rvx = b.vx - a.vx;
+      const rvy = b.vy - a.vy;
+      const vn = rvx * nx + rvy * ny;
+      const vt = -rvx * ny + rvy * nx;
+      const fn = Math.max(0, mu * (SOFT * (min - d) - SETTLE * vn));
+      const ft = -mu * SETTLE * STICKY * vt;
+      const fx = nx * fn - ny * ft;
+      const fy = ny * fn + nx * ft;
+      b.ax += fx / b.m;
+      b.ay += fy / b.m;
+      a.ax -= fx / a.m;
+      a.ay -= fy / a.m;
+      // Resting on top of another mark: float along with the stream.
+      if (ny < -0.3) b.supportedAt = t;
+      if (ny > 0.3) a.supportedAt = t;
+    }
+  }
+
+  for (const b of marks) {
+    // On a line: held up by the surface (the same soft cushion) and carried
+    // along by the stream. A mark leaves its line once its centre passes the
+    // right-hand end, and then simply falls.
+    if (b.ledge && (b.x > b.ledge.right || b.x < b.ledge.left - b.r)) b.ledge = null;
+    const floating = b.ledge || b.supportedAt > t - 0.15;
+    if (b.ledge) {
+      const p = b.y + b.foot - surface(b.ledge, b.x, t);
+      if (p > 0) b.ay -= SOFT * p + SETTLE * 2 * b.vy; // extra damping soaks up a landing over a few frames
+    }
+    if (floating) b.ax += (b.flow - b.vx) * FLOW_GRIP;
+    else b.ax -= b.vx * 0.4; // a little drag in the air
+    b.ay -= b.vy * (GRAVITY / FALL_SPEED); // thick air: the fall eases up to its top speed
+    // A soft wall at the title's left edge.
+    if (b.y < lastLedge) {
+      const p = wall + b.r * 0.6 - b.x;
+      if (p > 0) b.ax += SOFT * p - SETTLE * Math.min(0, b.vx);
+    }
+
+    const prevBottom = b.y + b.foot;
+    b.vx += b.ax * STEP;
+    b.vy += b.ay * STEP;
+    // Marks on a line never drift backwards, so none slip off the left.
+    if (floating && b.vx < 0) b.vx *= 0.5;
+    b.x += b.vx * STEP;
+    b.y += b.vy * STEP;
+
+    if (floating) {
+      b.rz += (Math.sin(t * 1.8 + b.phase) * 6 - b.rz) * Math.min(1, STEP * 2);
     } else {
       b.rz += b.wrz * STEP;
     }
-    b.x += b.vx * STEP;
-    b.y += b.vy * STEP;
     b.rx += b.wrx * STEP;
     b.ry += b.wry * STEP;
 
-    // Land on a ledge only from above, and only while the mark's centre is
-    // over it: past the right end it tips off and falls. A mark already on a
-    // ledge can't be nudged off its left end; the stream only runs one way.
-    const was = b.ledge;
-    b.ledge = null;
-    b.supported = false;
-    for (const l of g.ledges) {
-      const held = l === was && b.x < l.left;
-      if (!held && (b.x < l.left || b.x > l.right)) continue;
-      if (b.y + b.r >= l.y && prevBottom <= l.y + b.r * 0.5) {
-        if (held) { b.x = l.left; b.vx = Math.max(0, b.vx); }
-        // Bob gently on the surface.
-        b.y = l.y - b.r - (0.5 + 0.5 * Math.sin(t * 3 + b.phase)) * b.r * 0.2;
-        if (b.vy > 0) b.vy = 0;
-        b.ledge = l;
-        break;
-      }
-    }
-  }
-
-  // Gentle knocks: overlapping marks are eased apart along the line between
-  // their centres (heavier marks move less) and their closing speed is simply
-  // absorbed, with no rebound and no spin, so nothing gets flung away.
-  for (let pass = 0; pass < SOLVE_PASSES; pass++) {
-    for (let i = 0; i < marks.length; i++) {
-      const a = marks[i];
-      for (let j = i + 1; j < marks.length; j++) {
-        const b = marks[j];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const min = a.r + b.r;
-        const d2 = dx * dx + dy * dy;
-        if (d2 >= min * min) continue;
-        const d = Math.sqrt(d2) || 0.01;
-        const nx = d2 ? dx / d : 0;
-        const ny = d2 ? dy / d : 1;
-        // A mark resting on a ledge holds up the one on top of it, and the one
-        // on top floats along with the stream.
-        const ia = a.ledge && ny < -0.3 ? 0 : 1 / a.m;
-        const ib = b.ledge && ny > 0.3 ? 0 : 1 / b.m;
-        if (ny < -0.3) b.supported = true;
-        if (ny > 0.3) a.supported = true;
-        if (!ia && !ib) continue;
-        const share = (min - d) / (ia + ib);
-        a.x -= nx * share * ia;
-        a.y -= ny * share * ia;
-        b.x += nx * share * ib;
-        b.y += ny * share * ib;
-        if (pass) continue;
-        const vn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-        if (vn < 0) {
-          const j2 = -vn / (ia + ib);
-          a.vx -= j2 * nx * ia;
-          a.vy -= j2 * ny * ia;
-          b.vx += j2 * nx * ib;
-          b.vy += j2 * ny * ib;
+    // Landing: only by crossing a line's surface from above (checked across
+    // the whole step, so a fast mark can't slip past into the letters). The
+    // fall is soaked up, like dropping into syrup.
+    if (!b.ledge) {
+      for (const l of g.ledges) {
+        if (b.x < l.left || b.x > l.right) continue;
+        const s = surface(l, b.x, t);
+        if (prevBottom <= s + 1 && b.y + b.foot >= s) {
+          b.ledge = l;
+          b.landedAt = t;
+          break;
         }
       }
     }
-  }
-
-  // Keep every nudge soft: no mark is pushed upward or sideways faster than
-  // a drift.
-  // Nothing escapes off the left of the title, even from the top of a heap.
-  const wall = g.ledges[0].left;
-  const lastLedge = g.ledges[g.ledges.length - 1].y;
-  for (const b of marks) {
-    b.vx = Math.min(b.flow * 1.6, Math.max(-b.flow * 0.25, b.vx));
-    if (b.vy < -30) b.vy = -30;
-    if (b.y < lastLedge && b.x - b.r * 0.5 < wall) {
-      b.x = wall + b.r * 0.5;
-      b.vx = Math.max(0, b.vx);
+    // Safety net only: never deeper than a few pixels into the letters.
+    if (b.ledge) {
+      const s = surface(b.ledge, b.x, t);
+      const deep = b.y + b.foot - (s + b.foot * 0.25);
+      if (deep > 0) { b.y -= deep; b.vy = Math.min(b.vy, 0); }
     }
+    if (b.y < lastLedge && b.x < wall) { b.x = wall; b.vx = Math.max(0, b.vx); }
   }
 
   // Gone once fully below the cover (or, rarely, knocked off a side).
@@ -268,14 +311,102 @@ function step(t) {
   });
 }
 
-// The glyph's centre sits about 46% of the way down its line box.
-function render() {
+// Draw each mark between its last two simulation steps (alpha 0–1), so motion
+// is smooth whatever the screen's refresh rate. The glyph's centre sits about
+// 46% of the way down its line box.
+function render(alpha = 1) {
   for (const b of marks) {
+    b.drawX = b.px + (b.x - b.px) * alpha;
+    b.drawY = b.py + (b.y - b.py) * alpha;
     b.el.style.transform =
-      `translate(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px) translate(-50%, -46%) ` +
+      `translate(${b.drawX.toFixed(2)}px, ${b.drawY.toFixed(2)}px) translate(-50%, -46%) ` +
       `perspective(${Math.round(b.size * 5)}px) rotate(${b.rz.toFixed(1)}deg) ` +
       `rotateX(${b.rx.toFixed(1)}deg) rotateY(${b.ry.toFixed(1)}deg)`;
   }
+}
+
+// ---- Debug view (?debug) ----
+// Per mark, on what's actually drawn: jitter = direction reversals per second
+// (a gentle bob alone gives about 1), stuck = sitting on a line without moving
+// forward for over a second, inText = centre inside the letters of a line.
+// Totals accumulate in window.__qdebug for headless checks (tools/probe.ps1).
+let dbg = null;
+function debugFrame(dt, t) {
+  if (!dbg) {
+    const cv = document.createElement('canvas');
+    cv.style.cssText = 'position:absolute;inset:0;z-index:50;pointer-events:none';
+    cover.append(cv);
+    const hud = document.createElement('pre');
+    hud.style.cssText = 'position:absolute;left:8px;bottom:8px;z-index:51;margin:0;padding:6px 8px;font:12px/1.4 monospace;color:#fff;background:rgba(0,0,0,.7)';
+    cover.append(hud);
+    dbg = { cv, hud, totals: { markFrames: 0, jitter: 0, stuck: 0, inText: 0, maxJitter: 0, seen: 0 } };
+    window.__qdebug = dbg.totals;
+  }
+  const { cv, hud, totals } = dbg;
+  if (cv.width !== geo.width || cv.height !== geo.height) { cv.width = geo.width; cv.height = geo.height; }
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.lineWidth = 1.5;
+  for (const l of geo.ledges) {
+    ctx.strokeStyle = 'rgba(80,255,120,.9)';
+    ctx.beginPath(); ctx.moveTo(l.left, l.y); ctx.lineTo(l.right, l.y); ctx.stroke();
+    ctx.strokeStyle = 'rgba(80,255,120,.25)';
+    ctx.strokeRect(l.left, l.y, l.right - l.left, l.depth);
+  }
+  let nJ = 0, nS = 0, nT = 0;
+  for (const b of marks) {
+    const d = b.dbg || (b.dbg = { px: b.drawX, py: b.drawY, sx: 0, sy: 0, jit: 0, lastX: b.x, still: 0 });
+    if (!d.counted) { d.counted = true; totals.seen++; }
+    const dx = b.drawX - d.px, dy = b.drawY - d.py;
+    const sx = Math.abs(dx) > 0.15 ? Math.sign(dx) : 0;
+    const sy = Math.abs(dy) > 0.15 ? Math.sign(dy) : 0;
+    let flips = 0;
+    if (sx && d.sx && sx !== d.sx) flips++;
+    if (sy && d.sy && sy !== d.sy) flips++;
+    if (flips) {
+      d.hist = (d.hist || []).slice(-11);
+      d.hist.push([+t.toFixed(2), b.ledge ? 'ride' : b.supportedAt > t - 0.15 ? 'on' : 'fall', +dx.toFixed(2), +dy.toFixed(2)]);
+    }
+    if (sx) d.sx = sx;
+    if (sy) d.sy = sy;
+    // A jolt: a sudden change of speed between frames (what reads as shaking).
+    // Landing is the one place a quick change is expected, so it isn't counted.
+    const landed = b.landedAt > t - 0.15;
+    if (d.pdx !== undefined && !landed && Math.hypot(dx - d.pdx, dy - d.pdy) > 1.2) {
+      totals.jolts = (totals.jolts || 0) + 1;
+      const why = b.ledge ? (b.supportedAt > t - 0.15 ? 'ride+touch' : 'ride') : b.supportedAt > t - 0.15 ? 'air+touch' : 'air';
+      totals.joltKinds = totals.joltKinds || {};
+      totals.joltKinds[why] = (totals.joltKinds[why] || 0) + 1;
+      if (!totals.joltSample || totals.joltSample.length < 6) (totals.joltSample = totals.joltSample || []).push([why, +t.toFixed(2), +(dx - d.pdx).toFixed(1), +(dy - d.pdy).toFixed(1), +d.pdy.toFixed(1)]);
+    }
+    d.pdx = dx; d.pdy = dy;
+    d.px = b.drawX; d.py = b.drawY;
+    d.jit = d.jit * Math.exp(-dt) + flips; // ≈ reversals per second
+    const resting = b.ledge || b.supportedAt > t - 0.15;
+    if (!resting || b.x - d.lastX > 4) { d.lastX = b.x; d.still = 0; } else d.still += dt;
+    const jittery = d.jit > 3;
+    const stuck = d.still > 1;
+    const inText = geo.ledges.some((l) => b.x > l.left && b.x < l.right && b.y > l.y + 2 && b.y < l.y + l.depth);
+    totals.markFrames++;
+    if (jittery) { totals.jitter++; nJ++; 
+      const kind = b.ledge ? "riding" : b.supportedAt > t - 0.15 ? "on-mark" : "falling";
+      totals.kinds = totals.kinds || {};
+      totals.kinds[kind] = (totals.kinds[kind] || 0) + 1;
+    }
+    if (stuck) { totals.stuck++; nS++; }
+    if (inText) { totals.inText++; nT++; }
+    if (d.jit > totals.maxJitter) totals.worst = { r: +b.r.toFixed(1), hist: d.hist };
+    totals.maxJitter = Math.max(totals.maxJitter, d.jit);
+    ctx.strokeStyle = inText ? '#ff40ff' : stuck ? '#ffa000' : jittery ? '#ff3030' : 'rgba(255,255,255,.6)';
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.stroke();
+  }
+  hud.textContent =
+    `marks ${marks.length}  t ${t.toFixed(1)}s\n` +
+    `now:  jitter ${nJ}  stuck ${nS}  in text ${nT}\n` +
+    `total mark-frames ${totals.markFrames}\n` +
+    `  jitter ${totals.jitter}  stuck ${totals.stuck}  in text ${totals.inText}\n` +
+    `  worst jitter ${totals.maxJitter.toFixed(1)}/s  jolts ${totals.jolts || 0}\n` +
+    'white ok · red jitter · orange stuck · pink in text';
 }
 
 function clearMarks() {
@@ -327,7 +458,7 @@ function tick(now) {
     const every = lowPower ? SPAWN_EVERY * 1.6 : SPAWN_EVERY;
     while (carry >= every) {
       carry -= every;
-      if (marks.length < MAX_MARKS) spawn(Math.random);
+      if (marks.length < MAX_MARKS) spawn(DEBUG ? debugRand : Math.random);
     }
     simCarry += dt;
     while (simCarry >= STEP) {
@@ -335,7 +466,8 @@ function tick(now) {
       step(simTime);
       simTime += STEP;
     }
-    render();
+    render(simCarry / STEP);
+    if (DEBUG) debugFrame(dt, simTime);
   }
   requestAnimationFrame(tick);
 }
