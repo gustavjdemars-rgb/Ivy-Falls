@@ -785,20 +785,21 @@ figcaption {
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
-/* Same round blue buttons as the photo deck, smaller, on the video's corner. */
+/* Same round blue buttons as the photo deck, larger, in the middle of the video. */
 .film__controls {
   position: absolute;
-  left: var(--gutter);
-  bottom: clamp(0.75rem, 2vw, 1.25rem);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
-  gap: 0.5rem;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
 }
 .film__controls[hidden] { display: none; }
 .film__btn {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: clamp(3.25rem, 2.5rem + 2.5vw, 4.75rem);
+  height: clamp(3.25rem, 2.5rem + 2.5vw, 4.75rem);
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -806,9 +807,6 @@ figcaption {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   transition: transform 0.2s;
-}
-@media (max-width: 760px) {
-  .film__btn { width: 2.1rem; height: 2.1rem; }
 }
 .film__btn:hover { transform: scale(1.08); }
 .film__btn:active { transform: scale(0.96); }
