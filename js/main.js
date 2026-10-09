@@ -686,9 +686,10 @@ if (deck) {
 }
 
 // ---------- Bank to bank (M2) ----------
-// A simple red river, and a red point that hops from a spot on one bank to
-// the spot directly across, slides a little way downstream, hops back, and so
-// on, trailing a short fading tail, until it settles on one spot and pulses.
+// A simple red river, and a red point that bounces from bank to bank like a
+// ball between two walls, turning back the moment it touches a bank, while it
+// drifts slowly downstream, trailing a short fading tail, until it settles on
+// one spot and pulses.
 // Then it fades and starts again. Runs only while on screen; with reduced
 // motion it shows the finished search as a still.
 
@@ -696,18 +697,17 @@ const viz = document.querySelector('.stage__viz');
 if (viz) {
   const ctx = viz.getContext('2d');
   const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
-  const ACROSS = 1.3;   // s for a hop across the river
-  const ALONG = 1.5;    // s for a slide along one bank
-  const REST = 0.35;    // s paused on each bank
+  const ACROSS = 1.4;   // s for each crossing, bank to bank
+  const CROSSINGS = 11; // bounces before it settles
+  const FROM = 0.12, TO = 0.8; // how far down the river it starts and stops (fractions)
   const TAIL = 1.4;     // s of trail behind the point
   const SETTLE = 3.2;   // s pulsing on the last spot
   const FADE = 0.7;     // s to fade out before starting again
-  const STOPS = [0.14, 0.27, 0.4, 0.53, 0.66, 0.79];
 
-  let W = 0, H = 0, line = [], hw = 0, legs = [], total = 0;
+  let W = 0, H = 0, line = [], hw = 0;
+  const total = ACROSS * CROSSINGS;
   let trail = [], t0 = 0, running = false, visible = false;
 
-  const ease = (u) => 0.5 - Math.cos(Math.PI * u) / 2;
 
   // The river's centre line, top to bottom, as a smooth curve through a few
   // points (fractions of the frame). On wide screens it keeps to the right,
@@ -744,18 +744,10 @@ if (viz) {
     });
     line.forEach((p) => { p.d /= len; });
 
-    // The route: across at each stop, then along that bank to the next stop.
-    legs = [];
-    let side = -1;
-    STOPS.forEach((f, i) => {
-      legs.push({ kind: 'across', f, from: side, to: -side, dur: ACROSS });
-      side = -side;
-      if (i < STOPS.length - 1) legs.push({ kind: 'along', from: f, to: STOPS[i + 1], side, dur: ALONG });
-    });
-    total = legs.reduce((s, l) => s + l.dur + REST, 0);
   }
 
-  // A point on one bank (side -1 or 1) at fraction f of the way downstream.
+  // A point across the river (side -1 to 1, bank to bank) at fraction f of the
+  // way downstream.
   function bank(side, f) {
     let i = 1;
     while (i < line.length - 1 && line[i].d < f) i++;
@@ -765,21 +757,14 @@ if (viz) {
     return { x: a.x + dx * u + (-dy / n) * hw * side, y: a.y + dy * u + (dx / n) * hw * side };
   }
 
+  // Downstream at a steady pace; across in straight runs that turn back the
+  // instant they reach a bank (a triangle wave from one bank to the other).
   function pointAt(t) {
-    for (const leg of legs) {
-      if (t < leg.dur) {
-        const e = ease(t / leg.dur);
-        if (leg.kind === 'along') return bank(leg.side, leg.from + (leg.to - leg.from) * e);
-        const a = bank(leg.from, leg.f), b = bank(leg.to, leg.f);
-        return { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e };
-      }
-      t -= leg.dur;
-      if (t < REST) return pointAt.end(leg);
-      t -= REST;
-    }
-    return pointAt.end(legs[legs.length - 1]);
+    const u = Math.min(1, t / total);
+    const k = (t / ACROSS) % 2;
+    const side = k < 1 ? -1 + 2 * k : 3 - 2 * k;
+    return bank(t >= total ? (CROSSINGS % 2 ? 1 : -1) : side, FROM + (TO - FROM) * u);
   }
-  pointAt.end = (leg) => (leg.kind === 'along' ? bank(leg.side, leg.to) : bank(leg.to, leg.f));
 
   function drawRiver(alpha) {
     ctx.save();
