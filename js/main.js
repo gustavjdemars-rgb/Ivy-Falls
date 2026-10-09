@@ -682,6 +682,54 @@ if (deck) {
   window.addEventListener('resize', () => layout());
 }
 
+// ---------- The falls video ----------
+// Plays muted on a loop while it's on screen and pauses when it scrolls away.
+// Nothing downloads until it first comes into view. If the reader pauses it,
+// it stays paused; with reduced motion it waits for the play button.
+
+const film = document.querySelector('.film');
+if (film) {
+  const video = film.querySelector('video');
+  const playBtn = film.querySelector('[data-film="play"]');
+  const soundBtn = film.querySelector('[data-film="sound"]');
+  let heldByReader = reduceMotion.matches;
+  let inView = false;
+
+  video.controls = false;
+  film.querySelector('.film__controls').hidden = false;
+
+  const sync = () => {
+    film.classList.toggle('is-paused', video.paused);
+    playBtn.setAttribute('aria-label', video.paused ? 'Play video' : 'Pause video');
+  };
+  video.addEventListener('play', sync);
+  video.addEventListener('pause', sync);
+  sync();
+
+  const update = () => {
+    if (inView && !heldByReader) video.play().catch(() => {});
+    else if (!video.paused) video.pause();
+  };
+
+  playBtn.addEventListener('click', () => {
+    heldByReader = !video.paused;
+    if (heldByReader) video.pause();
+    else video.play().catch(() => {});
+  });
+  soundBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    soundBtn.setAttribute('aria-pressed', String(!video.muted));
+    soundBtn.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Turn sound off');
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      update();
+    }, { threshold: 0.4 }).observe(film);
+  }
+}
+
 // ---------- Reading progress ----------
 
 const bar = document.querySelector('.progress__bar');

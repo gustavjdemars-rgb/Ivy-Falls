@@ -774,10 +774,60 @@ figcaption {
 /* The next sheet is laid partly over the bottom of the dark section. */
 .night + .sheet { margin-top: -2.5rem; }
 
-.ph--video { aspect-ratio: 16 / 9; border: 0; }
-@media (max-width: 760px) {
-  .ph--video { aspect-ratio: 4 / 5; }
+.film {
+  position: relative;
+  background: #000;
 }
+.film__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+/* Same round blue buttons as the photo deck, smaller, on the video's corner. */
+.film__controls {
+  position: absolute;
+  left: var(--gutter);
+  bottom: clamp(0.75rem, 2vw, 1.25rem);
+  display: flex;
+  gap: 0.5rem;
+}
+.film__controls[hidden] { display: none; }
+.film__btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+@media (max-width: 760px) {
+  .film__btn { width: 2.1rem; height: 2.1rem; }
+}
+.film__btn:hover { transform: scale(1.08); }
+.film__btn:active { transform: scale(0.96); }
+.film__btn:focus-visible { outline: 2px solid var(--night-ink); outline-offset: 3px; }
+.film__btn svg {
+  width: 52%;
+  height: 52%;
+  fill: none;
+  stroke: var(--on-blue);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.film__btn .i-play { fill: var(--on-blue); }
+.film__btn[data-film="sound"] svg > path:first-child { fill: var(--on-blue); }
+.film.is-paused .i-pause,
+.film:not(.is-paused) .i-play,
+.film__btn[aria-pressed="true"] .i-off,
+.film__btn[aria-pressed="false"] .i-on { display: none; }
 
 figcaption.col { font-size: 0.88rem; }
 

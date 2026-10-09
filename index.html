@@ -152,9 +152,16 @@
     <!-- The payoff: dark, full-bleed video. -->
     <section class="night" aria-label="The falls">
       <figure class="media media--bleed" data-slot="V1">
-        <div class="ph ph--night ph--video" role="img" aria-label="Placeholder for video V1 of the falls.">
-          <span class="ph__id">V1 · Video loop · 16:9 (4:5 mobile)</span>
-          <span class="ph__what">Both tiers of the falls. Muted loop when in view, with play/pause and sound controls.</span>
+        <!-- Plays muted on a loop while in view; the buttons pause it and turn
+             the sound on. Without JavaScript it falls back to native controls. -->
+        <div class="film">
+          <video class="film__video" controls muted loop playsinline preload="none" width="1280" height="720" poster="assets/video/ivy-falls-poster.jpg" aria-label="Video of Ivy Falls: water pours over layered shale ledges in a bare spring woodland.">
+            <source src="assets/video/ivy-falls.mp4" type="video/mp4">
+          </video>
+          <div class="film__controls" hidden>
+            <button class="film__btn" type="button" data-film="play" aria-label="Pause video"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M8 5v14M16 5v14"/><path class="i-play" d="M7 4.5v15l12-7.5z"/></svg></button>
+            <button class="film__btn" type="button" data-film="sound" aria-label="Turn sound on" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="i-on" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/><path class="i-off" d="m16 9.5 5 5M21 9.5l-5 5"/></svg></button>
+          </div>
         </div>
         <figcaption class="col"><span class="todo">Caption to come.</span> <span class="credit todo">Video credit to come</span></figcaption>
       </figure>
