@@ -4,7 +4,7 @@ There's a little-known waterfall in the Twin Cities, flowing down from the high 
 
 The 25-foot spring-fed waterfall in Mendota Heights was once under consideration to become a state park, but is now all but unknown to most residents of the Twin Cities.
 
-If you’re like me, which you probably aren’t, sometimes you procrastinate by looking at maps. One day while procrastinating, I remembered something Josh Feinberg, a geology professor at the University of Minnesota, told me one spring afternoon in 2020, while we were out collecting water samples from a natural spring on the South banks of the Mississippi, across from campus.
+If you’re like me, sometimes you procrastinate by looking at maps. One day while procrastinating, I remembered something Josh Feinberg, a geology professor at the University of Minnesota, told me one spring afternoon in 2020, while we were out collecting water samples from a natural spring on the South banks of the Mississippi, across from campus.
 
 “So before, there used to be sediment that went all the way across the river,” he said. “And the surface was much higher, there were pre-existing rocks above where the river is now. So as the river eroded down, there are sometimes features that used to be connected with one another in space.”
 

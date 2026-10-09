@@ -536,21 +536,6 @@ a:hover { text-decoration-thickness: 2px; }
   .framed { margin-inline: -0.6em; padding-inline: 0.6em; }
 }
 
-/* The first letter of the story: a small light-blue initial in a thin box. */
-.lede::first-letter {
-  float: left;
-  margin: 0.08em 0.14em 0 0;
-  padding: 0.12em 0.16em 0.06em;
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: 1.7em;
-  font-variation-settings: "opsz" 60;
-  line-height: 0.82;
-  color: var(--blue);           /* the light question-mark blue */
-  border: 2px solid var(--blue);
-  background-color: var(--sheet);
-}
-
 /* ---------- Media and placeholders ---------- */
 
 .media {
