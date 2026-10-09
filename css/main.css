@@ -819,12 +819,13 @@ figcaption {
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
-/* Same round blue buttons as the photo deck, larger, in the middle of the video. */
+/* Same round blue buttons as the photo deck, larger, centred along the
+   bottom of the video. */
 .film__controls {
   position: absolute;
-  top: 50%;
+  bottom: clamp(0.75rem, 2.5vw, 1.75rem);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   display: flex;
   gap: clamp(0.75rem, 2vw, 1.25rem);
 }
