@@ -552,6 +552,13 @@ a:hover { text-decoration-thickness: 2px; }
 .media--bleed { margin-inline: 0; }
 
 .media .ph { aspect-ratio: var(--ar, 16 / 9); }
+.media__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--ar, 16 / 9);
+  object-fit: cover;
+}
 
 .ph {
   display: flex;
