@@ -899,49 +899,114 @@ if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
 }
 
 // ---------- Route zoom (M4 → M5) ----------
-// At the last route card the overview pushes in on the Ivy Falls dot and the
-// close-up map grows into place over it. Both zoom about the falls: each
-// map's transform origin is set to where the falls sit in that image, after
-// object-fit and object-position have placed it in the frame, and the
-// overview's dot slides onto the close-up's dot as it zooms (--zx, --zy).
+// At the last route card the map zooms from the overview down to the
+// close-up, like a camera pushing in on the falls. The close-up and a sharp
+// tile of the overview sit over their own ground inside one layer (see the
+// CSS), so moving that one layer keeps everything in register. The zoom runs
+// about a fixed point, at a steady rate on a log scale (how zooming feels
+// natural), easing in and out; the sharp tile fades in first (and with it the
+// overview's pin goes, as map labels do when you zoom), then the close-up.
+// Scrolling back above the card zooms back out. Add ?zoomAt=0.4 to freeze it
+// partway, for checking.
 
+const zoom = document.querySelector('.zoom');
 const zoomCard = document.querySelector('.card--zoom');
-const zoomStage = zoomCard && zoomCard.closest('.stage');
-if (zoomStage) {
-  // Where the falls are in each image, as fractions of its width and height.
-  const FALLS = { M4: [0.704, 0.745], M5: [0.663, 0.605] };
+if (zoom && zoomCard) {
+  const world = zoom.querySelector('.zoom__world');
+  const AR = 2400 / 1454;                       // the overview's shape
+  const CLOSE = { x: 0.65456, y: 0.72516, w: 0.07922, h: 0.07998 }; // close-up footprint
+  const FEATHER = 0.1;                          // matches the mask in the CSS
+  const DURATION = 2.6;                         // s
+  const frozen = parseFloat(new URLSearchParams(location.search).get('zoomAt'));
 
-  function originFor(img, [fx, fy]) {
-    const cs = getComputedStyle(img);
-    const bw = img.clientWidth, bh = img.clientHeight;
-    const ir = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : img.width / img.height;
-    const s = cs.objectFit === 'contain' ? Math.min(bw / (bh * ir), 1) : Math.max(bw / (bh * ir), 1);
-    const w = bh * ir * s, h = bh * s;
-    const [px, py] = cs.objectPosition.split(' ').map((v) => parseFloat(v) / 100);
-    const x = (bw - w) * px + w * fx, y = (bh - h) * py + h * fy;
-    img.style.transformOrigin = `${x.toFixed(1)}px ${y.toFixed(1)}px`;
-    return [x, y];
+  let geo = null, p = 0, target = 0, last = 0, raf = 0;
+
+  const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+  function measure() {
+    const fw = zoom.clientWidth, fh = zoom.clientHeight;
+    const tall = fw / fh <= 6 / 5;
+    // Start: the overview fills the frame (whole map on tall screens).
+    const W = tall ? Math.min(fw, fh * AR) : Math.max(fw, fh * AR), H = W / AR;
+    const b0 = [(fw - W) / 2, (fh - H) / 2];
+    // End: the close-up, less its soft edges, fills the frame (kept around
+    // its label on tall screens).
+    const cw = CLOSE.w * W * (1 - 2 * FEATHER), ch = CLOSE.h * H * (1 - 2 * FEATHER);
+    const cx = (CLOSE.x + CLOSE.w * FEATHER) * W, cy = (CLOSE.y + CLOSE.h * FEATHER) * H;
+    // On tall screens fit the close-up's full height (its soft top and bottom
+    // edges then melt into the blurred overview), so it isn't pushed in so
+    // far that the cul-de-sacs around the falls leave the frame.
+    const k = tall ? Math.max(fw / cw, fh / (CLOSE.h * H)) : Math.max(fw / cw, fh / ch);
+    // Centre the falls (label and dot) where the frame allows, never showing
+    // past the close-up's sharp area.
+    const fx = (CLOSE.x + CLOSE.w * 0.665) * W, fy = (CLOSE.y + CLOSE.h * 0.58) * H;
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const b1 = [
+      clamp(fw / 2 - k * fx, fw - k * (cx + cw), -k * cx),
+      tall ? fh / 2 - k * (CLOSE.y + CLOSE.h / 2) * H : clamp(fh / 2 - k * fy, fh - k * (cy + ch), -k * cy),
+    ];
+    // The one screen point that stays put through the zoom.
+    const f = [0, 1].map((i) => (b1[i] - k * b0[i]) / (1 - k));
+    world.style.width = `${W}px`;
+    world.style.height = `${H}px`;
+    geo = { b0, k, f };
   }
-  const place = () => {
-    const at = {};
-    zoomStage.querySelectorAll('.stage__map').forEach((img) => {
-      if (FALLS[img.dataset.slot]) at[img.dataset.slot] = originFor(img, FALLS[img.dataset.slot]);
-    });
-    if (at.M4 && at.M5) {
-      zoomStage.style.setProperty('--zx', `${(at.M5[0] - at.M4[0]).toFixed(1)}px`);
-      zoomStage.style.setProperty('--zy', `${(at.M5[1] - at.M4[1]).toFixed(1)}px`);
+
+  function render() {
+    if (!geo) return;
+    const e = ease(p);
+    const z = geo.k ** e;
+    const tx = geo.f[0] + z * (geo.b0[0] - geo.f[0]);
+    const ty = geo.f[1] + z * (geo.b0[1] - geo.f[1]);
+    world.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${z.toFixed(5)})`;
+    zoom.style.setProperty('--detail', smooth(0, 0.12, e).toFixed(3));
+    zoom.style.setProperty('--close', smooth(0.3, 0.62, e).toFixed(3));
+    // A touch of softness on the overview as it's pushed past its own
+    // resolution, like motion blur, so its pixels never show.
+    // Blur in the layer's own pixels, so divide by the zoom: about 4px on
+    // screen, like a shallow depth of field around the sharp close-up.
+    zoom.style.setProperty('--soft', `${(smooth(0.28, 0.55, e) * 4 / z).toFixed(3)}px`);
+    // The close-up is brighter and less saturated than the overview: it
+    // arrives tinted to match, then eases back to its own colours as it lands.
+    const own = smooth(0.5, 1, e);
+    zoom.style.setProperty('--cbri', (0.68 + 0.32 * own).toFixed(3));
+    zoom.style.setProperty('--csat', (1.5 - 0.5 * own).toFixed(3));
+  }
+
+  function tick(ms) {
+    const dt = last ? Math.min(0.05, (ms - last) / 1000) : 0;
+    last = ms;
+    p += Math.sign(target - p) * Math.min(Math.abs(target - p), dt / DURATION);
+    render();
+    if (p !== target) raf = requestAnimationFrame(tick);
+    else { raf = 0; last = 0; world.style.willChange = 'auto'; } // re-draw sharp at rest
+  }
+
+  function go(to) {
+    if (!Number.isNaN(frozen) || to === target) return;
+    target = to;
+    if (reduceMotion.matches) {
+      zoom.classList.add('is-swapping');
+      setTimeout(() => { p = target; render(); zoom.classList.remove('is-swapping'); }, 300);
+      return;
     }
-  };
-  place();
-  window.addEventListener('resize', place);
-  zoomStage.querySelectorAll('.stage__map').forEach((img) => img.addEventListener('load', place));
+    world.style.willChange = 'transform';
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  zoom.classList.add('is-live');
+  measure();
+  if (!Number.isNaN(frozen)) p = target = Math.min(1, Math.max(0, frozen));
+  render();
+  new ResizeObserver(() => { measure(); render(); }).observe(zoom);
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => {
-      zoomStage.classList.toggle('is-zoomed', e.isIntersecting || e.boundingClientRect.top < 0);
+      go(e.isIntersecting || e.boundingClientRect.top < 0 ? 1 : 0);
     }, { rootMargin: '0px 0px -33% 0px' }).observe(zoomCard);
   } else {
-    zoomStage.classList.add('is-zoomed');
+    go(1);
   }
 }
 

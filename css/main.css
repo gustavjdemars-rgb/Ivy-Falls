@@ -637,29 +637,53 @@ figcaption {
 @media (max-aspect-ratio: 6 / 5) {
   .stage__map { object-fit: contain; }
 }
-/* Zoom: at the last route card the overview pushes in on the Ivy Falls dot
-   and fades while the close-up map grows into place over it, both centred
-   on the falls (the origins are set in js/main.js). Plays forward or back as
-   the reader passes the card. */
-.stage__map[data-slot="M4"],
-.stage__map--zoom {
-  transition:
-    transform 1.8s cubic-bezier(0.5, 0, 0.2, 1),
-    opacity 0.9s ease;
+/* Zoom (M4 → M5): one layer holding the overview, a sharp tile of it around
+   the falls, and the close-up, each placed over its own patch of ground
+   (footprints are fractions of the overview, measured by matching the
+   images). js/main.js sizes the layer, moves it like a camera and fades the
+   tile and close-up in (--detail, --close). Without JS the overview simply
+   fills the frame. */
+.zoom { position: absolute; inset: 0; overflow: hidden; }
+.zoom__world { position: absolute; inset: 0; transform-origin: 0 0; }
+.zoom__base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.stage__map--zoom { opacity: 0; transform: translate(calc(-1 * var(--zx, 0px)), calc(-1 * var(--zy, 0px))) scale(0.62); }
-/* The close-up only fades in once it nearly fills the frame, so its edges
-   never show as a box growing over the overview. */
-.stage.is-zoomed .stage__map--zoom { opacity: 1; transform: none; transition-delay: 0s, 0.8s; }
-.stage.is-zoomed .stage__map[data-slot="M4"] { opacity: 0; transform: translate(var(--zx, 0px), var(--zy, 0px)) scale(2.6); transition-delay: 0s, 0.9s; }
 @media (max-aspect-ratio: 6 / 5) {
-  /* On tall screens the close-up fills the frame around the label. */
-  .stage__map--zoom { object-fit: cover; object-position: 66% 50%; }
+  .zoom__base { object-fit: contain; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .stage__map[data-slot="M4"],
-  .stage__map--zoom { transform: none !important; transition: opacity 0.6s ease; }
+.zoom__detail,
+.zoom__close { display: none; }
+.zoom.is-live .zoom__world { inset: auto; left: 0; top: 0; }
+.zoom.is-live .zoom__base { object-fit: fill; }
+.zoom.is-live .zoom__base { filter: blur(var(--soft, 0px)); }
+.zoom.is-live .zoom__detail { filter: blur(var(--soft, 0px)); }
+.zoom.is-live .zoom__detail,
+.zoom.is-live .zoom__close {
+  display: block;
+  position: absolute;
+  max-width: none;
+  /* Soft edges, so each layer melts into the matching ground beneath it. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect;
 }
+.zoom.is-live .zoom__detail {
+  left: 48.838%; top: 48.665%; width: 43.786%; height: 48.665%;
+  opacity: var(--detail, 0);
+}
+.zoom.is-live .zoom__close {
+  left: 65.456%; top: 72.516%; width: 7.922%; height: 7.998%;
+  opacity: var(--close, 0);
+  filter: brightness(var(--cbri, 1)) saturate(var(--csat, 1));
+}
+/* Reduced motion: no zoom, a quick fade through to the close-up instead. */
+.zoom { transition: opacity 0.3s ease; }
+.zoom.is-swapping { opacity: 0; }
 
 /* M3 waits under M2 and fades in when the "aha" card arrives. */
 .stage__map--reveal {
