@@ -625,6 +625,32 @@ figcaption {
 }
 .ph--fill { height: 100%; border: 0; }
 
+/* A real map filling the sticky frame. Wide screens fill edge to edge; on
+   tall phone screens the whole map shows, letterboxed on the dark ground. */
+.stage__graphic { background: var(--night); }
+.stage__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-aspect-ratio: 6 / 5) {
+  .stage__map { object-fit: contain; }
+}
+/* M3 waits under M2 and fades in when the "aha" card arrives. */
+.stage__map--reveal {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.stage.is-revealed .stage__map--reveal { opacity: 1; }
+.stage.is-revealed .ph { visibility: hidden; transition: visibility 0s 0.9s; }
+/* On tall screens the elevation map fills the frame, cropped around the
+   ravine and the arrow, instead of shrinking to a thin band. */
+@media (max-aspect-ratio: 6 / 5) {
+  .stage__map--reveal { object-fit: cover; object-position: 60% 50%; }
+}
+
 .stage__steps {
   position: relative;
   z-index: 1;
@@ -696,6 +722,14 @@ figcaption {
   aspect-ratio: 1;
   border: 0;
   padding: 0.9rem;
+  background: #DADDDF;
+}
+.polaroid__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
   background: #DADDDF;
 }
 .polaroid__text {
@@ -872,6 +906,21 @@ mark {
 
 .clipping figcaption { margin-top: 1.1rem; }
 
+/* A real scan: narrower, since the column is tall, and multiplied onto the
+   paper so the scan's white takes on the paper tone. */
+.clipping--scan { max-width: calc(24rem + 2 * var(--gutter)); }
+.clipping--scan .clipping__paper {
+  aspect-ratio: auto;
+  display: block;
+  padding: clamp(0.6rem, 2vw, 0.9rem);
+}
+.clipping__scan {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
 .transcript {
   margin-top: 0.5rem;
   font-family: var(--sans);
@@ -891,6 +940,18 @@ mark {
 @media (max-width: 760px) {
   .ph--closing { aspect-ratio: 4 / 5; }
 }
+.closing__map {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+@media (max-width: 760px) {
+  /* Keep the label and the cul-de-sacs around it in the taller crop. */
+  .closing__map { aspect-ratio: 4 / 5; object-position: 66% 50%; }
+}
+.media--closing > figcaption { padding-bottom: 1rem; }
 
 /* ---------- Credits ---------- */
 

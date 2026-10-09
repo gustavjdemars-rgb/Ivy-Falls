@@ -108,10 +108,12 @@
     <!-- Stage 1: full-bleed sticky map, text cards scroll over it (M2 → M3). -->
     <section class="stage" aria-label="Searching the map">
       <div class="stage__graphic">
-        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for maps M2 and M3.">
-          <span class="ph__id">M2 → M3 · Full-bleed sticky map</span>
-          <span class="ph__what">Satellite view of the river. Hop bank to bank between marked waterfalls, land on an unmarked spot. Then an old topographic sheet slides in over the satellite as a paper overlay, and its contours show the ravine.</span>
+        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for map M2.">
+          <span class="ph__id">M2 · Full-bleed sticky map</span>
+          <span class="ph__what">Satellite view of the river. Hop bank to bank between marked waterfalls, land on an unmarked spot.</span>
         </div>
+        <!-- M3 fades in over M2 when the "aha" card arrives. -->
+        <img class="stage__map stage__map--reveal" data-slot="M3" src="assets/maps/hillshade-1200.jpg" srcset="assets/maps/hillshade-1200.jpg 1200w, assets/maps/hillshade-2400.jpg 2400w" sizes="100vw" width="2400" height="1442" loading="lazy" decoding="async" alt="A shaded elevation map of the bluffs beside the Mississippi. A deep ravine cuts into the bluff, and a red arrow labelled Ivy Falls points to its head.">
       </div>
       <div class="stage__steps">
         <div class="card"><p>Half-remembering what he told me years later, I bounced back and forth between the banks of the Mississippi on Google Maps, looking at the locations of marked waterfalls and the points directly across. I eventually landed on a spot that looked like it should have a waterfall, but found nothing marked.</p></div>
@@ -124,11 +126,10 @@
     <section class="deck" aria-roledescription="carousel" aria-label="Photos from the walk">
       <button class="deck__arrow deck__arrow--prev" type="button" aria-label="Rotate photos left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 7 12l8 8"/></svg></button>
       <div class="deck__hand">
-        <figure class="deck__card" data-slot="P2" aria-roledescription="slide" aria-label="1 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P2."><span class="ph__id">P2 · Photo</span></div><figcaption class="polaroid__text">Planks across the reeds.</figcaption></figure>
-        <figure class="deck__card" data-slot="P3" aria-roledescription="slide" aria-label="2 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P3."><span class="ph__id">P3 · Photo</span></div><figcaption class="polaroid__text">Tracks above the flooded flats.</figcaption></figure>
-        <figure class="deck__card" data-slot="P4" aria-roledescription="slide" aria-label="3 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P4."><span class="ph__id">P4 · Photo</span></div><figcaption class="polaroid__text">A fallen-tree creek crossing.</figcaption></figure>
-        <figure class="deck__card" data-slot="P5" aria-roledescription="slide" aria-label="4 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P5."><span class="ph__id">P5 · Photo</span></div><figcaption class="polaroid__text">Hopping the creek on rocks.</figcaption></figure>
-        <figure class="deck__card" data-slot="P6" aria-roledescription="slide" aria-label="5 of 5"><div class="ph" role="img" aria-label="Placeholder for photo P6."><span class="ph__id">P6 · Photo</span></div><figcaption class="polaroid__text">The small wooded valley below the falls.</figcaption></figure>
+        <figure class="deck__card" data-slot="P2" aria-roledescription="slide" aria-label="1 of 4"><img class="polaroid__photo" src="assets/photos/flooded-road.jpg" width="800" height="800" loading="lazy" decoding="async" alt="A No Exit sign, a pedestrian crossing sign and a half-sunk welcome sign stand in brown floodwater among bare trees."><figcaption class="polaroid__text">The road to the trailhead, under water.</figcaption></figure>
+        <figure class="deck__card" data-slot="P3" aria-roledescription="slide" aria-label="2 of 4"><img class="polaroid__photo" src="assets/photos/flooded-club.jpg" width="800" height="800" loading="lazy" decoding="async" alt="A white pool and yacht club building stands in floodwater up to its sign, with dry reeds in the foreground."><figcaption class="polaroid__text">The flooded river flats.</figcaption></figure>
+        <figure class="deck__card" data-slot="P4" aria-roledescription="slide" aria-label="3 of 4"><img class="polaroid__photo" src="assets/photos/ravine.jpg" width="800" height="800" loading="lazy" decoding="async" alt="A person in a red cap and blue shirt walks along a leaf-covered slope toward a pale rock wall in a wooded ravine."><figcaption class="polaroid__text">The small wooded valley below the falls.</figcaption></figure>
+        <figure class="deck__card" data-slot="P5" aria-roledescription="slide" aria-label="4 of 4"><img class="polaroid__photo" src="assets/photos/falls-through-trees.jpg" width="800" height="800" loading="lazy" decoding="async" alt="A white waterfall glimpsed through a tangle of bare branches, spilling down layered rock."><figcaption class="polaroid__text">The falls, through the trees.</figcaption></figure>
       </div>
       <button class="deck__arrow deck__arrow--next" type="button" aria-label="Rotate photos right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4l8 8-8 8"/></svg></button>
       <p class="visually-hidden" aria-live="polite" data-deck-status></p>
@@ -137,10 +138,8 @@
     <!-- Stage 2: overview zooming into the route (M4). -->
     <section class="stage" aria-label="The route to the falls">
       <div class="stage__graphic">
-        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for route map M4.">
-          <span class="ph__id">M4 · Full-bleed sticky map</span>
-          <span class="ph__what">Starts on the overview (Minneapolis, St. Paul, Ivy Falls labels in blue boxes), then zooms toward the Lilydale flats as each card arrives. Detail level to be decided (see location note).</span>
-        </div>
+        <img class="stage__map" data-slot="M4" src="assets/maps/overview-1200.jpg" srcset="assets/maps/overview-1200.jpg 1200w, assets/maps/overview-2400.jpg 2400w" sizes="100vw" width="2400" height="1454" loading="lazy" decoding="async" alt="Satellite map of the Twin Cities with the Mississippi winding between Minneapolis and St. Paul. A blue dot marks Ivy Falls on the river bluffs south-west of downtown St. Paul.">
+        <!-- Later: zoom toward the Lilydale flats as each card arrives (detail level to be decided, see location note). -->
       </div>
       <div class="stage__steps">
         <div class="card"><p>Reaching Ivy Falls takes about 45 minutes on foot starting at the Lilydale Trailhead, located on the flats of the Mississippi, about a 15-minute drive from Downtown Minneapolis. The town that once resided on this floodplain relocated to the bluffs overlooking the river due to the area’s repeated flooding, <a href="https://web.archive.org/web/20240523142348/https://www.nps.gov/miss/planyourvisit/lilydale_park.htm">according to the National Parks Service.</a></p></div>
@@ -192,15 +191,17 @@
       <p>Despite the waterfall’s lack of widespread exposure, the South St. Paul Reporter reported in 1937 that the park was under consideration to become a state park, with two state legislators introducing bills to set aside the land for public use. Those efforts never came to fruition.</p>
     </div>
 
-    <figure class="clipping" data-slot="C2" style="--tilt: 1.1deg">
+    <figure class="clipping clipping--scan" data-slot="C2" style="--tilt: 1.1deg">
       <div class="clipping__paper">
-        <span class="clipping__id">C2 · 1937 · South St. Paul Reporter</span>
-        <p class="clipping__line">Scan goes here, with the key sentence <mark>highlighted</mark>.</p>
+        <img class="clipping__scan" src="assets/clippings/ssp-reporter-1937-02-24.jpg" width="1000" height="2400" loading="lazy" decoding="async" alt="Newspaper clipping headlined “Happy Hollow Park Purchase Is Being Urged,” with two passages highlighted in yellow. A full transcription follows.">
       </div>
-      <figcaption><span class="todo">Publication, date and page to come.</span></figcaption>
+      <figcaption>South St. Paul Reporter, Feb. 24, 1937. <span class="credit todo">Scan source to come</span></figcaption>
       <details class="transcript">
         <summary>Read the transcription</summary>
-        <p class="todo">Transcription to come.</p>
+        <p><strong>Happy Hollow Park Purchase Is Being Urged</strong></p>
+        <p>The first step in the effort to preserve for posterity one of the natural beauty spots of northern Dakota county was taken this week when Representative R. H. Forsythe and Senator Lewis E. Berg <mark>introduced in the house and senate respectively, bills to set aside what is known as “Happy Hollow Park” as a state park.</mark></p>
+        <p>This area, which includes several hundred acres overlooking the Mississippi river near Mendota, is not only outstanding in its scenic advantages but it a spot of historic interest. It marks the sight of the old Indian trail famous in pioneer days and <mark>because of its location on the river bluff offers the natural opportunities for one of the state’s most beautiful parks.</mark> The site contains a stand of virgin timber and also a little lake.</p>
+        <p>“There is now an opportunity to buy this area at a moderate cost because the owners reside in a distant state and I think the purchase should be made while there is the chance,” Representative Forsythe said in discussing the proposed park. The bill carries an appropriation of $25,000 and has the backing of numerous organizations interested in conservation and outdoor recreation.</p>
       </details>
     </figure>
 
@@ -209,10 +210,9 @@
     </div>
 
     <figure class="media media--bleed media--closing" data-slot="M5">
-      <div class="ph ph--night ph--closing" role="img" aria-label="Placeholder for closing map M5.">
-        <span class="ph__id">M5 · Closing map · full bleed</span>
-        <span class="ph__what">Pull back to show the ravine between the river and the cul-de-sacs. A blue “Ivy Falls” label appears where the map had nothing, answering the question marks on the cover.</span>
-      </div>
+      <!-- Later: the blue label could write itself on as the map arrives. -->
+      <img class="closing__map" src="assets/maps/closeup-1200.jpg" srcset="assets/maps/closeup-1200.jpg 1200w, assets/maps/closeup-2400.jpg 2400w" sizes="100vw" width="2400" height="1468" loading="lazy" decoding="async" alt="Satellite view of the Mississippi, a rail line and the flooded flats, with wooded bluffs rising to streets of large houses and cul-de-sacs. A blue label marks Ivy Falls in the trees between them.">
+      <figcaption class="col"><span class="todo">Map credit and imagery source to come</span></figcaption>
     </figure>
 
   </article>
@@ -225,6 +225,7 @@
       <p>Reported and written by Gustav DeMars</p>
       <p>Video by <span class="todo">name to come</span></p>
       <p>Photos by <span class="todo">name to come</span></p>
+      <p>Maps by <span class="todo">name to come</span>; <span class="todo">satellite imagery and elevation data sources to come</span></p>
       <p><span class="todo">Original reporting date to come</span></p>
     </div>
     <div>

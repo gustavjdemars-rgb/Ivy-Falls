@@ -682,6 +682,23 @@ if (deck) {
   window.addEventListener('resize', () => layout());
 }
 
+// ---------- Topographic reveal ----------
+// The elevation map fades in over the first map once the "aha" card ("A quick
+// look at a topographical map...") is a third of the way up the screen, and back out if
+// the reader scrolls above it again.
+
+const aha = document.querySelector('.card--aha');
+const revealStage = aha && aha.closest('.stage');
+if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => {
+      revealStage.classList.toggle('is-revealed', e.isIntersecting || e.boundingClientRect.top < 0);
+    }, { rootMargin: '0px 0px -33% 0px' }).observe(aha);
+  } else {
+    revealStage.classList.add('is-revealed');
+  }
+}
+
 // ---------- The falls video ----------
 // Plays muted on a loop while it's on screen and pauses when it scrolls away.
 // Nothing downloads until it first comes into view. If the reader pauses it,
