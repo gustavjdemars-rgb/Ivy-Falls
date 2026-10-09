@@ -685,6 +685,217 @@ if (deck) {
   window.addEventListener('resize', () => layout());
 }
 
+// ---------- Bank to bank (M2) ----------
+// A simple red river, and a red point that hops from a spot on one bank to
+// the spot directly across, slides a little way downstream, hops back, and so
+// on, trailing a short fading tail, until it settles on one spot and pulses.
+// Then it fades and starts again. Runs only while on screen; with reduced
+// motion it shows the finished search as a still.
+
+const viz = document.querySelector('.stage__viz');
+if (viz) {
+  const ctx = viz.getContext('2d');
+  const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
+  const ACROSS = 1.3;   // s for a hop across the river
+  const ALONG = 1.5;    // s for a slide along one bank
+  const REST = 0.35;    // s paused on each bank
+  const TAIL = 1.4;     // s of trail behind the point
+  const SETTLE = 3.2;   // s pulsing on the last spot
+  const FADE = 0.7;     // s to fade out before starting again
+  const STOPS = [0.14, 0.27, 0.4, 0.53, 0.66, 0.79];
+
+  let W = 0, H = 0, line = [], hw = 0, legs = [], total = 0;
+  let trail = [], t0 = 0, running = false, visible = false;
+
+  const ease = (u) => 0.5 - Math.cos(Math.PI * u) / 2;
+
+  // The river's centre line, top to bottom, as a smooth curve through a few
+  // points (fractions of the frame). On wide screens it keeps to the right,
+  // clear of the text cards; on tall screens it runs down the middle.
+  function build() {
+    const r = viz.getBoundingClientRect();
+    W = r.width; H = r.height;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    viz.width = Math.round(W * dpr); viz.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const wide = W > H * 1.1;
+    const pts = (wide
+      ? [[0.66, -0.08], [0.58, 0.17], [0.69, 0.41], [0.6, 0.65], [0.7, 0.88], [0.64, 1.08]]
+      : [[0.56, -0.08], [0.38, 0.18], [0.62, 0.42], [0.4, 0.66], [0.6, 0.88], [0.52, 1.08]]
+    ).map(([x, y]) => [x * W, y * H]);
+    hw = Math.max(24, Math.min(58, Math.min(W, H) * 0.055));
+
+    // Catmull-Rom through the points, then measure along it.
+    line = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      for (let k = 0; k < 60; k++) {
+        const u = k / 60, u2 = u * u, u3 = u2 * u;
+        const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u2 + (-a + 3 * b - 3 * c + d) * u3);
+        line.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: f(p0[1], p1[1], p2[1], p3[1]) });
+      }
+    }
+    line.push({ x: pts[pts.length - 1][0], y: pts[pts.length - 1][1] });
+    let len = 0;
+    line.forEach((p, i) => {
+      if (i) len += Math.hypot(p.x - line[i - 1].x, p.y - line[i - 1].y);
+      p.d = len;
+    });
+    line.forEach((p) => { p.d /= len; });
+
+    // The route: across at each stop, then along that bank to the next stop.
+    legs = [];
+    let side = -1;
+    STOPS.forEach((f, i) => {
+      legs.push({ kind: 'across', f, from: side, to: -side, dur: ACROSS });
+      side = -side;
+      if (i < STOPS.length - 1) legs.push({ kind: 'along', from: f, to: STOPS[i + 1], side, dur: ALONG });
+    });
+    total = legs.reduce((s, l) => s + l.dur + REST, 0);
+  }
+
+  // A point on one bank (side -1 or 1) at fraction f of the way downstream.
+  function bank(side, f) {
+    let i = 1;
+    while (i < line.length - 1 && line[i].d < f) i++;
+    const a = line[i - 1], b = line[i];
+    const u = (f - a.d) / ((b.d - a.d) || 1);
+    const dx = b.x - a.x, dy = b.y - a.y, n = Math.hypot(dx, dy) || 1;
+    return { x: a.x + dx * u + (-dy / n) * hw * side, y: a.y + dy * u + (dx / n) * hw * side };
+  }
+
+  function pointAt(t) {
+    for (const leg of legs) {
+      if (t < leg.dur) {
+        const e = ease(t / leg.dur);
+        if (leg.kind === 'along') return bank(leg.side, leg.from + (leg.to - leg.from) * e);
+        const a = bank(leg.from, leg.f), b = bank(leg.to, leg.f);
+        return { x: a.x + (b.x - a.x) * e, y: a.y + (b.y - a.y) * e };
+      }
+      t -= leg.dur;
+      if (t < REST) return pointAt.end(leg);
+      t -= REST;
+    }
+    return pointAt.end(legs[legs.length - 1]);
+  }
+  pointAt.end = (leg) => (leg.kind === 'along' ? bank(leg.side, leg.to) : bank(leg.to, leg.f));
+
+  function drawRiver(alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = RED;
+    ctx.shadowColor = RED;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      line.forEach((p, i) => {
+        const q = i < line.length - 1 ? line[i + 1] : p, o = i ? line[i - 1] : p;
+        const dx = q.x - o.x, dy = q.y - o.y, n = Math.hypot(dx, dy) || 1;
+        const x = p.x + (-dy / n) * hw * side, y = p.y + (dx / n) * hw * side;
+        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+      });
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = alpha * 0.55;
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPoint(p, alpha, pulse) {
+    ctx.save();
+    ctx.fillStyle = RED;
+    ctx.strokeStyle = RED;
+    ctx.shadowColor = RED;
+    if (pulse !== undefined) {
+      ctx.globalAlpha = alpha * 0.5 * (1 - pulse);
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 7 + pulse * 18, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // The tail: recent positions, thinning and fading with age.
+  function drawTrail(now, alpha) {
+    ctx.save();
+    ctx.strokeStyle = RED;
+    ctx.shadowColor = RED;
+    ctx.shadowBlur = 8;
+    ctx.lineCap = 'round';
+    for (let i = 1; i < trail.length; i++) {
+      const age = (now - trail[i].t) / TAIL;
+      if (age >= 1) continue;
+      ctx.globalAlpha = alpha * 0.7 * (1 - age);
+      ctx.lineWidth = 4 * (1 - age) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+      ctx.lineTo(trail[i].x, trail[i].y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function frame(ms) {
+    if (!running) return;
+    const now = ms / 1000;
+    if (!t0) t0 = now;
+    let t = now - t0;
+    if (t > total + SETTLE + FADE) { t0 = now; t = 0; trail = []; }
+
+    ctx.clearRect(0, 0, W, H);
+    drawRiver(1);
+    const fade = t > total + SETTLE ? 1 - (t - total - SETTLE) / FADE : Math.min(1, t / 0.4);
+    const p = pointAt(Math.min(t, total));
+    trail.push({ x: p.x, y: p.y, t: now });
+    while (trail.length && now - trail[0].t > TAIL) trail.shift();
+    drawTrail(now, fade);
+    drawPoint(p, fade, t > total ? ((t - total) % 1.6) / 1.6 : undefined);
+    requestAnimationFrame(frame);
+  }
+
+  // Reduced motion: the whole search at once, faintly, ending on the spot.
+  function drawStill() {
+    ctx.clearRect(0, 0, W, H);
+    drawRiver(1);
+    ctx.save();
+    ctx.strokeStyle = RED;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    for (let t = 0; t <= total; t += 0.05) {
+      const p = pointAt(t);
+      if (t) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    drawPoint(pointAt(total), 1);
+  }
+
+  function update() {
+    const play = visible && !reduceMotion.matches;
+    if (play && !running) { running = true; t0 = 0; trail = []; requestAnimationFrame(frame); }
+    if (!play) {
+      running = false;
+      if (W) drawStill();
+    }
+  }
+
+  build();
+  update();
+  new ResizeObserver(() => { build(); trail = []; if (!running) update(); }).observe(viz);
+  reduceMotion.addEventListener('change', update);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }).observe(viz);
+  } else {
+    visible = true; update();
+  }
+}
+
 // ---------- Topographic reveal ----------
 // The elevation map fades in over the first map once the "aha" card ("A quick
 // look at a topographical map...") is a third of the way up the screen, and back out if

@@ -108,10 +108,9 @@
     <!-- Stage 1: full-bleed sticky map, text cards scroll over it (M2 → M3). -->
     <section class="stage" aria-label="Searching the map">
       <div class="stage__graphic">
-        <div class="ph ph--fill ph--night" role="img" aria-label="Placeholder for map M2.">
-          <span class="ph__id">M2 · Full-bleed sticky map</span>
-          <span class="ph__what">Satellite view of the river. Hop bank to bank between marked waterfalls, land on an unmarked spot.</span>
-        </div>
+        <!-- M2: a red point hops bank to bank down a simple red river, with a
+             fading trail, and settles on one spot. Drawn by js/main.js. -->
+        <canvas class="stage__viz" data-slot="M2" role="img" aria-label="Animation: a red point hops back and forth across a river, from one bank to the point directly opposite, working its way downstream until it settles on one spot."></canvas>
         <!-- M3 fades in over M2 when the "aha" card arrives. -->
         <img class="stage__map stage__map--reveal" data-slot="M3" src="assets/maps/hillshade-1200.jpg" srcset="assets/maps/hillshade-1200.jpg 1200w, assets/maps/hillshade-2400.jpg 2400w" sizes="100vw" width="2400" height="1442" loading="lazy" decoding="async" alt="A shaded elevation map of the bluffs beside the Mississippi. A deep ravine cuts into the bluff, and a red arrow labelled Ivy Falls points to its head.">
       </div>
