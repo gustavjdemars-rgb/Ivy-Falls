@@ -784,6 +784,9 @@ figcaption {
 /* The route map runs straight into the dark section, with no sliver of paper. */
 .stage:has(+ .night) { margin-bottom: 0; }
 .stage + .night { margin-top: 0; }
+/* The two map sections run straight into each other. */
+.stage:has(+ .stage) { margin-bottom: 0; }
+.stage + .stage { margin-top: 0; }
 
 /* The paragraph under the video gets room to breathe and a little more size,
    clear of the caption above and the sheet laid over the section below. */
