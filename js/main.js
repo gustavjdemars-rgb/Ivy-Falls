@@ -154,8 +154,11 @@ function spawn(rand) {
   const r = size * 0.3; // a little inside the glyph's outline, so a soft squish never shows
   const foot = size * 0.36; // centre to the bottom of the glyph, for sitting on a line
   const el = makeMark(rand, s);
-  // About a quarter of the marks travel behind the title text.
-  (streamBack && rand() < 0.25 ? streamBack : stream).append(el);
+  // Every mark travels behind the title text, so none ever covers the letters
+  // (author request, 2026-10-09). The draw is kept so the seeded stream, and
+  // so the whole cascade, moves exactly as before.
+  rand();
+  (streamBack || stream).append(el);
   marks.push({
     el, r, foot, size,
     m: s * s,
