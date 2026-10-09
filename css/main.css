@@ -471,7 +471,6 @@ a:hover { text-decoration-thickness: 2px; }
   margin-top: -1.1rem;
   margin-bottom: clamp(2rem, 5vw, 3rem);
 }
-.story > .media--closing { margin-top: -1.1rem; }
 
 @media (max-width: 760px) {
   .sheet { margin-inline: 8px; }
@@ -621,6 +620,7 @@ figcaption {
   top: 0;
   height: 100vh;
   height: 100svh;
+  overflow: hidden;           /* maps can zoom past the frame */
 }
 .ph--fill { height: 100%; border: 0; }
 
@@ -637,6 +637,30 @@ figcaption {
 @media (max-aspect-ratio: 6 / 5) {
   .stage__map { object-fit: contain; }
 }
+/* Zoom: at the last route card the overview pushes in on the Ivy Falls dot
+   and fades while the close-up map grows into place over it, both centred
+   on the falls (the origins are set in js/main.js). Plays forward or back as
+   the reader passes the card. */
+.stage__map[data-slot="M4"],
+.stage__map--zoom {
+  transition:
+    transform 1.8s cubic-bezier(0.5, 0, 0.2, 1),
+    opacity 0.9s ease;
+}
+.stage__map--zoom { opacity: 0; transform: translate(calc(-1 * var(--zx, 0px)), calc(-1 * var(--zy, 0px))) scale(0.62); }
+/* The close-up only fades in once it nearly fills the frame, so its edges
+   never show as a box growing over the overview. */
+.stage.is-zoomed .stage__map--zoom { opacity: 1; transform: none; transition-delay: 0s, 0.8s; }
+.stage.is-zoomed .stage__map[data-slot="M4"] { opacity: 0; transform: translate(var(--zx, 0px), var(--zy, 0px)) scale(2.6); transition-delay: 0s, 0.9s; }
+@media (max-aspect-ratio: 6 / 5) {
+  /* On tall screens the close-up fills the frame around the label. */
+  .stage__map--zoom { object-fit: cover; object-position: 66% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage__map[data-slot="M4"],
+  .stage__map--zoom { transform: none !important; transition: opacity 0.6s ease; }
+}
+
 /* M3 waits under M2 and fades in when the "aha" card arrives. */
 .stage__map--reveal {
   opacity: 0;
@@ -969,26 +993,6 @@ mark {
   color: var(--blue-ink);
 }
 .transcript p { margin: 0.5rem 0 0; }
-
-/* ---------- Closing map ---------- */
-
-.media--closing { margin-bottom: 0; }
-.ph--closing { aspect-ratio: 16 / 9; border: 0; }
-@media (max-width: 760px) {
-  .ph--closing { aspect-ratio: 4 / 5; }
-}
-.closing__map {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-}
-@media (max-width: 760px) {
-  /* Keep the label and the cul-de-sacs around it in the taller crop. */
-  .closing__map { aspect-ratio: 4 / 5; object-position: 66% 50%; }
-}
-.media--closing > figcaption { padding-bottom: 1rem; }
 
 /* ---------- Credits ---------- */
 

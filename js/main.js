@@ -898,6 +898,53 @@ if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
   }
 }
 
+// ---------- Route zoom (M4 → M5) ----------
+// At the last route card the overview pushes in on the Ivy Falls dot and the
+// close-up map grows into place over it. Both zoom about the falls: each
+// map's transform origin is set to where the falls sit in that image, after
+// object-fit and object-position have placed it in the frame, and the
+// overview's dot slides onto the close-up's dot as it zooms (--zx, --zy).
+
+const zoomCard = document.querySelector('.card--zoom');
+const zoomStage = zoomCard && zoomCard.closest('.stage');
+if (zoomStage) {
+  // Where the falls are in each image, as fractions of its width and height.
+  const FALLS = { M4: [0.704, 0.745], M5: [0.663, 0.605] };
+
+  function originFor(img, [fx, fy]) {
+    const cs = getComputedStyle(img);
+    const bw = img.clientWidth, bh = img.clientHeight;
+    const ir = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : img.width / img.height;
+    const s = cs.objectFit === 'contain' ? Math.min(bw / (bh * ir), 1) : Math.max(bw / (bh * ir), 1);
+    const w = bh * ir * s, h = bh * s;
+    const [px, py] = cs.objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+    const x = (bw - w) * px + w * fx, y = (bh - h) * py + h * fy;
+    img.style.transformOrigin = `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+    return [x, y];
+  }
+  const place = () => {
+    const at = {};
+    zoomStage.querySelectorAll('.stage__map').forEach((img) => {
+      if (FALLS[img.dataset.slot]) at[img.dataset.slot] = originFor(img, FALLS[img.dataset.slot]);
+    });
+    if (at.M4 && at.M5) {
+      zoomStage.style.setProperty('--zx', `${(at.M5[0] - at.M4[0]).toFixed(1)}px`);
+      zoomStage.style.setProperty('--zy', `${(at.M5[1] - at.M4[1]).toFixed(1)}px`);
+    }
+  };
+  place();
+  window.addEventListener('resize', place);
+  zoomStage.querySelectorAll('.stage__map').forEach((img) => img.addEventListener('load', place));
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => {
+      zoomStage.classList.toggle('is-zoomed', e.isIntersecting || e.boundingClientRect.top < 0);
+    }, { rootMargin: '0px 0px -33% 0px' }).observe(zoomCard);
+  } else {
+    zoomStage.classList.add('is-zoomed');
+  }
+}
+
 // ---------- The falls video ----------
 // Plays muted on a loop while it's on screen and pauses when it scrolls away.
 // Nothing downloads until it first comes into view. If the reader pauses it,
