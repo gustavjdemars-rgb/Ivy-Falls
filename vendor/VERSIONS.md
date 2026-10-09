@@ -11,6 +11,7 @@ Fetched from the Fontsource npm packages via jsDelivr on 2026-10-01. Latin subse
 | Alfa Slab One 400 | `@fontsource/alfa-slab-one` | 5.3.0 | `alfa-slab-one-latin-400-normal.woff2` | SIL OFL 1.1 (`OFL-alfa-slab-one.txt`) |
 | Archivo (variable: wght 100–900, wdth 62–125) | `@fontsource-variable/archivo` | 5.3.0 | `archivo-latin-standard-normal.woff2` | SIL OFL 1.1 (`OFL-archivo.txt`) |
 | Inter Tight (variable, wght 100–900) | `@fontsource-variable/inter-tight` | 5.3.0 | `inter-tight-latin-wght-normal.woff2` | SIL OFL 1.1 (`OFL-inter-tight.txt`) |
+| Caveat (variable, wght 400–700; polaroid captions, added 2026-10-09) | `@fontsource-variable/caveat` | 5.3.0 | `caveat-latin-wght-normal.woff2` | SIL OFL 1.1 (`OFL-caveat.txt`) |
 | Source Serif 4 (variable, wght 200–900) | `@fontsource-variable/source-serif-4` | 5.3.0 | `source-serif-4-latin-wght-normal.woff2`, `source-serif-4-latin-wght-italic.woff2` | SIL OFL 1.1 (`OFL-source-serif-4.txt`) |
 
 ## JavaScript (`/vendor`)

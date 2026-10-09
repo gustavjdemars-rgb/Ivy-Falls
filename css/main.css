@@ -18,6 +18,12 @@
   font-display: swap;
 }
 @font-face {
+  font-family: "Caveat";
+  src: url("../fonts/caveat-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
   font-family: "Inter Tight";
   src: url("../fonts/inter-tight-latin-wght-normal.woff2") format("woff2");
   font-weight: 100 900;
@@ -697,21 +703,22 @@ figcaption {
 
 .deck__hand {
   position: relative;
-  height: calc(var(--card-w) * 1.32);
-  --card-w: clamp(11rem, 22vw, 17rem);
+  height: calc(var(--card-w) * 1.4);
+  --card-w: clamp(13rem, 30vw, 24rem);
 }
 
-/* Each card is a photo print with a white border. Positions are set from
-   js/main.js; without JS the cards simply overlap, middle card on top. */
-/* Each card is a polaroid: square photo, deep bottom border with a caption. */
+/* Each card is a Polaroid: square photo in a warm off-white frame, thin at the
+   top and sides and deep at the bottom, with a caption written in marker.
+   Positions are set from js/main.js; without JS the cards simply overlap,
+   middle card on top. */
 .deck__card {
   position: absolute;
   left: 50%;
-  top: 54%;
+  top: 52%;
   width: var(--card-w);
   margin: 0;
-  padding: 0.6rem 0.6rem 0;
-  background: #FCFCFA;
+  padding: calc(var(--card-w) * 0.055) calc(var(--card-w) * 0.055) 0;
+  background: #F5F2EA;
   border-radius: 2px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 14px 30px -14px rgba(0, 0, 0, 0.55);
   transform: translate(-50%, -50%);
@@ -731,16 +738,22 @@ figcaption {
   object-fit: cover;
   background: #DADDDF;
 }
+.polaroid__photo { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); }
+/* Written on the bottom border in felt-tip, a touch off level. */
 .polaroid__text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--card-w) * 0.24);
   margin: 0;
-  padding: 0.75rem 0.3rem 0.95rem;
-  font-family: var(--display);
-  font-weight: 600;
-  font-stretch: 94%;
-  font-size: clamp(0.8rem, 0.7rem + 0.35vw, 1rem);
-  line-height: 1.25;
+  padding: 0.3rem 0.4rem 0.5rem;
+  font-family: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  font-weight: 500;
+  font-size: clamp(1.1rem, 0.85rem + 0.75vw, 1.6rem);
+  line-height: 1.05;
   text-align: center;
-  color: var(--ink);
+  color: #262B36;
+  transform: rotate(-1.2deg);
 }
 .deck__card.is-center { cursor: default; }
 
@@ -773,7 +786,7 @@ figcaption {
 
 @media (max-width: 760px) {
   .deck { gap: 0; }
-  .deck__hand { --card-w: 50vw; }
+  .deck__hand { --card-w: 64vw; }
   .deck__arrow { margin-inline: -0.25rem; }
 }
 

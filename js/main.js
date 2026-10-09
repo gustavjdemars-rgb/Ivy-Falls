@@ -598,7 +598,7 @@ function weather(rand) {
 
 // ---------- Photo deck ----------
 //
-// Five photos fanned like a hand of cards. The arrows rotate the hand in
+// The walk photos fanned like a hand of cards. The arrows rotate the hand in
 // their direction; each card arcs to its new place, and a card wrapping from
 // one end to the other slides around behind the hand. The middle card is
 // raised and tilted, as if being chosen.
@@ -617,7 +617,7 @@ if (deck) {
     1: { lift: 0, rot: 6, scale: 0.84, z: 6, bright: 0.94 },
     2: { lift: 5, rot: 11, scale: 0.7, z: 2, bright: 0.86 },
   };
-  const spread = () => Math.min(230, Math.max(62, hand.clientWidth * 0.2));
+  const spread = () => Math.min(280, Math.max(56, hand.clientWidth * 0.19));
   const look = (pos) => {
     const l = LOOK[Math.abs(pos)];
     const sign = Math.sign(pos) || 1;
