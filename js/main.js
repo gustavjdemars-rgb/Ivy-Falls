@@ -1101,31 +1101,38 @@ if (zoom && zoomCards.length) {
 
 // ---------- Share ----------
 // Opens the device's share sheet where there is one (phones, most laptops);
-// otherwise copies the link and says so.
+// otherwise copies the link and says so: in the status line under the end
+// button, or on the cover by turning the button's icon into a tick.
 
-const shareBtn = document.querySelector('[data-share]');
-if (shareBtn) {
+const shareBtns = document.querySelectorAll('[data-share]');
+if (shareBtns.length) {
   const status = document.querySelector('.share__status');
   const canonical = document.querySelector('link[rel="canonical"]');
   const url = canonical ? canonical.href : location.href.split(/[?#]/)[0];
   const data = { title: document.title, text: 'It’s called Ivy Falls, and it isn’t found on any maps.', url };
   let timer = 0;
-  const say = (msg) => {
-    status.textContent = msg;
+  const say = (btn, msg, done) => {
     clearTimeout(timer);
-    timer = setTimeout(() => { status.textContent = ''; }, 3500);
+    if (btn.classList.contains('cover__share')) {
+      btn.classList.toggle('is-done', done);
+      btn.setAttribute('aria-label', msg);
+      timer = setTimeout(() => { btn.classList.remove('is-done'); btn.setAttribute('aria-label', 'Share this story'); }, 2500);
+    } else if (status) {
+      status.textContent = msg;
+      timer = setTimeout(() => { status.textContent = ''; }, 3500);
+    }
   };
-  shareBtn.addEventListener('click', async () => {
+  shareBtns.forEach((btn) => btn.addEventListener('click', async () => {
     if (navigator.share) {
       try { await navigator.share(data); return; } catch (e) { if (e.name === 'AbortError') return; }
     }
     try {
       await navigator.clipboard.writeText(url);
-      say('Link copied');
+      say(btn, 'Link copied', true);
     } catch {
-      say(url); // last resort: show the link to copy by hand
+      say(btn, url, false); // last resort: show the link to copy by hand
     }
-  });
+  }));
 }
 
 // ---------- The falls video ----------

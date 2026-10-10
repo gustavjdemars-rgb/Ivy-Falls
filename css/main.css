@@ -286,10 +286,17 @@ a:hover { text-decoration-thickness: 2px; }
   letter-spacing: 0;
   color: #FFFFFF;           /* 5.6:1 on --blue-deep */
 }
+/* The byline and a small share tag sit side by side, tucked under the dek. */
+.cover__byrow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  margin: calc(-0.55 * clamp(0.92rem, 0.85rem + 0.25vw, 1.05rem)) calc(-1.1 * clamp(0.92rem, 0.85rem + 0.25vw, 1.05rem)) 0 0;
+}
 .cover__byline {
   position: relative;
   display: grid;
-  margin: -0.55em -1.1em 0 0;
+  margin: 0;
   font-family: var(--display);
   font-weight: 800;
   font-stretch: 96%;
@@ -329,8 +336,41 @@ a:hover { text-decoration-thickness: 2px; }
   .flipcard__face, .flipcard__back { transition: none; }
 }
 @media (max-width: 760px) {
-  .cover__byline { margin-right: 0; }
+  .cover__byrow { margin-right: 0; }
 }
+
+/* Same dark tag as the byline face, square, with a light-blue icon. Quiet
+   until hovered, when it turns light blue like the byline's back. */
+.cover__share {
+  display: grid;
+  place-items: center;
+  width: 2.4em;
+  align-self: center;
+  height: 2.4em;
+  padding: 0;
+  border: 0;
+  background: #121B22;
+  box-shadow: inset 0 0 0 1px rgba(76, 187, 236, 0.3);
+  color: var(--blue);
+  font-size: clamp(0.92rem, 0.85rem + 0.25vw, 1.05rem);
+  transform: rotate(-1.5deg);
+  cursor: pointer;
+  transition: background-color 0.25s, color 0.25s;
+}
+.cover__share:hover { background: var(--blue); color: var(--on-blue); }
+.cover__share:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.cover__share svg {
+  width: 1.15em;
+  height: 1.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cover__share .i-done,
+.cover__share.is-done .i-share { display: none; }
+.cover__share.is-done .i-done { display: inline; }
 
 @media (max-width: 760px) {
   .cover {

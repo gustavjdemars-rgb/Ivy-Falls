@@ -42,10 +42,16 @@
       <p class="cover__dek">You won’t find it on any maps.</p>
       <!-- Hover turns the tag over to "See my work"; hover again turns it back.
            It links to the author's portfolio (URL to come). -->
-      <a class="cover__byline flipcard" href="#credits" aria-label="By Gustav DeMars. See my work">
-        <span class="flipcard__face" aria-hidden="true">By Gustav DeMars</span>
-        <span class="flipcard__back" aria-hidden="true">See my work →</span>
-      </a>
+      <div class="cover__byrow">
+        <a class="cover__byline flipcard" href="#credits" aria-label="By Gustav DeMars. See my work">
+          <span class="flipcard__face" aria-hidden="true">By Gustav DeMars</span>
+          <span class="flipcard__back" aria-hidden="true">See my work →</span>
+        </a>
+        <!-- Share: a small square tag to match the byline. -->
+        <button class="cover__share" type="button" data-share aria-label="Share this story" title="Share this story">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-share" d="M12 14.5V3.5M7.8 7.7 12 3.5l4.2 4.2M5.5 11v8c0 .8.7 1.5 1.5 1.5h10c.8 0 1.5-.7 1.5-1.5v-8"/><path class="i-done" d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
