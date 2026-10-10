@@ -7,7 +7,9 @@
   <meta name="description" content="There’s a little-known waterfall in the Twin Cities, flowing down from the high river bluffs into the Mississippi. It’s called Ivy Falls, and it isn’t found on any maps.">
   <meta name="theme-color" content="#0E1217">
 
+  <link rel="canonical" href="https://gustavjdemars-rgb.github.io/Ivy-Falls/">
   <!-- Open Graph. og:image is slot OG (1200×630), not yet made. -->
+  <meta property="og:url" content="https://gustavjdemars-rgb.github.io/Ivy-Falls/">
   <meta property="og:type" content="article">
   <meta property="og:title" content="The Twin Cities’ Hidden Waterfall">
   <meta property="og:description" content="It’s called Ivy Falls, and it isn’t found on any maps.">
@@ -219,9 +221,28 @@
       <figcaption>Chairs at the foot of a backyard on the slope. <span class="credit todo">Caption and photo credit to confirm</span></figcaption>
     </figure>
 
-    <div class="col sheet">
+    <div class="col sheet sheet--last">
       <p>Ivy Falls now sits nestled in between the Mississippi and a residential neighborhood, surrounded by million-dollar house laden cul-de-sacs, according to data from Zillow. A locale once sought as a recreation area for many, now is seen by very few.</p>
     </div>
+
+    <!-- The end: a small ornament (a two-tier falls between shale ledges,
+         flanked by rules) and a share button. -->
+    <section class="endmark" aria-label="End of story">
+      <div class="endmark__ornament" aria-hidden="true">
+        <span class="endmark__rule"></span>
+        <svg class="endmark__falls" viewBox="0 0 80 48">
+          <path class="endmark__ledge" d="M4 10h30M30 25h28M50 40h26"/>
+          <path class="endmark__water" d="M34 10c4 0 6 3 6 8v6M58 25c4 0 6 3 6 8v6"/>
+          <path class="endmark__spray" d="M37 29.5c1.5-1.5 4.5-1.5 6 0M61 44.5c1.5-1.5 4.5-1.5 6 0"/>
+        </svg>
+        <span class="endmark__rule"></span>
+      </div>
+      <button class="share" type="button" data-share>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M5 11v8.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V11"/></svg>
+        <span>Share this story</span>
+      </button>
+      <p class="share__status" role="status" aria-live="polite"></p>
+    </section>
 
 
   </article>

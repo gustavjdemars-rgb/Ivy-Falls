@@ -1010,6 +1010,35 @@ if (zoom && zoomCard) {
   }
 }
 
+// ---------- Share ----------
+// Opens the device's share sheet where there is one (phones, most laptops);
+// otherwise copies the link and says so.
+
+const shareBtn = document.querySelector('[data-share]');
+if (shareBtn) {
+  const status = document.querySelector('.share__status');
+  const canonical = document.querySelector('link[rel="canonical"]');
+  const url = canonical ? canonical.href : location.href.split(/[?#]/)[0];
+  const data = { title: document.title, text: 'It’s called Ivy Falls, and it isn’t found on any maps.', url };
+  let timer = 0;
+  const say = (msg) => {
+    status.textContent = msg;
+    clearTimeout(timer);
+    timer = setTimeout(() => { status.textContent = ''; }, 3500);
+  };
+  shareBtn.addEventListener('click', async () => {
+    if (navigator.share) {
+      try { await navigator.share(data); return; } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      say('Link copied');
+    } catch {
+      say(url); // last resort: show the link to copy by hand
+    }
+  });
+}
+
 // ---------- The falls video ----------
 // Plays muted on a loop while it's on screen and pauses when it scrolls away.
 // Nothing downloads until it first comes into view. If the reader pauses it,

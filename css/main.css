@@ -462,6 +462,8 @@ a:hover { text-decoration-thickness: 2px; }
   transform: none;
 }
 .sheet > :last-child { margin-bottom: 0; }
+/* The last sheet gets more room below its final line. */
+.sheet--last { padding-bottom: calc(var(--sheet-pad) * 2.4); }
 
 /* Figures, clippings and photos are laid over the bottom edge of the sheet
    above. Below them there's always clear space, so captions and transcription
@@ -1019,6 +1021,90 @@ mark {
 .transcript p { margin: 0.5rem 0 0; }
 
 /* ---------- Credits ---------- */
+
+/* ---------- End mark and share ---------- */
+
+.endmark {
+  display: grid;
+  justify-items: center;
+  gap: 1.6rem;
+  margin: clamp(3.5rem, 9vw, 6rem) auto clamp(4rem, 10vw, 6.5rem);
+  padding-inline: var(--gutter);
+  text-align: center;
+}
+.endmark__ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: min(22rem, 100%);
+}
+.endmark__rule {
+  flex: 1;
+  height: 0;
+  border-top: 1px solid var(--ink);
+  opacity: 0.55;
+  position: relative;
+}
+/* A small diamond at the outer end of each rule. */
+.endmark__rule::before {
+  content: "";
+  position: absolute;
+  top: -3.5px;
+  width: 6px;
+  height: 6px;
+  background: var(--ink);
+  transform: rotate(45deg);
+}
+.endmark__rule:first-child::before { left: -3px; }
+.endmark__rule:last-child::before { right: -3px; }
+.endmark__falls {
+  width: 4.6rem;
+  height: auto;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.endmark__ledge { stroke: var(--ink); stroke-width: 3.2; }
+.endmark__water { stroke: var(--blue); stroke-width: 3.4; }
+.endmark__spray { stroke: var(--blue); stroke-width: 2; opacity: 0.75; }
+
+.share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.25rem 0.7rem 1.05rem;
+  border: 0;
+  border-radius: 2px;
+  background: var(--blue);
+  color: var(--on-blue);
+  font-family: var(--display);
+  font-weight: 750;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.share:hover { transform: translateY(-1px) scale(1.03); }
+.share:active { transform: scale(0.98); }
+.share:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 3px; }
+.share svg {
+  width: 1.15em;
+  height: 1.15em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.share__status {
+  min-height: 1.4em;
+  margin: -0.8rem 0 0;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
 
 .credits {
   padding: clamp(2.5rem, 6vw, 4rem) var(--gutter) clamp(3rem, 8vw, 5rem);
