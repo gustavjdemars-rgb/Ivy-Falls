@@ -1032,42 +1032,27 @@ mark {
   padding-inline: var(--gutter);
   text-align: center;
 }
-.endmark__ornament {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  width: min(22rem, 100%);
-}
-.endmark__rule {
-  flex: 1;
-  height: 0;
-  border-top: 1px solid var(--ink);
-  opacity: 0.55;
-  position: relative;
-}
-/* A small diamond at the outer end of each rule. */
-.endmark__rule::before {
-  content: "";
-  position: absolute;
-  top: -3.5px;
-  width: 6px;
-  height: 6px;
-  background: var(--ink);
-  transform: rotate(45deg);
-}
-.endmark__rule:first-child::before { left: -3px; }
-.endmark__rule:last-child::before { right: -3px; }
-.endmark__falls {
-  width: 4.6rem;
-  height: auto;
-  overflow: visible;
+.endmark__ornament { width: min(21rem, 92%); }
+/* Engraved-style ivy: fine ink vines and leaves, a blue leaf at the heart. */
+.endmark__ivy { display: block; width: 100%; height: auto; overflow: visible; }
+.ivy__vine {
   fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.1;
   stroke-linecap: round;
-  stroke-linejoin: round;
+  opacity: 0.7;
 }
-.endmark__ledge { stroke: var(--ink); stroke-width: 3.2; }
-.endmark__water { stroke: var(--blue); stroke-width: 3.4; }
-.endmark__spray { stroke: var(--blue); stroke-width: 2; opacity: 0.75; }
+.ivy__vine--fine { stroke-width: 0.8; }
+.ivy__rule { stroke: var(--ink); stroke-width: 0.8; opacity: 0.4; }
+.ivy__leaf path { fill: var(--ink); opacity: 0.72; }
+.ivy__heart > path:first-child { fill: var(--blue-deep); }
+.ivy__vein {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
 
 .share {
   display: inline-flex;
