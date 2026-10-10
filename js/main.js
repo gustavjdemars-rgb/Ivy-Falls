@@ -1102,7 +1102,45 @@ if (film) {
     video.muted = !video.muted;
     soundBtn.setAttribute('aria-pressed', String(!video.muted));
     soundBtn.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Turn sound off');
+    film.classList.toggle('is-sound', !video.muted);
   });
+
+  // The hand-drawn arrow: from the end of the "Turn on sound" prompt,
+  // curving round and up to a point just under the video, below the sound
+  // button. A little wobble and an uneven head make it look drawn by hand.
+  const arrow = film.parentElement.querySelector('.film__arrow');
+  const hint = film.parentElement.querySelector('.film__hint');
+  const drawArrow = () => {
+    if (!arrow || !hint) return;
+    const box = film.parentElement.getBoundingClientRect();
+    const h = hint.getBoundingClientRect(), v = film.getBoundingClientRect(), b = soundBtn.getBoundingClientRect();
+    const ex = b.left + b.width / 2 - box.left, ey = v.bottom + 7 - box.top;
+    const who = film.parentElement.querySelector('.film__who').getBoundingClientRect();
+    let sx, sy, c1x, c1y, c2x, c2y;
+    if (h.top > who.bottom - 2) {
+      // Prompt on its own line (phones): start past its end, head out to the
+      // right, then sweep up to arrive at the tip from below.
+      sx = h.right + 10 - box.left; sy = h.top + h.height * 0.45 - box.top;
+      c1x = sx + 34; c1y = sy - 4;
+      c2x = ex + (sx > ex ? 22 : -22); c2y = ey + (sy - ey) * 0.55;
+    } else {
+      // Prompt beside the name: rise from just above it in a short hook.
+      sx = Math.min(Math.max(ex + 70, h.left + 40), h.right - 30) - box.left;
+      sy = h.top - 5 - box.top;
+      c1x = sx + 6; c1y = sy - (sy - ey) * 0.75;
+      c2x = ex + 30; c2y = ey + 6;
+    }
+    const wob = (x, y, k) => `${(x + Math.sin(k * 7.3) * 1.2).toFixed(1)} ${(y + Math.cos(k * 5.1) * 1.2).toFixed(1)}`;
+    arrow.querySelector('.film__arrow-line').setAttribute('d',
+      `M${wob(sx, sy, 1)} C${wob(c1x, c1y, 2)} ${wob(c2x, c2y, 3)} ${ex.toFixed(1)} ${ey.toFixed(1)}`);
+    // The head: two strokes back from the tip, along the final direction.
+    const ang = Math.atan2(ey - c2y, ex - c2x);
+    const leg = (a, len) => `${(ex - Math.cos(ang + a) * len).toFixed(1)} ${(ey - Math.sin(ang + a) * len).toFixed(1)}`;
+    arrow.querySelector('.film__arrow-head').setAttribute('d', `M${leg(0.5, 11)} L${ex.toFixed(1)} ${ey.toFixed(1)} L${leg(-0.42, 9.5)}`);
+  };
+  drawArrow();
+  new ResizeObserver(drawArrow).observe(film.parentElement);
+  window.addEventListener('resize', drawArrow);
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => {

@@ -999,13 +999,17 @@ figcaption.col { font-size: 0.88rem; }
    short light-blue rule in front, so it's easy to spot under the video. */
 .night figcaption.film__voice {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.7rem;
-  margin-top: 1.2rem;
+  gap: 0.6rem 1.5rem;
+  margin-top: clamp(2.6rem, 5vw, 3.4rem);   /* room for the arrow */
   font-size: clamp(1.2rem, 1rem + 0.7vw, 1.55rem);
   color: var(--night-ink);
 }
-.film__voice::before {
+.film__who,
+.film__hint { display: inline-flex; align-items: center; gap: 0.7rem; }
+.film__who::before,
+.film__hint::before {
   content: "";
   width: 1.6rem;
   height: 3px;
@@ -1013,6 +1017,29 @@ figcaption.col { font-size: 0.88rem; }
   flex: none;
 }
 .film__voice strong { font-weight: 700; color: var(--blue); }
+/* The prompt to unmute: the same treatment in the map red (4.8:1 here). */
+.film__hint { font-weight: 600; color: var(--map-red); transition: opacity 0.4s ease; }
+.film__hint::before { background: var(--map-red); }
+/* Hand-drawn arrow from the prompt up to the sound button, kept below the
+   video. Both go once the sound is on. */
+.media:has(> .film) { position: relative; }
+.film__arrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--map-red);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.4s ease;
+}
+.film.is-sound ~ .film__voice .film__hint,
+.film.is-sound ~ .film__arrow { opacity: 0; }
 
 /* ---------- Clippings: real paper ---------- */
 
