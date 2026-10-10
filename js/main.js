@@ -979,6 +979,21 @@ if (zoom && zoomCards.length) {
   settle();
 }
 
+// ---------- Loupe (C3) ----------
+// Hover and keyboard focus open the enlarged caption through CSS; a tap or
+// click pins it open (and closes it again), as do Escape and a tap elsewhere.
+
+document.querySelectorAll('.loupe').forEach((btn) => {
+  const fig = btn.closest('.clipping--page');
+  const set = (open) => {
+    fig.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); set(!fig.classList.contains('is-open')); });
+  document.addEventListener('click', (e) => { if (!fig.contains(e.target)) set(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+});
+
 // ---------- Share ----------
 // Opens the device's share sheet where there is one (phones, most laptops);
 // otherwise copies the link and says so: in the status line under the end

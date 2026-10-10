@@ -1066,6 +1066,93 @@ mark {
   mix-blend-mode: multiply;
 }
 
+/* A full newspaper page: wider than a clipping. */
+.clipping--page { max-width: calc(40rem + 2 * var(--gutter)); }
+/* Sits above the figures after it, so the open caption can overlap them. */
+.clipping--page { z-index: 3; }
+/* The loupe and its card are placed against the scan itself. */
+.clipping__sheet { position: relative; }
+
+/* The loupe: four light-blue corner marks over the page's caption panel (the
+   same marks that frame the opening). Hover, focus or tap opens a readable
+   copy of the caption as a crisp sheet growing out of the panel. */
+.loupe {
+  position: absolute;
+  left: var(--x); top: var(--y); width: var(--w); height: var(--h);
+  padding: 0;
+  border: 0;
+  background:
+    linear-gradient(var(--blue), var(--blue)) left top / 12px 2px,
+    linear-gradient(var(--blue), var(--blue)) left top / 2px 12px,
+    linear-gradient(var(--blue), var(--blue)) right top / 12px 2px,
+    linear-gradient(var(--blue), var(--blue)) right top / 2px 12px,
+    linear-gradient(var(--blue), var(--blue)) left bottom / 12px 2px,
+    linear-gradient(var(--blue), var(--blue)) left bottom / 2px 12px,
+    linear-gradient(var(--blue), var(--blue)) right bottom / 12px 2px,
+    linear-gradient(var(--blue), var(--blue)) right bottom / 2px 12px;
+  background-repeat: no-repeat;
+  cursor: zoom-in;
+  transform: scale(1.06);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.loupe:hover, .loupe:focus-visible { background-color: rgba(76, 187, 236, 0.12); transform: scale(1.09); }
+.loupe:focus-visible { outline: none; }
+
+.loupe__card {
+  position: absolute;
+  z-index: 5;
+  top: 37%;
+  right: 2%;
+  width: min(23rem, 92%);
+  margin: 0;
+  padding: 1.15rem 1.35rem 1rem;
+  background: var(--sheet);
+  border-top: 3px solid var(--blue);
+  box-shadow: 0 2px 4px rgba(20, 15, 8, 0.12), 0 22px 44px -16px rgba(20, 15, 8, 0.5);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1rem;
+  line-height: 1.55;
+  transform-origin: 90% 15%;
+  transform: scale(0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(.2, .8, .2, 1), opacity 0.25s ease, visibility 0s 0.35s;
+}
+.loupe__card p { margin: 0 0 0.7em; }
+.loupe__head {
+  font-family: var(--display);
+  font-weight: 800;
+  font-stretch: 72%;
+  font-size: 1.7rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.loupe__card .loupe__credit {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.loupe:hover + .loupe__card,
+.loupe:focus-visible + .loupe__card,
+.loupe__card:hover,
+.clipping--page.is-open .loupe__card {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.35s cubic-bezier(.2, .8, .2, 1), opacity 0.2s ease, visibility 0s;
+}
+@media (max-width: 760px) {
+  .loupe__card { top: 3%; right: 3%; width: 94%; padding: 0.95rem 1.05rem 0.85rem; font-size: 0.9rem; line-height: 1.5; transform-origin: 85% 45%; }
+  .loupe__head { font-size: 1.45rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loupe, .loupe__card { transition: none; }
+}
+
 .transcript {
   margin-top: 0.5rem;
   font-family: var(--sans);
