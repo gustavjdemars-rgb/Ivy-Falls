@@ -1176,12 +1176,11 @@ mark {
   padding-inline: var(--gutter);
   text-align: center;
 }
-.endmark__ornament { width: min(12rem, 70%); }
-/* Mid-century modern: a light-blue starburst, two dots, two ink rules. */
-.endmark__mcm { display: block; width: 100%; height: auto; }
-.mcm__rule { stroke: var(--ink); stroke-width: 1.4; stroke-linecap: round; opacity: 0.55; }
-.mcm__dot { fill: var(--ink); opacity: 0.55; }
-.mcm__star { fill: none; stroke: var(--blue-deep); stroke-width: 1.8; stroke-linecap: round; }
+.endmark__ornament { width: min(7.5rem, 50%); }
+/* A plain, heavy end mark: two solid bars and a square in deep blue. */
+.endmark__mark { display: block; width: 100%; height: auto; }
+.mark__bar { fill: var(--ink); }
+.mark__block { fill: var(--blue-deep); }
 
 .share {
   display: inline-flex;
