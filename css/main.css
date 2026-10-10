@@ -931,6 +931,7 @@ figcaption {
 
 .film {
   position: relative;
+  overflow: hidden;            /* the hidden buttons tuck under the bottom edge */
   background: #000;
 }
 .film__video {
@@ -942,13 +943,23 @@ figcaption {
 }
 /* Same round blue buttons as the photo deck, larger, centred along the
    bottom of the video. */
+/* Tucked below the frame with a sliver showing; they rise into place when a
+   pointer comes near (js/main.js), on keyboard focus, or while paused. */
 .film__controls {
+  --lift: clamp(0.75rem, 2.5vw, 1.75rem);
   position: absolute;
-  bottom: clamp(0.75rem, 2.5vw, 1.75rem);
+  bottom: var(--lift);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, calc(100% + var(--lift) - 7px));
   display: flex;
   gap: clamp(0.75rem, 2vw, 1.25rem);
+  transition: transform 0.45s cubic-bezier(.2, .8, .2, 1);
+}
+.film.is-near .film__controls,
+.film.is-paused .film__controls,
+.film__controls:focus-within { transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) {
+  .film__controls { transition: none; }
 }
 .film__controls[hidden] { display: none; }
 .film__btn {

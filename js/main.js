@@ -1110,6 +1110,28 @@ if (film) {
       update();
     }, { threshold: 0.4 }).observe(film);
   }
+
+  // The buttons hide below the frame and pop up when a pointer comes within
+  // about 260px of where they sit; a touch on the video shows them for a few
+  // seconds. They drop away again 1.2 s after the pointer leaves the range.
+  const controls = film.querySelector('.film__controls');
+  const RANGE = 260;
+  let hideTimer = 0;
+  const show = (ms) => {
+    film.classList.add('is-near');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => film.classList.remove('is-near'), ms);
+  };
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch' || !inView) return;
+    const f = film.getBoundingClientRect(), c = controls.getBoundingClientRect();
+    // Where the buttons sit when shown: same row, lifted back into the frame.
+    const top = f.bottom - (c.height + parseFloat(getComputedStyle(controls).bottom));
+    const dx = Math.max(c.left - e.clientX, 0, e.clientX - c.right);
+    const dy = Math.max(top - e.clientY, 0, e.clientY - (top + c.height));
+    if (Math.hypot(dx, dy) < RANGE) show(1200);
+  }, { passive: true });
+  film.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') show(3500); });
 }
 
 // ---------- Reading progress ----------
