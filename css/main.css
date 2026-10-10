@@ -518,7 +518,7 @@ a:hover { text-decoration-thickness: 2px; }
   .sheet { margin-inline: 8px; }
 }
 
-.lede { font-size: 1.12em; line-height: 1.55; }
+.lede { font-size: 1em; line-height: inherit; }   /* same size as the body, at the author's request */
 
 .quote {
   margin: 2.2em 0;
