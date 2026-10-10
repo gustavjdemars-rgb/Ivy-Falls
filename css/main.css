@@ -502,8 +502,10 @@ a:hover { text-decoration-thickness: 2px; }
   transform: none;
 }
 .sheet > :last-child { margin-bottom: 0; }
-/* The last sheet gets more room below its final line. */
-.sheet--last { padding-bottom: calc(var(--sheet-pad) * 2.4); }
+/* The last sheet hugs its one paragraph. (The folded corner added by
+   js/main.js comes after the paragraph, so :last-child misses it.) */
+.sheet--last > p:last-of-type { margin-bottom: 0; }
+.sheet--last { padding-bottom: calc(var(--sheet-pad) * 0.85); }
 
 /* Figures, clippings and photos are laid over the bottom edge of the sheet
    above. Below them there's always clear space, so captions and transcription
