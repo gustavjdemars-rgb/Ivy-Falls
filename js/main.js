@@ -899,27 +899,32 @@ if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
 }
 
 // ---------- Route zoom (M4 → M5) ----------
-// At the last route card the map zooms from the overview down to the
-// close-up, like a camera pushing in on the falls. The close-up and a sharp
+// The route cards drive one camera in two moves: the first card shows the
+// overview, the second settles partway in (the river from St. Paul down past
+// the falls to the flats), the third lands on the close-up. Each card says
+// where it wants the camera with data-zoom (0 = overview, 1 = close-up). The close-up and a sharp
 // tile of the overview sit over their own ground inside one layer (see the
 // CSS), so moving that one layer keeps everything in register. The zoom runs
-// about a fixed point, at a steady rate on a log scale (how zooming feels
-// natural), easing in and out; the sharp tile fades in first (and with it the
+// at a steady rate on a log scale (how zooming feels natural), easing in and
+// out; the sharp tile fades in first (and with it the
 // overview's pin goes, as map labels do when you zoom), then the close-up.
-// Scrolling back above the card zooms back out. Add ?zoomAt=0.4 to freeze it
+// Scrolling back zooms back out the same way. Add ?zoomAt=0.4 to freeze it
 // partway, for checking.
 
 const zoom = document.querySelector('.zoom');
-const zoomCard = document.querySelector('.card--zoom');
-if (zoom && zoomCard) {
+const zoomCards = zoom ? [...zoom.closest('.stage').querySelectorAll('.card[data-zoom]')] : [];
+if (zoom && zoomCards.length) {
   const world = zoom.querySelector('.zoom__world');
   const AR = 2400 / 1454;                       // the overview's shape
   const CLOSE = { x: 0.65456, y: 0.72516, w: 0.07922, h: 0.07998 }; // close-up footprint
   const FEATHER = 0.1;                          // matches the mask in the CSS
-  const DURATION = 2.6;                         // s
+  // Seconds for a move: longer the further it goes on the zoom scale.
+  const durationFor = (d) => 0.9 + 2 * Math.abs(d);
   const frozen = parseFloat(new URLSearchParams(location.search).get('zoomAt'));
 
-  let geo = null, p = 0, target = 0, last = 0, raf = 0;
+  // e: where the camera is, 0–1 on a log scale of zoom. A move eases from
+  // where the camera is to where it's going.
+  let geo = null, e = 0, target = 0, move = null, raf = 0;
 
   const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
@@ -937,50 +942,55 @@ if (zoom && zoomCard) {
     // On tall screens fit the close-up's full height (its soft top and bottom
     // edges then melt into the blurred overview), so it isn't pushed in so
     // far that the cul-de-sacs around the falls leave the frame.
-    const k = tall ? Math.max(fw / cw, fh / (CLOSE.h * H)) : Math.max(fw / cw, fh / ch);
+    const k = tall ? 1.2 * Math.max(fw / cw, fh / (CLOSE.h * H)) : Math.max(fw / cw, fh / ch);
     // Centre the falls (label and dot) where the frame allows, never showing
     // past the close-up's sharp area.
     const fx = (CLOSE.x + CLOSE.w * 0.665) * W, fy = (CLOSE.y + CLOSE.h * 0.58) * H;
     const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
     const b1 = [
       clamp(fw / 2 - k * fx, fw - k * (cx + cw), -k * cx),
-      tall ? fh / 2 - k * (CLOSE.y + CLOSE.h / 2) * H : clamp(fh / 2 - k * fy, fh - k * (cy + ch), -k * cy),
+      // On tall screens the cards cover the lower half, so the falls sit in
+      // the upper third; the close-up's soft lower edge goes under the card.
+      tall ? fh * 0.36 - k * fy : clamp(fh / 2 - k * fy, fh - k * (cy + ch), -k * cy),
     ];
-    // The one screen point that stays put through the zoom.
-    const f = [0, 1].map((i) => (b1[i] - k * b0[i]) / (1 - k));
+    // Where the falls are on screen at the start and at the end.
+    const S0 = [b0[0] + fx, b0[1] + fy], S1 = [b1[0] + k * fx, b1[1] + k * fy];
     world.style.width = `${W}px`;
     world.style.height = `${H}px`;
-    geo = { b0, k, f };
+    geo = { k, fall: [fx, fy], S0, S1 };
   }
 
   function render() {
     if (!geo) return;
-    const e = ease(p);
     const z = geo.k ** e;
-    const tx = geo.f[0] + z * (geo.b0[0] - geo.f[0]);
-    const ty = geo.f[1] + z * (geo.b0[1] - geo.f[1]);
+    // The camera keeps the falls in view: the first move (to the halfway
+    // stop) brings them to where they'll end up on screen while zooming; the
+    // second pushes straight in on them.
+    const g = smooth(0, 0.36, e);
+    const tx = geo.S0[0] + (geo.S1[0] - geo.S0[0]) * g - z * geo.fall[0];
+    const ty = geo.S0[1] + (geo.S1[1] - geo.S0[1]) * g - z * geo.fall[1];
     world.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${z.toFixed(5)})`;
-    zoom.style.setProperty('--detail', smooth(0, 0.12, e).toFixed(3));
-    zoom.style.setProperty('--close', smooth(0.3, 0.62, e).toFixed(3));
+    zoom.style.setProperty('--detail', smooth(0.46, 0.58, e).toFixed(3));
+    zoom.style.setProperty('--close', smooth(0.6, 0.88, e).toFixed(3));
     // A touch of softness on the overview as it's pushed past its own
     // resolution, like motion blur, so its pixels never show.
     // Blur in the layer's own pixels, so divide by the zoom: about 4px on
     // screen, like a shallow depth of field around the sharp close-up.
-    zoom.style.setProperty('--soft', `${(smooth(0.28, 0.55, e) * 4 / z).toFixed(3)}px`);
+    zoom.style.setProperty('--soft', `${(smooth(0.56, 0.8, e) * 4 / z).toFixed(3)}px`);
     // The close-up is brighter and less saturated than the overview: it
     // arrives tinted to match, then eases back to its own colours as it lands.
-    const own = smooth(0.5, 1, e);
+    const own = smooth(0.72, 1, e);
     zoom.style.setProperty('--cbri', (0.68 + 0.32 * own).toFixed(3));
     zoom.style.setProperty('--csat', (1.5 - 0.5 * own).toFixed(3));
   }
 
   function tick(ms) {
-    const dt = last ? Math.min(0.05, (ms - last) / 1000) : 0;
-    last = ms;
-    p += Math.sign(target - p) * Math.min(Math.abs(target - p), dt / DURATION);
+    if (!move.start) move.start = ms;
+    const t = Math.min(1, (ms - move.start) / 1000 / move.dur);
+    e = move.from + (move.to - move.from) * ease(t);
     render();
-    if (p !== target) raf = requestAnimationFrame(tick);
-    else { raf = 0; last = 0; world.style.willChange = 'auto'; } // re-draw sharp at rest
+    if (t < 1) raf = requestAnimationFrame(tick);
+    else { raf = 0; move = null; world.style.willChange = 'auto'; } // re-draw sharp at rest
   }
 
   function go(to) {
@@ -988,26 +998,39 @@ if (zoom && zoomCard) {
     target = to;
     if (reduceMotion.matches) {
       zoom.classList.add('is-swapping');
-      setTimeout(() => { p = target; render(); zoom.classList.remove('is-swapping'); }, 300);
+      setTimeout(() => { e = target; render(); zoom.classList.remove('is-swapping'); }, 300);
       return;
     }
+    // A new move starts from wherever the camera is, even mid-move.
+    move = { from: e, to, dur: durationFor(to - e), start: 0 };
     world.style.willChange = 'transform';
     if (!raf) raf = requestAnimationFrame(tick);
   }
 
   zoom.classList.add('is-live');
   measure();
-  if (!Number.isNaN(frozen)) p = target = Math.min(1, Math.max(0, frozen));
+  if (!Number.isNaN(frozen)) e = target = Math.min(1, Math.max(0, frozen));
   render();
   new ResizeObserver(() => { measure(); render(); }).observe(zoom);
 
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([e]) => {
-      go(e.isIntersecting || e.boundingClientRect.top < 0 ? 1 : 0);
-    }, { rootMargin: '0px 0px -33% 0px' }).observe(zoomCard);
-  } else {
-    go(1);
-  }
+  // The camera goes where the last card past the trigger line (two thirds
+  // of the way down the screen) asks; above the first card, the overview.
+  // Checked from positions on every scroll, so a jump (Home, a link, a fast
+  // fling) can't leave it at the wrong stop.
+  let queued = false;
+  const settle = () => {
+    queued = false;
+    const line = window.innerHeight * 0.67;
+    let to = 0;
+    zoomCards.forEach((card) => {
+      if (card.getBoundingClientRect().top < line) to = parseFloat(card.dataset.zoom);
+    });
+    go(to);
+  };
+  const queue = () => { if (!queued) { queued = true; requestAnimationFrame(settle); } };
+  window.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', queue);
+  settle();
 }
 
 // ---------- Share ----------
