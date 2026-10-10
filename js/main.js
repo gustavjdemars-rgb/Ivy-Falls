@@ -691,9 +691,10 @@ if (deck) {
 // right), bouncing like a ball between two walls: the
 // edges of the wooded river corridor, where the woods meet the roads and
 // houses on the bluffs. So it crosses the rivers and roams the woods and
-// land either side, where a waterfall could be. Off the right edge of the
-// frame it comes back in at the left and goes again. Runs only while on
-// screen; with reduced motion the dot rests in the middle.
+// land either side, where a waterfall could be. Near the right end it glides
+// in to one spot, the woods south of the lake where a road crosses over the
+// water, and stops there with a soft click ring. It starts over each time
+// the section comes back into view. With reduced motion it rests on the spot.
 
 const viz = document.querySelector('.stage__viz');
 if (viz) {
@@ -707,6 +708,8 @@ if (viz) {
   // The pointer: a classic arrow, tip at 0,0, in px.
   const ARROW = [[0, 0], [0, 21], [5, 16.5], [8.6, 24.8], [12.4, 23.2], [8.8, 15.2], [15, 15]];
   const S_ARROW = 1.5;
+  const TARGET = [2675, 725];   // where it stops, image px
+  const APPROACH = 260;         // image px before the spot where it heads straight in
 
   const img = new Image();
   img.decoding = 'async';
@@ -725,7 +728,8 @@ if (viz) {
     const tall = W <= H * 1.1;
     const k = tall ? Math.max(W / IMG_W, (H * 0.58) / IMG_H) : Math.max(W / IMG_W, H / IMG_H);
     const w = IMG_W * k, h = IMG_H * k;
-    view = { k, w, h, x: (W - w) * 0.55, y: tall ? 0 : Math.min(0, Math.max(H - h, H * 0.5 - h * 0.38)) };
+    // Kept flush right, so the spot it stops on is always in view.
+    view = { k, w, h, x: W - w, y: tall ? 0 : Math.min(0, Math.max(H - h, H * 0.5 - h * 0.38)) };
     if (img.complete && img.naturalWidth) draw();
   }
   img.addEventListener('load', () => draw());
@@ -744,18 +748,25 @@ if (viz) {
   const start = () => {
     const x = toImgX(-R * 4);
     const [t, b] = wallsAt(x);
-    dot = { x, y: t + (b - t) * 0.3, dir: 1 };
+    dot = { x, y: t + (b - t) * 0.3, dir: 1, done: 0 };
   };
 
   function step(dt) {
     const s = H / 800 / view.k;                   // frame px/s → image px/s
+    if (dot.done) { dot.done += dt; return; }
+    if (dot.x >= TARGET[0] - APPROACH) {          // the last stretch: straight in
+      const dx = TARGET[0] - dot.x, dy = TARGET[1] - dot.y, d = Math.hypot(dx, dy);
+      const v = Math.hypot(ALONG, ACROSS) * 0.6 * s * dt;
+      if (d <= v) { dot.x = TARGET[0]; dot.y = TARGET[1]; dot.done = 1e-6; }
+      else { dot.x += dx / d * v; dot.y += dy / d * v; }
+      return;
+    }
     dot.x += ALONG * s * dt;
     dot.y += dot.dir * ACROSS * s * dt;
     const [t, b] = wallsAt(dot.x);
     const pad = (R + 2) / view.k;
     if (dot.y > b - pad) { dot.y = b - pad; dot.dir = -1; }
     if (dot.y < t + pad) { dot.y = t + pad; dot.dir = 1; }
-    if (dot.x * view.k + view.x > W + R * 4) start();   // off the right: back to the left
   }
 
   function draw() {
@@ -766,7 +777,19 @@ if (viz) {
     ctx.fillStyle = 'rgba(14, 18, 23, 0.28)';
     ctx.fillRect(0, 0, W, H);
     if (!dot) return;
-    drawPointer(view.x + dot.x * view.k, view.y + dot.y * view.k);
+    const px = view.x + dot.x * view.k, py = view.y + dot.y * view.k;
+    // Stopped: a soft white ring opens from the tip every couple of seconds.
+    if (dot.done) {
+      const u = (dot.done % 2.2) / 1.2;
+      if (u < 1) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${(0.85 * (1 - u)).toFixed(3)})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(px, py, 4 + u * 26, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+    }
+    drawPointer(px, py);
   }
 
   // A white pointer with depth: a soft shadow on the map, a grey extruded
@@ -820,12 +843,11 @@ if (viz) {
   function update() {
     const play = visible && !reduceMotion.matches;
     if (!img.src && visible) img.src = W * dpr > 1500 ? 'assets/maps/river-search2-2400.jpg' : 'assets/maps/river-search2-1400.jpg';
-    if (play && !running) { running = true; last = 0; requestAnimationFrame(frame); }
+    if (play && !running) { running = true; last = 0; dot = null; requestAnimationFrame(frame); }
     if (!play) {
       running = false;
       if (reduceMotion.matches && visible) {
-        const x = toImgX(W * 0.6), [t, b] = wallsAt(x);
-        dot = { x, y: (t + b) / 2, dir: 1 };
+        dot = { x: TARGET[0], y: TARGET[1], dir: 1, done: 1.5 };
         draw();
       }
     }
