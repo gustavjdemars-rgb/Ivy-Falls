@@ -687,8 +687,8 @@ if (deck) {
 
 // ---------- Bank to bank (M2) ----------
 // A satellite view of the river valley where the Minnesota River meets the
-// Mississippi, and a red dot with a short glowing tail that drifts slowly
-// downstream (left to right), bouncing like a ball between two walls: the
+// Mississippi, and a white 3D mouse pointer that drifts downstream (left to
+// right), bouncing like a ball between two walls: the
 // edges of the wooded river corridor, where the woods meet the roads and
 // houses on the bluffs. So it crosses the rivers and roams the woods and
 // land either side, where a waterfall could be. Off the right edge of the
@@ -698,19 +698,20 @@ if (deck) {
 const viz = document.querySelector('.stage__viz');
 if (viz) {
   const ctx = viz.getContext('2d');
-  const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
   const IMG_W = 2820, IMG_H = 1190;
   // The corridor's edges: [x, top y, bottom y], fractions of the image.
   const WALLS = [[0.0,0.1777,0.5958],[0.0179,0.1851,0.5981],[0.0357,0.1925,0.6003],[0.0536,0.1999,0.6026],[0.0714,0.2074,0.6048],[0.0893,0.2148,0.6071],[0.1071,0.2222,0.6094],[0.125,0.2296,0.6238],[0.1429,0.237,0.6381],[0.1607,0.2391,0.6525],[0.1786,0.2412,0.6669],[0.1964,0.2433,0.6686],[0.2143,0.2454,0.6703],[0.2321,0.2476,0.672],[0.25,0.2497,0.6737],[0.2679,0.2518,0.6754],[0.2857,0.2539,0.6771],[0.3036,0.256,0.6722],[0.3214,0.2581,0.6674],[0.3393,0.2602,0.6611],[0.3571,0.2624,0.649],[0.375,0.2645,0.6369],[0.3929,0.2666,0.6285],[0.4107,0.2687,0.6257],[0.4286,0.2708,0.6229],[0.4464,0.2734,0.6229],[0.4643,0.2759,0.6229],[0.4821,0.2784,0.6229],[0.5,0.281,0.6229],[0.5179,0.2835,0.6246],[0.5357,0.2861,0.6263],[0.5536,0.2886,0.628],[0.5714,0.2911,0.6297],[0.5893,0.2892,0.6352],[0.6071,0.2873,0.6407],[0.625,0.2854,0.6462],[0.6429,0.2835,0.6517],[0.6607,0.2816,0.653],[0.6786,0.2797,0.6542],[0.6964,0.2778,0.6555],[0.7143,0.2759,0.6568],[0.7321,0.2728,0.6557],[0.75,0.2697,0.6546],[0.7679,0.2666,0.6536],[0.7857,0.2635,0.6525],[0.8036,0.2604,0.6515],[0.8214,0.2573,0.6504],[0.8393,0.2553,0.6494],[0.8571,0.2533,0.6483],[0.875,0.2514,0.6466],[0.8929,0.2494,0.6449],[0.9107,0.2474,0.6432],[0.9286,0.2454,0.6415],[0.9464,0.2476,0.6398],[0.9643,0.2497,0.6381],[0.9821,0.2518,0.6364],[1.0,0.2539,0.6348]];
   const R = 5;           // dot radius, px
-  const TAIL = 2.2;      // s of trail
-  const ACROSS = 32;     // px/s up and down, at an 800px-tall frame
-  const ALONG = 14;      // px/s downstream, at an 800px-tall frame
+  const ACROSS = 110;    // px/s up and down, at an 800px-tall frame
+  const ALONG = 48;      // px/s downstream, at an 800px-tall frame
+  // The pointer: a classic arrow, tip at 0,0, in px.
+  const ARROW = [[0, 0], [0, 21], [5, 16.5], [8.6, 24.8], [12.4, 23.2], [8.8, 15.2], [15, 15]];
+  const S_ARROW = 1.5;
 
   const img = new Image();
   img.decoding = 'async';
   let W = 0, H = 0, dpr = 1, view = null;
-  let dot = null, trail = [], last = 0, running = false, visible = false;
+  let dot = null, last = 0, running = false, visible = false;
 
   // Wide screens: the image covers the frame, centred on the corridor.
   // Tall screens: the image fills the top part of the frame (the text cards
@@ -744,7 +745,6 @@ if (viz) {
     const x = toImgX(-R * 4);
     const [t, b] = wallsAt(x);
     dot = { x, y: t + (b - t) * 0.3, dir: 1 };
-    trail = [];
   };
 
   function step(dt) {
@@ -758,7 +758,7 @@ if (viz) {
     if (dot.x * view.k + view.x > W + R * 4) start();   // off the right: back to the left
   }
 
-  function draw(now = 0) {
+  function draw() {
     ctx.fillStyle = '#0E1217';
     ctx.fillRect(0, 0, W, H);
     if (img.complete && img.naturalWidth) ctx.drawImage(img, view.x, view.y, view.w, view.h);
@@ -766,30 +766,41 @@ if (viz) {
     ctx.fillStyle = 'rgba(14, 18, 23, 0.28)';
     ctx.fillRect(0, 0, W, H);
     if (!dot) return;
-    const sx = (x) => view.x + x * view.k, sy = (y) => view.y + y * view.k;
-    ctx.save();
-    ctx.strokeStyle = RED;
-    ctx.shadowColor = RED;
-    ctx.shadowBlur = 8;
-    ctx.lineCap = 'round';
-    for (let i = 1; i < trail.length; i++) {
-      const age = (now - trail[i].t) / TAIL;
-      if (age >= 1) continue;
-      ctx.globalAlpha = 0.75 * (1 - age);
-      ctx.lineWidth = 4 * (1 - age) + 0.5;
+    drawPointer(view.x + dot.x * view.k, view.y + dot.y * view.k);
+  }
+
+  // A white pointer with depth: a soft shadow on the map, a grey extruded
+  // side, then the face, lit from the top left, with a fine dark edge.
+  function drawPointer(px, py) {
+    const path = (dx, dy) => {
       ctx.beginPath();
-      ctx.moveTo(sx(trail[i - 1].x), sy(trail[i - 1].y));
-      ctx.lineTo(sx(trail[i].x), sy(trail[i].y));
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = RED;
-    ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(sx(dot.x), sy(dot.y), R, 0, Math.PI * 2); ctx.fill();
+      ARROW.forEach(([x, y], i) => {
+        const X = px + dx + x * S_ARROW, Y = py + dy + y * S_ARROW;
+        if (i) ctx.lineTo(X, Y); else ctx.moveTo(X, Y);
+      });
+      ctx.closePath();
+    };
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 7;
+    ctx.fillStyle = '#8E979F';
+    for (let d = 3; d >= 1; d--) { path(d, d); ctx.fill(); if (d === 3) { ctx.shadowColor = 'transparent'; } }
+    const g = ctx.createLinearGradient(px, py, px + 14 * S_ARROW, py + 24 * S_ARROW);
+    g.addColorStop(0, '#FFFFFF');
+    g.addColorStop(1, '#DCE2E7');
+    ctx.fillStyle = g;
+    path(0, 0);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(20, 26, 32, 0.85)';
+    ctx.lineWidth = 1.1;
+    ctx.stroke();
     ctx.restore();
   }
 
-  // Add ?vizAt=30 to start the dot that many seconds in, for checking.
+  // Add ?vizAt=10 to start the pointer that many seconds in, for checking.
   const vizAt = parseFloat(new URLSearchParams(location.search).get('vizAt'));
 
   function frame(ms) {
@@ -799,17 +810,10 @@ if (viz) {
     last = now;
     if (!dot) {
       start();
-      if (!Number.isNaN(vizAt)) {
-        for (let t = 0; t < vizAt; t += 1 / 60) {
-          step(1 / 60);
-          trail.push({ x: dot.x, y: dot.y, t: now - vizAt + t });
-        }
-      }
+      if (!Number.isNaN(vizAt)) for (let t = 0; t < vizAt; t += 1 / 60) step(1 / 60);
     }
     step(dt);
-    trail.push({ x: dot.x, y: dot.y, t: now });
-    while (trail.length && now - trail[0].t > TAIL) trail.shift();
-    draw(now);
+    draw();
     requestAnimationFrame(frame);
   }
 
@@ -821,14 +825,14 @@ if (viz) {
       running = false;
       if (reduceMotion.matches && visible) {
         const x = toImgX(W * 0.6), [t, b] = wallsAt(x);
-        dot = { x, y: (t + b) / 2, dir: 1 }; trail = [];
+        dot = { x, y: (t + b) / 2, dir: 1 };
         draw();
       }
     }
   }
 
   build();
-  new ResizeObserver(() => { build(); trail = []; }).observe(viz);
+  new ResizeObserver(() => build()).observe(viz);
   reduceMotion.addEventListener('change', update);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }, { rootMargin: '200px 0px' }).observe(viz);
