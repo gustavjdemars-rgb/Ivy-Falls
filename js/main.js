@@ -845,9 +845,8 @@ if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
 }
 
 // ---------- Route zoom (M4 → M5) ----------
-// The route cards drive one camera in two moves: the first card shows the
-// overview, the second settles partway in (the river from St. Paul down past
-// the falls to the flats), the third lands on the close-up. Each card says
+// The route cards drive one camera: the first card shows the overview, the
+// second zooms in on the falls and lands on the close-up. Each card says
 // where it wants the camera with data-zoom (0 = overview, 1 = close-up). The close-up and a sharp
 // tile of the overview sit over their own ground inside one layer (see the
 // CSS), so moving that one layer keeps everything in register. The zoom runs
@@ -865,7 +864,7 @@ if (zoom && zoomCards.length) {
   const CLOSE = { x: 0.65456, y: 0.72516, w: 0.07922, h: 0.07998 }; // close-up footprint
   const FEATHER = 0.1;                          // matches the mask in the CSS
   // Seconds for a move: longer the further it goes on the zoom scale.
-  const durationFor = (d) => 0.9 + 2 * Math.abs(d);
+  const durationFor = (d) => 2.6 * Math.abs(d);
   const frozen = parseFloat(new URLSearchParams(location.search).get('zoomAt'));
 
   // e: where the camera is, 0–1 on a log scale of zoom. A move eases from
@@ -909,23 +908,22 @@ if (zoom && zoomCards.length) {
   function render() {
     if (!geo) return;
     const z = geo.k ** e;
-    // The camera keeps the falls in view: the first move (to the halfway
-    // stop) brings them to where they'll end up on screen while zooming; the
-    // second pushes straight in on them.
-    const g = smooth(0, 0.36, e);
-    const tx = geo.S0[0] + (geo.S1[0] - geo.S0[0]) * g - z * geo.fall[0];
-    const ty = geo.S0[1] + (geo.S1[1] - geo.S0[1]) * g - z * geo.fall[1];
+    // Zoom about the one screen point that stays put from start to end, so
+    // the falls glide steadily to their final spot as the camera pushes in.
+    const fp = [0, 1].map((i) => (geo.S1[i] - geo.k * geo.S0[i]) / (1 - geo.k));
+    const tx = fp[0] + z * (geo.S0[0] - fp[0]) - z * geo.fall[0];
+    const ty = fp[1] + z * (geo.S0[1] - fp[1]) - z * geo.fall[1];
     world.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${z.toFixed(5)})`;
-    zoom.style.setProperty('--detail', smooth(0.46, 0.58, e).toFixed(3));
-    zoom.style.setProperty('--close', smooth(0.6, 0.88, e).toFixed(3));
+    zoom.style.setProperty('--detail', smooth(0, 0.12, e).toFixed(3));
+    zoom.style.setProperty('--close', smooth(0.3, 0.62, e).toFixed(3));
     // A touch of softness on the overview as it's pushed past its own
     // resolution, like motion blur, so its pixels never show.
     // Blur in the layer's own pixels, so divide by the zoom: about 4px on
     // screen, like a shallow depth of field around the sharp close-up.
-    zoom.style.setProperty('--soft', `${(smooth(0.56, 0.8, e) * 4 / z).toFixed(3)}px`);
+    zoom.style.setProperty('--soft', `${(smooth(0.28, 0.55, e) * 4 / z).toFixed(3)}px`);
     // The close-up is brighter and less saturated than the overview: it
     // arrives tinted to match, then eases back to its own colours as it lands.
-    const own = smooth(0.72, 1, e);
+    const own = smooth(0.5, 1, e);
     zoom.style.setProperty('--cbri', (0.68 + 0.32 * own).toFixed(3));
     zoom.style.setProperty('--csat', (1.5 - 0.5 * own).toFixed(3));
   }
