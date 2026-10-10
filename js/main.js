@@ -686,262 +686,142 @@ if (deck) {
 }
 
 // ---------- Bank to bank (M2) ----------
-// A simple red river under a dark, slowly drifting fog of war, and a red
-// magnifying glass that bounces from bank to bank like a ball between two
-// walls, turning back the moment it touches a bank, while it drifts slowly
-// downstream. When it reaches the spot, the fog opens in a circle around it.
-// Then the fog closes and the search starts again. Runs only while on screen;
-// with reduced motion it shows the found spot as a still.
+// A satellite view of the Mississippi between Minneapolis and St. Paul, and a
+// red dot with a short glowing tail that bounces slowly from bank to bank
+// like a ball between two walls, the walls being the river's real edges
+// (traced from the image). It drifts downstream; off the bottom of the frame
+// it comes back in at the top and goes again. Runs only while on screen;
+// with reduced motion the dot rests mid-river.
 
 const viz = document.querySelector('.stage__viz');
 if (viz) {
   const ctx = viz.getContext('2d');
   const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
-  const ACROSS = 1.4;   // s for each crossing, bank to bank
-  const CROSSINGS = 11; // bounces before it settles
-  // How far down the river it starts and stops (fractions). It ends in the
-  // upper part of the frame, clear of the text cards (which cover the lower
-  // half on phones).
-  let FROM = 0.1, TO = 0.6;
-  const OPEN = 1.1;     // s for the fog to open on the spot
-  const SETTLE = 4;     // s resting on the spot, fog open
-  const FADE = 0.9;     // s for the fog to close before starting again
+  const IMG_W = 2056, IMG_H = 992;
+  // The river's banks: [y, left x, right x], fractions of the image.
+  const BANKS = [[0.0,0.8186,0.8536],[0.0161,0.8207,0.8548],[0.0323,0.8239,0.8573],[0.0484,0.826,0.8598],[0.0645,0.8267,0.8617],[0.0806,0.8266,0.863],[0.0968,0.826,0.864],[0.1129,0.8246,0.8646],[0.129,0.8218,0.8644],[0.1452,0.8199,0.8635],[0.1613,0.8188,0.8619],[0.1774,0.8176,0.8586],[0.1935,0.8158,0.855],[0.2097,0.8137,0.8514],[0.2258,0.8107,0.8484],[0.2419,0.8071,0.8455],[0.2581,0.803,0.8424],[0.2742,0.7996,0.8386],[0.2903,0.7933,0.8354],[0.3065,0.7863,0.8314],[0.3226,0.7809,0.827],[0.3387,0.7783,0.8227],[0.3548,0.7775,0.8174],[0.371,0.7745,0.8117],[0.3871,0.7701,0.806],[0.4032,0.7656,0.8003],[0.4194,0.7603,0.7952],[0.4355,0.7541,0.7917],[0.4516,0.7433,0.789],[0.4677,0.7307,0.7857],[0.4839,0.7234,0.7812],[0.5,0.7194,0.7772],[0.5161,0.7143,0.7728],[0.5323,0.7077,0.7664],[0.5484,0.7018,0.7595],[0.5645,0.6953,0.7526],[0.5806,0.6895,0.7451],[0.5968,0.686,0.7377],[0.6129,0.6823,0.7303],[0.629,0.6772,0.7236],[0.6452,0.6728,0.7174],[0.6613,0.6688,0.7121],[0.6774,0.6637,0.7077],[0.6935,0.6576,0.7033],[0.7097,0.6525,0.6991],[0.7258,0.6473,0.695],[0.7419,0.6409,0.691],[0.7581,0.6358,0.686],[0.7742,0.6311,0.6826],[0.7903,0.6254,0.6808],[0.8065,0.6188,0.6789],[0.8226,0.6107,0.6761],[0.8387,0.6006,0.6722],[0.8548,0.5901,0.6675],[0.871,0.5812,0.6602],[0.8871,0.5743,0.6501],[0.9032,0.568,0.64],[0.9194,0.5621,0.6315],[0.9355,0.5514,0.6237],[0.9516,0.5437,0.6181],[0.9677,0.5418,0.6102],[0.9839,0.5382,0.6027],[1.0,0.5355,0.5994]];
+  const R = 5;           // dot radius, px
+  const TAIL = 1.6;      // s of trail
+  const ACROSS = 55;     // px/s across the river, at a 800px-tall frame
+  const DOWN = 22;       // px/s downstream, at a 800px-tall frame
 
-  let W = 0, H = 0, line = [], hw = 0;
-  const total = ACROSS * CROSSINGS;
-  let t0 = 0, running = false, visible = false;
-  // The fog: a soft cloud texture made once per size, and a canvas to cut
-  // the clearing out of it each frame.
-  let fog = null, dpr = 1;
-  const veil = document.createElement('canvas');
-  const vctx = veil.getContext('2d');
-  const smooth01 = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
+  const img = new Image();
+  img.decoding = 'async';
+  let W = 0, H = 0, dpr = 1, view = null;
+  let dot = null, trail = [], last = 0, running = false, visible = false;
 
-
-  // The river's centre line, top to bottom, as a smooth curve through a few
-  // points (fractions of the frame). On wide screens it keeps to the right,
-  // clear of the text cards; on tall screens it runs down the middle.
+  // Where the image sits in the frame: covering it, kept to the river side
+  // on wide screens; on tall screens the camera pans with the dot.
   function build() {
     const r = viz.getBoundingClientRect();
     W = r.width; H = r.height;
     dpr = Math.min(2, window.devicePixelRatio || 1);
     viz.width = Math.round(W * dpr); viz.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    veil.width = viz.width; veil.height = viz.height;
-    vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    fog = makeFog(W, H);
-
-    const wide = W > H * 1.1;
-    [FROM, TO] = wide ? [0.1, 0.6] : [0.04, 0.4];
-    const pts = (wide
-      ? [[0.66, -0.08], [0.58, 0.17], [0.69, 0.41], [0.6, 0.65], [0.7, 0.88], [0.64, 1.08]]
-      : [[0.56, -0.08], [0.38, 0.18], [0.62, 0.42], [0.4, 0.66], [0.6, 0.88], [0.52, 1.08]]
-    ).map(([x, y]) => [x * W, y * H]);
-    hw = Math.max(24, Math.min(58, Math.min(W, H) * 0.055));
-
-    // Catmull-Rom through the points, then measure along it.
-    line = [];
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
-      for (let k = 0; k < 60; k++) {
-        const u = k / 60, u2 = u * u, u3 = u2 * u;
-        const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u2 + (-a + 3 * b - 3 * c + d) * u3);
-        line.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: f(p0[1], p1[1], p2[1], p3[1]) });
-      }
-    }
-    line.push({ x: pts[pts.length - 1][0], y: pts[pts.length - 1][1] });
-    let len = 0;
-    line.forEach((p, i) => {
-      if (i) len += Math.hypot(p.x - line[i - 1].x, p.y - line[i - 1].y);
-      p.d = len;
-    });
-    line.forEach((p) => { p.d /= len; });
-
+    const k = Math.max(W / IMG_W, H / IMG_H);
+    view = { k, w: IMG_W * k, h: IMG_H * k, x: (W - IMG_W * k) * 0.8, y: (H - IMG_H * k) / 2 };
+    if (img.complete && img.naturalWidth) draw();
   }
+  img.addEventListener('load', () => draw());
 
-  // A point across the river (side -1 to 1, bank to bank) at fraction f of the
-  // way downstream.
-  function bank(side, f) {
+  // The banks at image row y (image px), as image x.
+  function banksAt(yImg) {
+    const f = Math.min(1, Math.max(0, yImg / IMG_H));
     let i = 1;
-    while (i < line.length - 1 && line[i].d < f) i++;
-    const a = line[i - 1], b = line[i];
-    const u = (f - a.d) / ((b.d - a.d) || 1);
-    const dx = b.x - a.x, dy = b.y - a.y, n = Math.hypot(dx, dy) || 1;
-    return { x: a.x + dx * u + (-dy / n) * hw * side, y: a.y + dy * u + (dx / n) * hw * side };
+    while (i < BANKS.length - 1 && BANKS[i][0] < f) i++;
+    const a = BANKS[i - 1], b = BANKS[i], u = (f - a[0]) / ((b[0] - a[0]) || 1);
+    return [(a[1] + (b[1] - a[1]) * u) * IMG_W, (a[2] + (b[2] - a[2]) * u) * IMG_W];
   }
 
-  // Downstream at a steady pace; across in straight runs that turn back the
-  // instant they reach a bank (a triangle wave from one bank to the other).
-  function pointAt(t) {
-    const u = Math.min(1, t / total);
-    const k = (t / ACROSS) % 2;
-    const side = k < 1 ? -1 + 2 * k : 3 - 2 * k;
-    return bank(t >= total ? (CROSSINGS % 2 ? 1 : -1) : side, FROM + (TO - FROM) * u);
+  // The dot lives in image coordinates, so it stays on the river whatever
+  // the frame does.
+  const start = () => { const [l, r] = banksAt(0); dot = { x: (l + r) / 2, y: -R * 3 / view.k, dir: 1 }; trail = []; };
+
+  function step(dt) {
+    const s = H / 800 / view.k;                   // frame px/s → image px/s
+    dot.y += DOWN * s * dt;
+    dot.x += dot.dir * ACROSS * s * dt;
+    const [l, r] = banksAt(dot.y);
+    const pad = (R + 2) / view.k;
+    if (dot.x > r - pad) { dot.x = r - pad; dot.dir = -1; }
+    if (dot.x < l + pad) { dot.x = l + pad; dot.dir = 1; }
+    if (dot.y * view.k + view.y > H + R * 4) start();   // off the bottom: back to the top
   }
 
-  function drawRiver(alpha) {
+  // On tall screens the river doesn't fit across, so follow the dot sideways.
+  function pan() {
+    if (view.w - W < 1 || W > H * 1.1) return;
+    const want = W * 0.55 - dot.x * view.k;
+    view.x = Math.min(0, Math.max(W - view.w, view.x + (want - view.x) * 0.04));
+  }
+
+  function draw(now = 0) {
+    ctx.clearRect(0, 0, W, H);
+    if (img.complete && img.naturalWidth) ctx.drawImage(img, view.x, view.y, view.w, view.h);
+    // A light veil, so the red reads and the frame sits with the dark page.
+    ctx.fillStyle = 'rgba(14, 18, 23, 0.28)';
+    ctx.fillRect(0, 0, W, H);
+    if (!dot) return;
+    const sx = (x) => view.x + x * view.k, sy = (y) => view.y + y * view.k;
     ctx.save();
-    ctx.globalAlpha = alpha;
     ctx.strokeStyle = RED;
     ctx.shadowColor = RED;
-    for (const side of [-1, 1]) {
+    ctx.shadowBlur = 8;
+    ctx.lineCap = 'round';
+    for (let i = 1; i < trail.length; i++) {
+      const age = (now - trail[i].t) / TAIL;
+      if (age >= 1) continue;
+      ctx.globalAlpha = 0.75 * (1 - age);
+      ctx.lineWidth = 4 * (1 - age) + 0.5;
       ctx.beginPath();
-      line.forEach((p, i) => {
-        const q = i < line.length - 1 ? line[i + 1] : p, o = i ? line[i - 1] : p;
-        const dx = q.x - o.x, dy = q.y - o.y, n = Math.hypot(dx, dy) || 1;
-        const x = p.x + (-dy / n) * hw * side, y = p.y + (dx / n) * hw * side;
-        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
-      });
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = alpha * 0.55;
-      ctx.shadowBlur = 10;
+      ctx.moveTo(sx(trail[i - 1].x), sy(trail[i - 1].y));
+      ctx.lineTo(sx(trail[i].x), sy(trail[i].y));
       ctx.stroke();
     }
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = RED;
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(sx(dot.x), sy(dot.y), R, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
-
-  // Fog of war: value noise in a few octaves, wrapping left to right so it
-  // can drift sideways forever. Mostly near-black, thinner in places (where
-  // the river glimmers through), with faint grey wisps.
-  function makeFog(w, h) {
-    const lw = Math.max(24, Math.ceil(w / 8)), lh = Math.max(24, Math.ceil(h / 8));
-    const c = document.createElement('canvas');
-    c.width = lw; c.height = lh;
-    const g = c.getContext('2d');
-    const img = g.createImageData(lw, lh);
-    const rand = mulberry32(31);
-    const octaves = [3, 6, 12].map((fx) => {
-      const fy = Math.max(2, Math.round(fx * lh / lw));
-      return { fx, fy, v: Array.from({ length: fx * fy }, rand) };
-    });
-    const at = (o, x, y) => {
-      const gx = (x / lw) * o.fx, gy = (y / lh) * o.fy;
-      const i = Math.floor(gx), j = Math.floor(gy);
-      const u = gx - i, v = gy - j, su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v);
-      const p = (a, b) => o.v[((b % o.fy) + o.fy) % o.fy * o.fx + ((a % o.fx) + o.fx) % o.fx];
-      const top = p(i, j) + (p(i + 1, j) - p(i, j)) * su;
-      const bot = p(i, j + 1) + (p(i + 1, j + 1) - p(i, j + 1)) * su;
-      return top + (bot - top) * sv;
-    };
-    for (let y = 0; y < lh; y++) {
-      for (let x = 0; x < lw; x++) {
-        const n = (at(octaves[0], x, y) * 4 + at(octaves[1], x, y) * 2 + at(octaves[2], x, y)) / 7;
-        const wisp = Math.max(0, n - 0.45) ** 1.5 * 0.9;
-        const k = (y * lw + x) * 4;
-        img.data[k] = 14 + 100 * wisp;
-        img.data[k + 1] = 18 + 112 * wisp;
-        img.data[k + 2] = 23 + 122 * wisp;
-        img.data[k + 3] = 255 * (0.8 + 0.2 * n);
-      }
-    }
-    g.putImageData(img, 0, 0);
-    return c;
-  }
-
-  // The fog, drifting slowly sideways, with a soft round clearing of radius r
-  // at p cut out of it.
-  function drawFog(now, p, r) {
-    vctx.save();
-    vctx.setTransform(1, 0, 0, 1, 0, 0);
-    vctx.clearRect(0, 0, veil.width, veil.height);
-    vctx.restore();
-    const ox = (now * 7) % W;
-    vctx.imageSmoothingEnabled = true;
-    vctx.drawImage(fog, ox, 0, W, H);
-    vctx.drawImage(fog, ox - W, 0, W, H);
-    if (r > 0.5) {
-      vctx.save();
-      vctx.globalCompositeOperation = 'destination-out';
-      const grad = vctx.createRadialGradient(p.x, p.y, r * 0.55, p.x, p.y, r);
-      grad.addColorStop(0, 'rgba(0,0,0,1)');
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
-      vctx.fillStyle = grad;
-      vctx.beginPath(); vctx.arc(p.x, p.y, r, 0, Math.PI * 2); vctx.fill();
-      vctx.restore();
-    }
-    ctx.drawImage(veil, 0, 0, W, H);
-  }
-
-  // A magnifying glass: a red ring with a soft glow, a glint, and a handle
-  // down to the right. p is the centre of the lens.
-  function drawGlass(p, alpha) {
-    const r = 13, a = Math.PI / 4;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = RED;
-    ctx.shadowColor = RED;
-    ctx.lineCap = 'round';
-    ctx.fillStyle = 'rgba(14, 18, 23, 0.25)';
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 12;
-    ctx.lineWidth = 2.6;
-    ctx.stroke();
-    ctx.lineWidth = 4.5;
-    ctx.beginPath();
-    ctx.moveTo(p.x + Math.cos(a) * (r + 1.5), p.y + Math.sin(a) * (r + 1.5));
-    ctx.lineTo(p.x + Math.cos(a) * (r + 14), p.y + Math.sin(a) * (r + 14));
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(255, 240, 230, 0.45)';
-    ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(p.x, p.y, r - 4.5, Math.PI * 1.1, Math.PI * 1.45); ctx.stroke();
-    ctx.restore();
-  }
-
-  // The clearing's full size: comfortably wider than the river.
-  const clearing = () => Math.max(95, hw * 3);
-  // The ground under the fog: a shade lighter than the night around it, so
-  // the clearing reads as a window.
-  const GROUND = '#283440';
-  // Add ?vizAt=17 to freeze the animation at that many seconds, for checking.
-  const vizAt = parseFloat(new URLSearchParams(location.search).get('vizAt'));
 
   function frame(ms) {
     if (!running) return;
     const now = ms / 1000;
-    if (!t0) t0 = now;
-    let t = now - t0;
-    if (t > total + SETTLE + FADE) { t0 = now; t = 0; }
-    if (!Number.isNaN(vizAt)) t = vizAt;
-
-    const end = t - total;                       // time since reaching the spot
-    const closing = end > SETTLE ? (end - SETTLE) / FADE : 0;
-    const r = end > 0 ? clearing() * smooth01(end / OPEN) * (1 - smooth01(closing)) : 0;
-    const p = pointAt(Math.min(t, total));
-
-    ctx.fillStyle = GROUND;
-    ctx.fillRect(0, 0, W, H);
-    drawRiver(1);
-    drawFog(now, p, r);
-    drawGlass(p, Math.min(1, t / 0.4) * (1 - smooth01(closing)));
+    const dt = last ? Math.min(0.05, now - last) : 0;
+    last = now;
+    if (!dot) start();
+    step(dt);
+    pan();
+    trail.push({ x: dot.x, y: dot.y, t: now });
+    while (trail.length && now - trail[0].t > TAIL) trail.shift();
+    draw(now);
     requestAnimationFrame(frame);
-  }
-
-  // Reduced motion: the found spot, fog open around the glass.
-  function drawStill() {
-    const p = pointAt(total);
-    ctx.fillStyle = GROUND;
-    ctx.fillRect(0, 0, W, H);
-    drawRiver(1);
-    drawFog(0, p, clearing());
-    drawGlass(p, 1);
   }
 
   function update() {
     const play = visible && !reduceMotion.matches;
-    if (play && !running) { running = true; t0 = 0; requestAnimationFrame(frame); }
+    if (play && !running) {
+      running = true; last = 0;
+      if (!img.src) img.src = W * dpr > 1300 ? 'assets/maps/river-search-1960.jpg' : 'assets/maps/river-search-1200.jpg';
+      requestAnimationFrame(frame);
+    }
     if (!play) {
       running = false;
-      if (W) drawStill();
+      if (reduceMotion.matches && visible) {
+        if (!img.src) img.src = 'assets/maps/river-search-1200.jpg';
+        const [l, r] = banksAt(IMG_H * 0.4);
+        dot = { x: (l + r) / 2, y: IMG_H * 0.4, dir: 1 }; trail = [];
+        draw();
+      }
     }
   }
 
   build();
-  update();
-  new ResizeObserver(() => { build(); if (!running) update(); }).observe(viz);
+  new ResizeObserver(() => { build(); trail = []; }).observe(viz);
   reduceMotion.addEventListener('change', update);
   if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }).observe(viz);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }, { rootMargin: '200px 0px' }).observe(viz);
   } else {
     visible = true; update();
   }
