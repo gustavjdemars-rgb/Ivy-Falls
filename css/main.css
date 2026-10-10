@@ -989,6 +989,24 @@ figcaption {
 .film__btn[aria-pressed="false"] .i-on { display: none; }
 
 figcaption.col { font-size: 0.88rem; }
+/* The video's voice credit: larger and brighter than a caption, with a
+   short light-blue rule in front, so it's easy to spot under the video. */
+.night figcaption.film__voice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+  font-size: clamp(1.2rem, 1rem + 0.7vw, 1.55rem);
+  color: var(--night-ink);
+}
+.film__voice::before {
+  content: "";
+  width: 1.6rem;
+  height: 3px;
+  background: var(--blue);
+  flex: none;
+}
+.film__voice strong { font-weight: 700; color: var(--blue); }
 
 /* ---------- Clippings: real paper ---------- */
 
