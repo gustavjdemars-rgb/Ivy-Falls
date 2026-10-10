@@ -958,7 +958,7 @@ figcaption {
   height: clamp(3.25rem, 2.5rem + 2.5vw, 4.75rem);
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: 2px;          /* square, like the share button and label boxes */
   background: var(--blue);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
   cursor: pointer;
