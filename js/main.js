@@ -686,12 +686,12 @@ if (deck) {
 }
 
 // ---------- Bank to bank (M2) ----------
-// A simple red river, and a red point that bounces from bank to bank like a
-// ball between two walls, turning back the moment it touches a bank, while it
-// drifts slowly downstream, trailing a short fading tail, until it settles on
-// one spot and pulses.
-// Then it fades and starts again. Runs only while on screen; with reduced
-// motion it shows the finished search as a still.
+// A simple red river under a dark, slowly drifting fog of war, and a red
+// magnifying glass that bounces from bank to bank like a ball between two
+// walls, turning back the moment it touches a bank, while it drifts slowly
+// downstream. When it reaches the spot, the fog opens in a circle around it.
+// Then the fog closes and the search starts again. Runs only while on screen;
+// with reduced motion it shows the found spot as a still.
 
 const viz = document.querySelector('.stage__viz');
 if (viz) {
@@ -699,14 +699,23 @@ if (viz) {
   const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
   const ACROSS = 1.4;   // s for each crossing, bank to bank
   const CROSSINGS = 11; // bounces before it settles
-  const FROM = 0.12, TO = 0.8; // how far down the river it starts and stops (fractions)
-  const TAIL = 1.4;     // s of trail behind the point
-  const SETTLE = 3.2;   // s pulsing on the last spot
-  const FADE = 0.7;     // s to fade out before starting again
+  // How far down the river it starts and stops (fractions). It ends in the
+  // upper part of the frame, clear of the text cards (which cover the lower
+  // half on phones).
+  let FROM = 0.1, TO = 0.6;
+  const OPEN = 1.1;     // s for the fog to open on the spot
+  const SETTLE = 4;     // s resting on the spot, fog open
+  const FADE = 0.9;     // s for the fog to close before starting again
 
   let W = 0, H = 0, line = [], hw = 0;
   const total = ACROSS * CROSSINGS;
-  let trail = [], t0 = 0, running = false, visible = false;
+  let t0 = 0, running = false, visible = false;
+  // The fog: a soft cloud texture made once per size, and a canvas to cut
+  // the clearing out of it each frame.
+  let fog = null, dpr = 1;
+  const veil = document.createElement('canvas');
+  const vctx = veil.getContext('2d');
+  const smooth01 = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 
 
   // The river's centre line, top to bottom, as a smooth curve through a few
@@ -715,11 +724,15 @@ if (viz) {
   function build() {
     const r = viz.getBoundingClientRect();
     W = r.width; H = r.height;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    dpr = Math.min(2, window.devicePixelRatio || 1);
     viz.width = Math.round(W * dpr); viz.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    veil.width = viz.width; veil.height = viz.height;
+    vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    fog = makeFog(W, H);
 
     const wide = W > H * 1.1;
+    [FROM, TO] = wide ? [0.1, 0.6] : [0.04, 0.4];
     const pts = (wide
       ? [[0.66, -0.08], [0.58, 0.17], [0.69, 0.41], [0.6, 0.65], [0.7, 0.88], [0.64, 1.08]]
       : [[0.56, -0.08], [0.38, 0.18], [0.62, 0.42], [0.4, 0.66], [0.6, 0.88], [0.52, 1.08]]
@@ -787,83 +800,136 @@ if (viz) {
     ctx.restore();
   }
 
-  function drawPoint(p, alpha, pulse) {
+  // Fog of war: value noise in a few octaves, wrapping left to right so it
+  // can drift sideways forever. Mostly near-black, thinner in places (where
+  // the river glimmers through), with faint grey wisps.
+  function makeFog(w, h) {
+    const lw = Math.max(24, Math.ceil(w / 8)), lh = Math.max(24, Math.ceil(h / 8));
+    const c = document.createElement('canvas');
+    c.width = lw; c.height = lh;
+    const g = c.getContext('2d');
+    const img = g.createImageData(lw, lh);
+    const rand = mulberry32(31);
+    const octaves = [3, 6, 12].map((fx) => {
+      const fy = Math.max(2, Math.round(fx * lh / lw));
+      return { fx, fy, v: Array.from({ length: fx * fy }, rand) };
+    });
+    const at = (o, x, y) => {
+      const gx = (x / lw) * o.fx, gy = (y / lh) * o.fy;
+      const i = Math.floor(gx), j = Math.floor(gy);
+      const u = gx - i, v = gy - j, su = u * u * (3 - 2 * u), sv = v * v * (3 - 2 * v);
+      const p = (a, b) => o.v[((b % o.fy) + o.fy) % o.fy * o.fx + ((a % o.fx) + o.fx) % o.fx];
+      const top = p(i, j) + (p(i + 1, j) - p(i, j)) * su;
+      const bot = p(i, j + 1) + (p(i + 1, j + 1) - p(i, j + 1)) * su;
+      return top + (bot - top) * sv;
+    };
+    for (let y = 0; y < lh; y++) {
+      for (let x = 0; x < lw; x++) {
+        const n = (at(octaves[0], x, y) * 4 + at(octaves[1], x, y) * 2 + at(octaves[2], x, y)) / 7;
+        const wisp = Math.max(0, n - 0.45) ** 1.5 * 0.9;
+        const k = (y * lw + x) * 4;
+        img.data[k] = 14 + 100 * wisp;
+        img.data[k + 1] = 18 + 112 * wisp;
+        img.data[k + 2] = 23 + 122 * wisp;
+        img.data[k + 3] = 255 * (0.8 + 0.2 * n);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  // The fog, drifting slowly sideways, with a soft round clearing of radius r
+  // at p cut out of it.
+  function drawFog(now, p, r) {
+    vctx.save();
+    vctx.setTransform(1, 0, 0, 1, 0, 0);
+    vctx.clearRect(0, 0, veil.width, veil.height);
+    vctx.restore();
+    const ox = (now * 7) % W;
+    vctx.imageSmoothingEnabled = true;
+    vctx.drawImage(fog, ox, 0, W, H);
+    vctx.drawImage(fog, ox - W, 0, W, H);
+    if (r > 0.5) {
+      vctx.save();
+      vctx.globalCompositeOperation = 'destination-out';
+      const grad = vctx.createRadialGradient(p.x, p.y, r * 0.55, p.x, p.y, r);
+      grad.addColorStop(0, 'rgba(0,0,0,1)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      vctx.fillStyle = grad;
+      vctx.beginPath(); vctx.arc(p.x, p.y, r, 0, Math.PI * 2); vctx.fill();
+      vctx.restore();
+    }
+    ctx.drawImage(veil, 0, 0, W, H);
+  }
+
+  // A magnifying glass: a red ring with a soft glow, a glint, and a handle
+  // down to the right. p is the centre of the lens.
+  function drawGlass(p, alpha) {
+    const r = 13, a = Math.PI / 4;
     ctx.save();
-    ctx.fillStyle = RED;
+    ctx.globalAlpha = alpha;
     ctx.strokeStyle = RED;
     ctx.shadowColor = RED;
-    if (pulse !== undefined) {
-      ctx.globalAlpha = alpha * 0.5 * (1 - pulse);
-      ctx.lineWidth = 1.5;
-      ctx.shadowBlur = 8;
-      ctx.beginPath(); ctx.arc(p.x, p.y, 7 + pulse * 18, 0, Math.PI * 2); ctx.stroke();
-    }
-    ctx.globalAlpha = alpha * 0.9;
-    ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.lineCap = 'round';
+    ctx.fillStyle = 'rgba(14, 18, 23, 0.25)';
+    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 12;
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
+    ctx.lineWidth = 4.5;
+    ctx.beginPath();
+    ctx.moveTo(p.x + Math.cos(a) * (r + 1.5), p.y + Math.sin(a) * (r + 1.5));
+    ctx.lineTo(p.x + Math.cos(a) * (r + 14), p.y + Math.sin(a) * (r + 14));
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255, 240, 230, 0.45)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(p.x, p.y, r - 4.5, Math.PI * 1.1, Math.PI * 1.45); ctx.stroke();
     ctx.restore();
   }
 
-  // The tail: recent positions, thinning and fading with age.
-  function drawTrail(now, alpha) {
-    ctx.save();
-    ctx.strokeStyle = RED;
-    ctx.shadowColor = RED;
-    ctx.shadowBlur = 8;
-    ctx.lineCap = 'round';
-    for (let i = 1; i < trail.length; i++) {
-      const age = (now - trail[i].t) / TAIL;
-      if (age >= 1) continue;
-      ctx.globalAlpha = alpha * 0.7 * (1 - age);
-      ctx.lineWidth = 4 * (1 - age) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
-      ctx.lineTo(trail[i].x, trail[i].y);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
+  // The clearing's full size: comfortably wider than the river.
+  const clearing = () => Math.max(95, hw * 3);
+  // The ground under the fog: a shade lighter than the night around it, so
+  // the clearing reads as a window.
+  const GROUND = '#283440';
+  // Add ?vizAt=17 to freeze the animation at that many seconds, for checking.
+  const vizAt = parseFloat(new URLSearchParams(location.search).get('vizAt'));
 
   function frame(ms) {
     if (!running) return;
     const now = ms / 1000;
     if (!t0) t0 = now;
     let t = now - t0;
-    if (t > total + SETTLE + FADE) { t0 = now; t = 0; trail = []; }
+    if (t > total + SETTLE + FADE) { t0 = now; t = 0; }
+    if (!Number.isNaN(vizAt)) t = vizAt;
 
-    ctx.clearRect(0, 0, W, H);
-    drawRiver(1);
-    const fade = t > total + SETTLE ? 1 - (t - total - SETTLE) / FADE : Math.min(1, t / 0.4);
+    const end = t - total;                       // time since reaching the spot
+    const closing = end > SETTLE ? (end - SETTLE) / FADE : 0;
+    const r = end > 0 ? clearing() * smooth01(end / OPEN) * (1 - smooth01(closing)) : 0;
     const p = pointAt(Math.min(t, total));
-    trail.push({ x: p.x, y: p.y, t: now });
-    while (trail.length && now - trail[0].t > TAIL) trail.shift();
-    drawTrail(now, fade);
-    drawPoint(p, fade, t > total ? ((t - total) % 1.6) / 1.6 : undefined);
+
+    ctx.fillStyle = GROUND;
+    ctx.fillRect(0, 0, W, H);
+    drawRiver(1);
+    drawFog(now, p, r);
+    drawGlass(p, Math.min(1, t / 0.4) * (1 - smooth01(closing)));
     requestAnimationFrame(frame);
   }
 
-  // Reduced motion: the whole search at once, faintly, ending on the spot.
+  // Reduced motion: the found spot, fog open around the glass.
   function drawStill() {
-    ctx.clearRect(0, 0, W, H);
+    const p = pointAt(total);
+    ctx.fillStyle = GROUND;
+    ctx.fillRect(0, 0, W, H);
     drawRiver(1);
-    ctx.save();
-    ctx.strokeStyle = RED;
-    ctx.globalAlpha = 0.45;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 5]);
-    ctx.beginPath();
-    for (let t = 0; t <= total; t += 0.05) {
-      const p = pointAt(t);
-      if (t) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
-    }
-    ctx.stroke();
-    ctx.restore();
-    drawPoint(pointAt(total), 1);
+    drawFog(0, p, clearing());
+    drawGlass(p, 1);
   }
 
   function update() {
     const play = visible && !reduceMotion.matches;
-    if (play && !running) { running = true; t0 = 0; trail = []; requestAnimationFrame(frame); }
+    if (play && !running) { running = true; t0 = 0; requestAnimationFrame(frame); }
     if (!play) {
       running = false;
       if (W) drawStill();
@@ -872,7 +938,7 @@ if (viz) {
 
   build();
   update();
-  new ResizeObserver(() => { build(); trail = []; if (!running) update(); }).observe(viz);
+  new ResizeObserver(() => { build(); if (!running) update(); }).observe(viz);
   reduceMotion.addEventListener('change', update);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }).observe(viz);
