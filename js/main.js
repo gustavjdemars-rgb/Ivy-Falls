@@ -691,9 +691,9 @@ if (deck) {
 // right), bouncing like a ball between two walls: the
 // edges of the wooded river corridor, where the woods meet the roads and
 // houses on the bluffs. So it crosses the rivers and roams the woods and
-// land either side, where a waterfall could be. Near the right end it glides
-// in to one spot, the woods south of the lake where a road crosses over the
-// water, and stops there with a soft click ring. It starts over each time
+// land either side, where a waterfall could be. Near the end it leaves the
+// valley and glides in to one spot in the woods among the houses south of
+// the river (marked by the author), and stops there with a soft click ring. It starts over each time
 // the section comes back into view. With reduced motion it rests on the spot.
 
 const viz = document.querySelector('.stage__viz');
@@ -708,7 +708,7 @@ if (viz) {
   // The pointer: a classic arrow, tip at 0,0, in px.
   const ARROW = [[0, 0], [0, 21], [5, 16.5], [8.6, 24.8], [12.4, 23.2], [8.8, 15.2], [15, 15]];
   const S_ARROW = 1.5;
-  const TARGET = [2675, 725];   // where it stops, image px
+  const TARGET = [2192, 938];   // where it stops, image px (the author's X)
   const APPROACH = 260;         // image px before the spot where it heads straight in
 
   const img = new Image();
