@@ -686,77 +686,81 @@ if (deck) {
 }
 
 // ---------- Bank to bank (M2) ----------
-// A satellite view of the Mississippi between Minneapolis and St. Paul, and a
-// red dot with a short glowing tail that bounces slowly from bank to bank
-// like a ball between two walls, the walls being the river's real edges
-// (traced from the image). It drifts downstream; off the bottom of the frame
-// it comes back in at the top and goes again. Runs only while on screen;
-// with reduced motion the dot rests mid-river.
+// A satellite view of the river valley where the Minnesota River meets the
+// Mississippi, and a red dot with a short glowing tail that drifts slowly
+// downstream (left to right), bouncing like a ball between two walls: the
+// edges of the wooded river corridor, where the woods meet the roads and
+// houses on the bluffs. So it crosses the rivers and roams the woods and
+// land either side, where a waterfall could be. Off the right edge of the
+// frame it comes back in at the left and goes again. Runs only while on
+// screen; with reduced motion the dot rests in the middle.
 
 const viz = document.querySelector('.stage__viz');
 if (viz) {
   const ctx = viz.getContext('2d');
   const RED = getComputedStyle(document.documentElement).getPropertyValue('--map-red').trim() || '#D7563F';
-  const IMG_W = 2056, IMG_H = 992;
-  // The river's banks: [y, left x, right x], fractions of the image.
-  const BANKS = [[0.0,0.8186,0.8536],[0.0161,0.8207,0.8548],[0.0323,0.8239,0.8573],[0.0484,0.826,0.8598],[0.0645,0.8267,0.8617],[0.0806,0.8266,0.863],[0.0968,0.826,0.864],[0.1129,0.8246,0.8646],[0.129,0.8218,0.8644],[0.1452,0.8199,0.8635],[0.1613,0.8188,0.8619],[0.1774,0.8176,0.8586],[0.1935,0.8158,0.855],[0.2097,0.8137,0.8514],[0.2258,0.8107,0.8484],[0.2419,0.8071,0.8455],[0.2581,0.803,0.8424],[0.2742,0.7996,0.8386],[0.2903,0.7933,0.8354],[0.3065,0.7863,0.8314],[0.3226,0.7809,0.827],[0.3387,0.7783,0.8227],[0.3548,0.7775,0.8174],[0.371,0.7745,0.8117],[0.3871,0.7701,0.806],[0.4032,0.7656,0.8003],[0.4194,0.7603,0.7952],[0.4355,0.7541,0.7917],[0.4516,0.7433,0.789],[0.4677,0.7307,0.7857],[0.4839,0.7234,0.7812],[0.5,0.7194,0.7772],[0.5161,0.7143,0.7728],[0.5323,0.7077,0.7664],[0.5484,0.7018,0.7595],[0.5645,0.6953,0.7526],[0.5806,0.6895,0.7451],[0.5968,0.686,0.7377],[0.6129,0.6823,0.7303],[0.629,0.6772,0.7236],[0.6452,0.6728,0.7174],[0.6613,0.6688,0.7121],[0.6774,0.6637,0.7077],[0.6935,0.6576,0.7033],[0.7097,0.6525,0.6991],[0.7258,0.6473,0.695],[0.7419,0.6409,0.691],[0.7581,0.6358,0.686],[0.7742,0.6311,0.6826],[0.7903,0.6254,0.6808],[0.8065,0.6188,0.6789],[0.8226,0.6107,0.6761],[0.8387,0.6006,0.6722],[0.8548,0.5901,0.6675],[0.871,0.5812,0.6602],[0.8871,0.5743,0.6501],[0.9032,0.568,0.64],[0.9194,0.5621,0.6315],[0.9355,0.5514,0.6237],[0.9516,0.5437,0.6181],[0.9677,0.5418,0.6102],[0.9839,0.5382,0.6027],[1.0,0.5355,0.5994]];
+  const IMG_W = 2820, IMG_H = 1190;
+  // The corridor's edges: [x, top y, bottom y], fractions of the image.
+  const WALLS = [[0.0,0.1777,0.5958],[0.0179,0.1851,0.5981],[0.0357,0.1925,0.6003],[0.0536,0.1999,0.6026],[0.0714,0.2074,0.6048],[0.0893,0.2148,0.6071],[0.1071,0.2222,0.6094],[0.125,0.2296,0.6238],[0.1429,0.237,0.6381],[0.1607,0.2391,0.6525],[0.1786,0.2412,0.6669],[0.1964,0.2433,0.6686],[0.2143,0.2454,0.6703],[0.2321,0.2476,0.672],[0.25,0.2497,0.6737],[0.2679,0.2518,0.6754],[0.2857,0.2539,0.6771],[0.3036,0.256,0.6722],[0.3214,0.2581,0.6674],[0.3393,0.2602,0.6611],[0.3571,0.2624,0.649],[0.375,0.2645,0.6369],[0.3929,0.2666,0.6285],[0.4107,0.2687,0.6257],[0.4286,0.2708,0.6229],[0.4464,0.2734,0.6229],[0.4643,0.2759,0.6229],[0.4821,0.2784,0.6229],[0.5,0.281,0.6229],[0.5179,0.2835,0.6246],[0.5357,0.2861,0.6263],[0.5536,0.2886,0.628],[0.5714,0.2911,0.6297],[0.5893,0.2892,0.6352],[0.6071,0.2873,0.6407],[0.625,0.2854,0.6462],[0.6429,0.2835,0.6517],[0.6607,0.2816,0.653],[0.6786,0.2797,0.6542],[0.6964,0.2778,0.6555],[0.7143,0.2759,0.6568],[0.7321,0.2728,0.6557],[0.75,0.2697,0.6546],[0.7679,0.2666,0.6536],[0.7857,0.2635,0.6525],[0.8036,0.2604,0.6515],[0.8214,0.2573,0.6504],[0.8393,0.2553,0.6494],[0.8571,0.2533,0.6483],[0.875,0.2514,0.6466],[0.8929,0.2494,0.6449],[0.9107,0.2474,0.6432],[0.9286,0.2454,0.6415],[0.9464,0.2476,0.6398],[0.9643,0.2497,0.6381],[0.9821,0.2518,0.6364],[1.0,0.2539,0.6348]];
   const R = 5;           // dot radius, px
-  const TAIL = 1.6;      // s of trail
-  const ACROSS = 55;     // px/s across the river, at a 800px-tall frame
-  const DOWN = 22;       // px/s downstream, at a 800px-tall frame
+  const TAIL = 2.2;      // s of trail
+  const ACROSS = 32;     // px/s up and down, at an 800px-tall frame
+  const ALONG = 14;      // px/s downstream, at an 800px-tall frame
 
   const img = new Image();
   img.decoding = 'async';
   let W = 0, H = 0, dpr = 1, view = null;
   let dot = null, trail = [], last = 0, running = false, visible = false;
 
-  // Where the image sits in the frame: covering it, kept to the river side
-  // on wide screens; on tall screens the camera pans with the dot.
+  // Wide screens: the image covers the frame, centred on the corridor.
+  // Tall screens: the image fills the top part of the frame (the text cards
+  // cover the lower half), cropped around the middle of the valley.
   function build() {
     const r = viz.getBoundingClientRect();
     W = r.width; H = r.height;
     dpr = Math.min(2, window.devicePixelRatio || 1);
     viz.width = Math.round(W * dpr); viz.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const k = Math.max(W / IMG_W, H / IMG_H);
-    view = { k, w: IMG_W * k, h: IMG_H * k, x: (W - IMG_W * k) * 0.8, y: (H - IMG_H * k) / 2 };
+    const tall = W <= H * 1.1;
+    const k = tall ? Math.max(W / IMG_W, (H * 0.58) / IMG_H) : Math.max(W / IMG_W, H / IMG_H);
+    const w = IMG_W * k, h = IMG_H * k;
+    view = { k, w, h, x: (W - w) * 0.55, y: tall ? 0 : Math.min(0, Math.max(H - h, H * 0.5 - h * 0.38)) };
     if (img.complete && img.naturalWidth) draw();
   }
   img.addEventListener('load', () => draw());
 
-  // The banks at image row y (image px), as image x.
-  function banksAt(yImg) {
-    const f = Math.min(1, Math.max(0, yImg / IMG_H));
+  // The corridor at image column x (image px), as [top, bottom] image y.
+  function wallsAt(xImg) {
+    const f = Math.min(1, Math.max(0, xImg / IMG_W));
     let i = 1;
-    while (i < BANKS.length - 1 && BANKS[i][0] < f) i++;
-    const a = BANKS[i - 1], b = BANKS[i], u = (f - a[0]) / ((b[0] - a[0]) || 1);
-    return [(a[1] + (b[1] - a[1]) * u) * IMG_W, (a[2] + (b[2] - a[2]) * u) * IMG_W];
+    while (i < WALLS.length - 1 && WALLS[i][0] < f) i++;
+    const a = WALLS[i - 1], b = WALLS[i], u = (f - a[0]) / ((b[0] - a[0]) || 1);
+    return [(a[1] + (b[1] - a[1]) * u) * IMG_H, (a[2] + (b[2] - a[2]) * u) * IMG_H];
   }
 
-  // The dot lives in image coordinates, so it stays on the river whatever
-  // the frame does.
-  const start = () => { const [l, r] = banksAt(0); dot = { x: (l + r) / 2, y: -R * 3 / view.k, dir: 1 }; trail = []; };
+  // The dot lives in image coordinates; it starts just off the frame's left.
+  const toImgX = (sx) => (sx - view.x) / view.k;
+  const start = () => {
+    const x = toImgX(-R * 4);
+    const [t, b] = wallsAt(x);
+    dot = { x, y: t + (b - t) * 0.3, dir: 1 };
+    trail = [];
+  };
 
   function step(dt) {
     const s = H / 800 / view.k;                   // frame px/s → image px/s
-    dot.y += DOWN * s * dt;
-    dot.x += dot.dir * ACROSS * s * dt;
-    const [l, r] = banksAt(dot.y);
+    dot.x += ALONG * s * dt;
+    dot.y += dot.dir * ACROSS * s * dt;
+    const [t, b] = wallsAt(dot.x);
     const pad = (R + 2) / view.k;
-    if (dot.x > r - pad) { dot.x = r - pad; dot.dir = -1; }
-    if (dot.x < l + pad) { dot.x = l + pad; dot.dir = 1; }
-    if (dot.y * view.k + view.y > H + R * 4) start();   // off the bottom: back to the top
-  }
-
-  // On tall screens the river doesn't fit across, so follow the dot sideways.
-  function pan() {
-    if (view.w - W < 1 || W > H * 1.1) return;
-    const want = W * 0.55 - dot.x * view.k;
-    view.x = Math.min(0, Math.max(W - view.w, view.x + (want - view.x) * 0.04));
+    if (dot.y > b - pad) { dot.y = b - pad; dot.dir = -1; }
+    if (dot.y < t + pad) { dot.y = t + pad; dot.dir = 1; }
+    if (dot.x * view.k + view.x > W + R * 4) start();   // off the right: back to the left
   }
 
   function draw(now = 0) {
-    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0E1217';
+    ctx.fillRect(0, 0, W, H);
     if (img.complete && img.naturalWidth) ctx.drawImage(img, view.x, view.y, view.w, view.h);
     // A light veil, so the red reads and the frame sits with the dark page.
     ctx.fillStyle = 'rgba(14, 18, 23, 0.28)';
@@ -785,14 +789,24 @@ if (viz) {
     ctx.restore();
   }
 
+  // Add ?vizAt=30 to start the dot that many seconds in, for checking.
+  const vizAt = parseFloat(new URLSearchParams(location.search).get('vizAt'));
+
   function frame(ms) {
     if (!running) return;
     const now = ms / 1000;
     const dt = last ? Math.min(0.05, now - last) : 0;
     last = now;
-    if (!dot) start();
+    if (!dot) {
+      start();
+      if (!Number.isNaN(vizAt)) {
+        for (let t = 0; t < vizAt; t += 1 / 60) {
+          step(1 / 60);
+          trail.push({ x: dot.x, y: dot.y, t: now - vizAt + t });
+        }
+      }
+    }
     step(dt);
-    pan();
     trail.push({ x: dot.x, y: dot.y, t: now });
     while (trail.length && now - trail[0].t > TAIL) trail.shift();
     draw(now);
@@ -801,17 +815,13 @@ if (viz) {
 
   function update() {
     const play = visible && !reduceMotion.matches;
-    if (play && !running) {
-      running = true; last = 0;
-      if (!img.src) img.src = W * dpr > 1300 ? 'assets/maps/river-search-1960.jpg' : 'assets/maps/river-search-1200.jpg';
-      requestAnimationFrame(frame);
-    }
+    if (!img.src && visible) img.src = W * dpr > 1500 ? 'assets/maps/river-search2-2400.jpg' : 'assets/maps/river-search2-1400.jpg';
+    if (play && !running) { running = true; last = 0; requestAnimationFrame(frame); }
     if (!play) {
       running = false;
       if (reduceMotion.matches && visible) {
-        if (!img.src) img.src = 'assets/maps/river-search-1200.jpg';
-        const [l, r] = banksAt(IMG_H * 0.4);
-        dot = { x: (l + r) / 2, y: IMG_H * 0.4, dir: 1 }; trail = [];
+        const x = toImgX(W * 0.6), [t, b] = wallsAt(x);
+        dot = { x, y: (t + b) / 2, dir: 1 }; trail = [];
         draw();
       }
     }
