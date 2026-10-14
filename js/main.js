@@ -1013,20 +1013,30 @@ if (zoom && zoomCards.length) {
   settle();
 }
 
-// ---------- Loupe (C3) ----------
-// Hover and keyboard focus open the enlarged caption through CSS; a tap or
+// ---------- Loupes (C1, C3) ----------
+// Hover and keyboard focus open a loupe's transcription through CSS; a tap or
 // click pins it open (and closes it again), as do Escape and a tap elsewhere.
+// Only one is pinned open at a time.
 
-document.querySelectorAll('.loupe').forEach((btn) => {
-  const fig = btn.closest('.clipping--page');
-  const set = (open) => {
-    fig.classList.toggle('is-open', open);
-    btn.setAttribute('aria-expanded', String(open));
-  };
-  btn.addEventListener('click', (e) => { e.stopPropagation(); set(!fig.classList.contains('is-open')); });
-  document.addEventListener('click', (e) => { if (!fig.contains(e.target)) set(false); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+const loupes = document.querySelectorAll('.loupe');
+const pinLoupe = (btn, open) => {
+  btn.classList.toggle('is-open', open);
+  btn.setAttribute('aria-expanded', String(open));
+};
+loupes.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !btn.classList.contains('is-open');
+    loupes.forEach((b) => pinLoupe(b, false));
+    pinLoupe(btn, open);
+  });
 });
+if (loupes.length) {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.loupe__card')) loupes.forEach((b) => pinLoupe(b, false));
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') loupes.forEach((b) => pinLoupe(b, false)); });
+}
 
 // ---------- Share ----------
 // Opens the device's share sheet where there is one (phones, most laptops);
