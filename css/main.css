@@ -1099,6 +1099,21 @@ mark {
   mix-blend-mode: multiply;
 }
 
+/* An L-shaped cut (C1): the paper is clipped to the scan's L, inset by the
+   paper margin, and the shadow follows the cut via drop-shadow on a wrapper. */
+.clipping--cut { max-width: calc(34rem + 2 * var(--gutter)); }
+.clipping--cut .clipping__cut {
+  filter: drop-shadow(0 1px 2px rgba(40, 30, 20, 0.16)) drop-shadow(0 10px 14px rgba(40, 30, 20, 0.22));
+}
+.clipping--cut .clipping__paper {
+  --pad: clamp(0.6rem, 2vw, 0.9rem);
+  --cx: calc(var(--pad) + (100% - 2 * var(--pad)) * 0.2543);   /* the L's inner corner, measured on the scan */
+  --cy: calc(var(--pad) + (100% - 2 * var(--pad)) * 0.4999);
+  padding: var(--pad);
+  clip-path: polygon(0 0, 100% 0, 100% var(--cy), var(--cx) var(--cy), var(--cx) 100%, 0 100%);
+}
+.clipping--cut .clipping__paper::after { display: none; }
+
 /* A full newspaper page: wider than a clipping. */
 .clipping--page { max-width: calc(40rem + 2 * var(--gutter)); }
 /* Sits above the figures after it, so the open caption can overlap them. */
