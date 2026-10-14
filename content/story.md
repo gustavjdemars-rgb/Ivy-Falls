@@ -26,7 +26,9 @@ Happy Hollow Falls
 
 <!-- Gap in the original paste here: an image or embed probably sat at this spot. -->
 
-The falls, which were once known as Happy Hollow Falls, were little-known among the general public even in the early 20th century. Despite this, the falls and its surrounding area caught the eye of a passionate few. Some of that passion for the “picturesque falls” can be found in this 1917 article from the St. Paul Pioneer Press.
+The falls once went under a different name, Happy Hollow Falls. It’s unclear when the name changed.
+
+The falls were little-known among the general public even in the early 20th century. Despite this, the falls and its surrounding area caught the eye of a passionate few. Some of that passion for the “picturesque falls” and “overlooked nook” can be found in this 1917 article from the St. Paul Pioneer Press.
 
 <!-- Large gap in the original paste here: probably the 1917 clipping image. -->
 
