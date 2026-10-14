@@ -865,8 +865,8 @@ if (viz) {
 
 // ---------- Topographic reveal ----------
 // The elevation map fades in over the first map once the "aha" card ("A quick
-// look at a topographical map...") is a third of the way up the screen, and back out if
-// the reader scrolls above it again.
+// look at a topographic map...") has risen fully into its corner at the
+// bottom of the screen, and back out if the reader scrolls above it again.
 
 const aha = document.querySelector('.card--aha');
 const revealStage = aha && aha.closest('.stage');
@@ -874,7 +874,7 @@ if (revealStage && revealStage.querySelector('.stage__map--reveal')) {
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => {
       revealStage.classList.toggle('is-revealed', e.isIntersecting || e.boundingClientRect.top < 0);
-    }, { rootMargin: '0px 0px -33% 0px' }).observe(aha);
+    }, { threshold: 0.98 }).observe(aha);
   } else {
     revealStage.classList.add('is-revealed');
   }

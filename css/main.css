@@ -765,6 +765,22 @@ figcaption {
 
 .card:last-child { margin-bottom: 0; }
 .card--aha p { font-size: 1.18em; line-height: 1.45; }
+/* The "aha" card rises into the bottom-left corner and parks there while the
+   elevation map shows, clear of the ravine and the arrow. Its layout box
+   sticks just above the bottom of the screen and the card is drawn one card
+   height higher. A sticky box can't use its own margin as room to travel,
+   so a spacer after it sets how long it stays. */
+.card--aha {
+  position: sticky;
+  top: calc(100svh - clamp(1rem, 4vh, 2rem));
+  transform: translateY(-100%);
+}
+.stage__steps:has(> .card--aha:last-child) { padding-bottom: 0; }
+.stage__steps:has(> .card--aha:last-child)::after {
+  content: "";
+  display: block;
+  height: 60svh;
+}
 
 @media (max-width: 760px) {
   .stage__steps { padding-top: 70svh; }

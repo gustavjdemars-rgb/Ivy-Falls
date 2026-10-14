@@ -12,7 +12,7 @@ Because of a geological pattern called jointing, spring-fed waterfalls on the Mi
 
 Half-remembering what he told me years later, I bounced back and forth between the banks of the Mississippi on Google Maps, looking at the locations of marked waterfalls and the points directly across. I eventually landed on a spot that looked like it should have a waterfall, but found nothing marked.
 
-A quick look at a topographical map showed there was something there.
+A quick look at a topographic map showed there was something there.
 
 Reaching Ivy Falls takes about 45 minutes on foot starting at the Lilydale Trailhead, located on the flats of the Mississippi, about a 15-minute drive from Downtown Minneapolis. The town that once resided on this floodplain relocated to the bluffs overlooking the river due to the area’s repeated flooding,[ according to the National Parks Service.](https://web.archive.org/web/20240523142348/https://www.nps.gov/miss/planyourvisit/lilydale_park.htm)
 
