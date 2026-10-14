@@ -30,6 +30,6 @@ The falls, which were once known as Happy Hollow Falls, were little-known among 
 
 <!-- Large gap in the original paste here: probably the 1917 clipping image. -->
 
-Despite the waterfall’s lack of widespread exposure, the South St. Paul Reporter reported in 1937 that the park was under consideration to become a state park, with two state legislators introducing bills to set aside the land for public use. Those efforts never came to fruition.
+The South St. Paul Reporter reported in 1937 that the park was under consideration to become a state park, with two state legislators introducing bills to set aside the land for public use. Those efforts never came to fruition.
 
 Ivy Falls now sits nestled in between the Mississippi and a residential neighborhood, surrounded by million-dollar house laden cul-de-sacs, according to data from Zillow. A locale once sought as a recreation area for many, now is seen by very few.
