@@ -458,6 +458,10 @@ a:hover { text-decoration-thickness: 2px; }
   .redacted:hover .redacted__bar { animation: none; }
 }
 
+/* Images come as AVIF with a JPEG fallback; the <picture> wrapper stays out
+   of layout so each image sits exactly where a bare <img> would. */
+picture { display: contents; }
+
 /* ---------- Story: text on sheets that overlap like stacked paper ---------- */
 
 .story { padding-block: clamp(3rem, 8vw, 5.5rem) 0; }

@@ -4,6 +4,61 @@
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+// ---------- Loading ahead ----------
+// Images below the cover are lazy, so on their own they arrive only as the
+// reader gets close. Instead each media section starts loading about two
+// screens early (the video starts buffering too), and once the page has
+// settled the remaining images load quietly in story order, unless the reader
+// is saving data or on a slow connection. Images come as AVIF where the
+// browser takes it (the <picture> sources), JPEG otherwise.
+
+const AHEAD = '200% 0px';   // IntersectionObserver rootMargin: two screens ahead
+
+// The river map is drawn on a canvas, so it picks its own format.
+const canAvif = new Promise((resolve) => {
+  const t = new Image();
+  t.onload = () => resolve(t.width > 0);
+  t.onerror = () => resolve(false);
+  t.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADrbWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAOcGl0bQAAAAAAAQAAAB5pbG9jAAAAAEQAAAEAAQAAAAEAAAETAAAAIQAAAChpaW5mAAAAAAABAAAAGmluZmUCAAAAAAEAAGF2MDFDb2xvcgAAAABqaXBycAAAAEtpcGNvAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAQcGl4aQAAAAADCAgIAAAADGF2MUOBAAwAAAAAE2NvbHJuY2x4AAEADQAGgAAAABdpcG1hAAAAAAAAAAEAAQQBAoMEAAAAKW1kYXQSAAoIGAAGiAhoNCAyExlHh4Yhh5555oAAAJBAyRxgimo=';
+});
+
+const loadNow = (root) => {
+  root.querySelectorAll('img[loading="lazy"]').forEach((img) => { img.loading = 'eager'; });
+  root.querySelectorAll('video[preload="none"]').forEach((v) => { v.preload = 'auto'; });
+};
+
+if ('IntersectionObserver' in window) {
+  const ahead = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      loadNow(e.target);
+      ahead.unobserve(e.target);
+    });
+  }, { rootMargin: AHEAD });
+  document.querySelectorAll('.stage, .deck, .film, .clipping, .media').forEach((el) => ahead.observe(el));
+}
+
+const conn = navigator.connection;
+const frugal = conn && (conn.saveData || /2g|3g/.test(conn.effectiveType || ''));
+if (!frugal) {
+  const warm = () => {
+    // The cover animation keeps the page busy, so don't wait for idle time forever.
+    const idle = window.requestIdleCallback ? (cb) => requestIdleCallback(cb, { timeout: 1000 }) : (cb) => setTimeout(cb, 300);
+    const queue = [...document.querySelectorAll('img[loading="lazy"]')];
+    const next = () => {
+      if (!queue.length) return;
+      const batch = queue.splice(0, 2).filter((img) => img.loading === 'lazy');
+      Promise.all(batch.map((img) => {
+        img.loading = 'eager';
+        return img.decode().catch(() => {});
+      })).then(() => idle(next));
+    };
+    idle(next);
+  };
+  if (document.readyState === 'complete') warm();
+  else window.addEventListener('load', warm, { once: true });
+}
+
 // Seeded so anything random (still frames, torn corners) is stable per load.
 function mulberry32(seed) {
   return () => {
@@ -840,9 +895,16 @@ if (viz) {
     requestAnimationFrame(frame);
   }
 
+  function loadImage() {
+    if (img.src) return;
+    canAvif.then((ok) => {
+      if (!img.src) img.src = `assets/maps/river-search2-${W * dpr > 1500 ? 2400 : 1400}.${ok ? 'avif' : 'jpg'}`;
+    });
+  }
+
   function update() {
     const play = visible && !reduceMotion.matches;
-    if (!img.src && visible) img.src = W * dpr > 1500 ? 'assets/maps/river-search2-2400.jpg' : 'assets/maps/river-search2-1400.jpg';
+    if (visible) loadImage();
     if (play && !running) { running = true; last = 0; dot = null; requestAnimationFrame(frame); }
     if (!play) {
       running = false;
@@ -858,6 +920,7 @@ if (viz) {
   reduceMotion.addEventListener('change', update);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; update(); }, { rootMargin: '200px 0px' }).observe(viz);
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) loadImage(); }, { rootMargin: AHEAD }).observe(viz);
   } else {
     visible = true; update();
   }
@@ -1076,7 +1139,7 @@ if (shareBtns.length) {
 
 // ---------- The falls video ----------
 // Plays muted on a loop while it's on screen and pauses when it scrolls away.
-// Nothing downloads until it first comes into view. If the reader pauses it,
+// Nothing downloads until it's about two screens away (see Loading ahead). If the reader pauses it,
 // it stays paused; with reduced motion it waits for the play button.
 
 const film = document.querySelector('.film');
